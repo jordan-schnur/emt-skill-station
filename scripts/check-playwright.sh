@@ -1,21 +1,26 @@
 #!/bin/bash
-# Check if Playwright browsers are installed
-# If not, provide helpful instructions
+# Run Playwright E2E tests
+# Handles both local and CI environments (macOS, Linux, Windows)
 
-CHROMIUM_PATH="$HOME/Library/Caches/ms-playwright/chromium_headless_shell-*/chrome-headless-shell-mac-arm64/chrome-headless-shell"
+set -e
 
-if ls $CHROMIUM_PATH 2>/dev/null | grep -q .; then
-  echo "✓ Playwright browsers are installed"
-  npx playwright test
+echo "🧪 Running Playwright E2E tests..."
+
+# Check if we're in CI environment
+if [ -n "$CI" ] || [ -n "$GITHUB_ACTIONS" ]; then
+  echo "📍 Running in CI environment (browsers already installed)"
 else
-  echo "⚠ Playwright browsers are not installed"
-  echo ""
-  echo "To install browsers, run:"
-  echo "  npm run test:playwright:install"
-  echo ""
-  echo "Or run directly:"
-  echo "  npx playwright install"
-  echo ""
-  echo "Note: This requires internet access to download browser binaries."
-  exit 1
+  echo "📍 Running locally - checking Playwright browsers..."
+
+  # Try to detect if browsers are installed
+  PLAYWRIGHT_BROWSERS_PATH="${PLAYWRIGHT_BROWSERS_PATH:-./.playwright}"
+
+  if [ ! -d "$PLAYWRIGHT_BROWSERS_PATH" ]; then
+    echo "⚠️  Playwright browsers not found"
+    echo "Installing browsers (this may take a minute)..."
+    npx playwright install --with-deps
+  fi
 fi
+
+# Run the tests
+npx playwright test --reporter=list
