@@ -83,8 +83,9 @@
   function buildQueue(state, sheet, now = Date.now()) {
     const due = [];
     const fresh = [];
+    const srs = state.srs || {}; // Handle corrupted state where srs is null
     for (const card of sheet.cards) {
-      const rec = state.srs[card.id];
+      const rec = srs[card.id];
       if (!rec || rec.due <= 0) {
         fresh.push({ card, rec: rec || defaultRecord() });
       } else if (rec.due <= now) {
@@ -100,8 +101,9 @@
   function masteryFor(state, sheet) {
     if (!sheet.cards.length) return 0;
     let sum = 0;
+    const srs = state.srs || {}; // Handle corrupted state where srs is null
     for (const card of sheet.cards) {
-      const rec = state.srs[card.id];
+      const rec = srs[card.id];
       if (!rec || !rec.reps) continue;
       // 0 → unreviewed, 1 → "easy" several times with long interval.
       const intervalScore = Math.min(1, rec.interval / 30);
@@ -114,8 +116,9 @@
   /** Count cards due "now" for a sheet. New cards count as due. */
   function dueCount(state, sheet, now = Date.now()) {
     let n = 0;
+    const srs = state.srs || {}; // Handle corrupted state where srs is null
     for (const card of sheet.cards) {
-      const rec = state.srs[card.id];
+      const rec = srs[card.id];
       if (!rec || rec.due <= now) n += 1;
     }
     return n;

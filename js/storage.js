@@ -79,7 +79,7 @@
   async function importFromFile(file) {
     const text = await file.text();
     const parsed = JSON.parse(text);
-    if (!parsed || typeof parsed !== "object") throw new Error("Invalid file");
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("Invalid file");
     const fresh = empty();
     return {
       ...fresh,

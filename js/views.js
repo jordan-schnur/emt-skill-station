@@ -1418,6 +1418,9 @@
       h("p", {}, ["Nothing here."]),
     ]);
 
+  // Export h() as part of Views for convenience
+  Views.h = h;
+
   global.Views = Views;
   global.h = h;
 })(window);

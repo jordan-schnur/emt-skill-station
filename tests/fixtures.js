@@ -1,0 +1,202 @@
+/**
+ * Test fixtures – reusable mock data for all tests
+ */
+
+/**
+ * Minimal mock sheet for testing
+ */
+export function createMockSheet(overrides = {}) {
+  return {
+    id: "e201",
+    title: "Patient Assessment / Management – Trauma",
+    category: "Patient Assessment",
+    totalPoints: 42,
+    timeLimit: "10 minutes",
+    cards: [
+      { id: "e201::ppe::0", text: "Takes or verbalizes appropriate PPE precautions", points: 1, section: "PPE", stepIndex: 0, parent: null },
+      { id: "e201::scene::0", text: "Determines the scene/situation is safe", points: 1, section: "SCENE SIZE-UP", stepIndex: 0, parent: null },
+      { id: "e201::scene::1", text: "Determines the mechanism of injury", points: 1, section: "SCENE SIZE-UP", stepIndex: 1, parent: null },
+    ],
+    sections: [
+      {
+        name: "PPE",
+        header: false,
+        steps: [
+          { text: "Takes or verbalizes appropriate PPE precautions", points: 1 },
+        ],
+      },
+      {
+        name: "SCENE SIZE-UP",
+        header: true,
+        steps: [
+          { text: "Determines the scene/situation is safe", points: 1 },
+          { text: "Determines the mechanism of injury", points: 1 },
+        ],
+      },
+      {
+        name: "PRIMARY SURVEY/RESUSCITATION",
+        header: true,
+        steps: [
+          { text: "Verbalizes general impression of the patient", points: 1 },
+          {
+            text: "Airway",
+            points: 2,
+            substeps: [
+              { text: "Opens and assesses airway", points: 1 },
+              { text: "Inserts adjunct as indicated", points: 1 },
+            ],
+          },
+        ],
+      },
+    ],
+    criticalCriteria: [
+      "Failure to take appropriate PPE precautions",
+      "Failure to assess airway",
+      "Failure to manage the airway",
+    ],
+    ...overrides,
+  };
+}
+
+/**
+ * Empty state object as created by Storage.empty()
+ */
+export function createEmptyState() {
+  return {
+    version: 1,
+    srs: {},
+    notes: { step: {}, sheet: {} },
+    stats: { totalReviews: 0, lastReviewedAt: null },
+    drills: { secorder: {}, stepseq: {} },
+  };
+}
+
+/**
+ * State with some SRS records already graded
+ */
+export function createStateWithSRS() {
+  const state = createEmptyState();
+  const now = Date.now();
+  const DAY = 24 * 60 * 60 * 1000;
+
+  state.srs = {
+    "e201::ppe::0": {
+      ease: 2.5,
+      interval: 1,
+      reps: 1,
+      due: now + 1 * DAY,
+      lastGrade: "good",
+      lapses: 0,
+      lastReviewed: now - 1 * DAY,
+    },
+    "e201::scene::0": {
+      ease: 2.35,
+      interval: 0,
+      reps: 0,
+      due: now + 60 * 1000, // 1 minute – just graded "again"
+      lastGrade: "again",
+      lapses: 1,
+      lastReviewed: now,
+    },
+    "e201::scene::1": {
+      ease: 2.65,
+      interval: 6,
+      reps: 2,
+      due: now + 6 * DAY,
+      lastGrade: "easy",
+      lapses: 0,
+      lastReviewed: now - 6 * DAY,
+    },
+  };
+  state.stats = {
+    totalReviews: 10,
+    lastReviewedAt: now,
+  };
+
+  return state;
+}
+
+/**
+ * State with notes
+ */
+export function createStateWithNotes() {
+  const state = createEmptyState();
+  state.notes = {
+    step: {
+      "e201::ppe::0": "Remember: gloves, mask, eye protection",
+      "e201::scene::0": "Always check for hazards first",
+    },
+    sheet: {
+      "e201": "Focus on the order: PPE → Scene → Primary Survey",
+    },
+  };
+  return state;
+}
+
+/**
+ * State with section order drill progress
+ */
+export function createStateWithDrills() {
+  const state = createEmptyState();
+  state.drills = {
+    secorder: {
+      "e201": {
+        mastered: false,
+        streak: 2,
+        attempts: [
+          { correct: true, at: Date.now() - 60000 },
+          { correct: true, at: Date.now() - 30000 },
+        ],
+      },
+    },
+    stepseq: {
+      "e201": {
+        "SCENE SIZE-UP": {
+          mastered: true,
+          streak: 3,
+          attempts: [
+            { correct: true, at: Date.now() - 180000 },
+            { correct: true, at: Date.now() - 120000 },
+            { correct: true, at: Date.now() - 60000 },
+          ],
+        },
+      },
+    },
+  };
+  return state;
+}
+
+/**
+ * Mock context object passed to views
+ */
+export function createMockContext(state = null, route = null) {
+  return {
+    state: state || createEmptyState(),
+    route: route || { view: "home" },
+    navigate: jest.fn(),
+    refresh: jest.fn(),
+    toast: jest.fn(),
+    save: jest.fn(),
+  };
+}
+
+/**
+ * Mock global NREMT_DATA
+ */
+export function setupMockNREMTData() {
+  global.NREMT_DATA = {
+    sheets: [
+      createMockSheet(),
+      createMockSheet({ id: "e202", title: "Medical Patient Assessment" }),
+    ],
+    totalCards: 100,
+  };
+}
+
+/**
+ * Helper to parse a date string or timestamp into a readable format
+ */
+export function formatDate(timestamp) {
+  if (!timestamp) return null;
+  return new Date(timestamp).toISOString().slice(0, 10);
+}

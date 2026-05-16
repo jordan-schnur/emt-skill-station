@@ -1,0 +1,31 @@
+module.exports = {
+  testEnvironment: "jsdom",
+  setupFilesAfterEnv: ["<rootDir>/tests/setup.js"],
+  collectCoverageFrom: [
+    "js/**/*.js",
+    "!js/data.js", // generated file
+  ],
+  testMatch: [
+    "**/__tests__/**/*.test.js",
+    "**/?(*.)test.js",
+    "**/tests/**/*.test.js",
+    "**/tests/**/*.e2e.test.js",
+  ],
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "tests/setup.js",
+    "tests/fixtures.js",
+    "tests/e2e/*.spec.js",
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 60,
+      functions: 70,
+      lines: 70,
+      statements: 70,
+    },
+  },
+  moduleNameMapper: {
+    "^@/(.*)$": "<rootDir>/$1",
+  },
+};
