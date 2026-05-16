@@ -28,6 +28,8 @@
   };
 
   const Views = {};
+  const SECORDER_MASTERY_RUNS = 3;
+  const STEPSEQ_MASTERY_RUNS  = 3;
 
   // ---------- HOME ----------------------------------------------------
   Views.home = (ctx) => {
@@ -50,20 +52,20 @@
     road.append(
       h("h2", {}, ["Coming next"]),
       h("p", { class: "muted" }, [
-        "Flashcards + spaced repetition is the first study mode. These are next:",
+        "Open any sheet and use the Order Drill tab to learn sections in sequence. More modes coming:",
       ]),
       h("ul", {}, [
         h("li", {}, [
-          h("span", { class: "tag" }, ["soon"]),
-          "Step-ordering drills — drag shuffled steps back into the correct sequence",
+          h("span", { class: "tag shipped" }, ["✓ live"]),
+          "Section Order Drill — drag the major sections of each sheet into the correct exam order",
+        ]),
+        h("li", {}, [
+          h("span", { class: "tag shipped" }, ["✓ live"]),
+          "Step Sequence Drill — pick a section, drag its steps into the correct exam order",
         ]),
         h("li", {}, [
           h("span", { class: "tag" }, ["soon"]),
-          "Section recall — given a section header (e.g. PRIMARY SURVEY), list every step from memory and self-grade",
-        ]),
-        h("li", {}, [
-          h("span", { class: "tag" }, ["soon"]),
-          "Critical Criteria quiz — multiple choice / true-false on the auto-fail criteria for each sheet",
+          "Critical Fail Mode — drill only the auto-fail criteria with spaced repetition",
         ]),
         h("li", {}, [
           h("span", { class: "tag" }, ["soon"]),
@@ -80,6 +82,14 @@
     const mastery = SRS.masteryFor(ctx.state, sheet);
     const pct = Math.round(mastery * 100);
     const noteCount = Notes.countSheetNotes(ctx.state, sheet);
+    const secRec = ctx.state.drills && ctx.state.drills.secorder && ctx.state.drills.secorder[sheet.id];
+    const secBadge = secRec
+      ? (secRec.mastered
+          ? h("span", { class: "sec-badge mastered", title: "Section order mastered" }, ["order ✓"])
+          : secRec.streak > 0
+            ? h("span", { class: "sec-badge progress", title: `Section order streak ${secRec.streak}/${SECORDER_MASTERY_RUNS}` }, [`order ${secRec.streak}/${SECORDER_MASTERY_RUNS}`])
+            : null)
+      : null;
 
     return h(
       "div",
@@ -105,7 +115,7 @@
         ]),
         h("div", { class: "sheet-stats" }, [
           h("span", {}, [`mastery ${pct}%`]),
-          h("span", {}, [sheet.category]),
+          secBadge || h("span", {}, [sheet.category]),
         ]),
       ]
     );
@@ -136,14 +146,38 @@
       tab === "study"   ? Views.study(ctx, sheet)
       : tab === "sheet" ? Views.reference(ctx, sheet)
       : tab === "notes" ? Views.notes(ctx, sheet)
+      : tab === "order" ? Views.sectionOrderDrill(ctx, sheet)
+      : tab === "steps" ? Views.stepSeqDrill(ctx, sheet)
       : Views.notFound()
     );
     return wrap;
   };
 
   function renderTabs(ctx, sheet, current) {
+    const secRec = ctx.state.drills && ctx.state.drills.secorder && ctx.state.drills.secorder[sheet.id];
+    const orderLabel = secRec && secRec.mastered
+      ? "Order Drill ✓"
+      : secRec && secRec.streak > 0
+        ? `Order Drill (${secRec.streak}/${SECORDER_MASTERY_RUNS})`
+        : "Order Drill";
+
+    const drillableSections = sheet.sections.filter((s) => s.steps.length >= 2);
+    const stepseqRecs = ctx.state.drills && ctx.state.drills.stepseq && ctx.state.drills.stepseq[sheet.id];
+    const masteredSecCount = stepseqRecs
+      ? drillableSections.filter((s) => stepseqRecs[s.name] && stepseqRecs[s.name].mastered).length
+      : 0;
+    const stepLabel =
+      drillableSections.length > 0 && masteredSecCount === drillableSections.length
+        ? "Step Drill ✓"
+        : masteredSecCount > 0
+          ? `Step Drill (${masteredSecCount}/${drillableSections.length})`
+          : "Step Drill";
+
     const tabs = [
       { id: "study", label: "Flashcards (SRS)" },
+      // Only show Order Drill tab for sheets with multiple sections
+      ...(sheet.sections.length > 1 ? [{ id: "order", label: orderLabel }] : []),
+      { id: "steps", label: stepLabel },
       { id: "sheet", label: "Full sheet" },
       { id: "notes", label: "Notes" },
     ];
@@ -629,6 +663,625 @@
         ]));
       }
     }
+    return pane;
+  };
+
+  // ---------- SECTION ORDER DRILL ------------------------------------
+  Views.sectionOrderDrill = (ctx, sheet) => {
+    // Ensure drill state bucket exists
+    if (!ctx.state.drills) ctx.state.drills = { secorder: {} };
+    if (!ctx.state.drills.secorder) ctx.state.drills.secorder = {};
+
+    const correctOrder = sheet.sections.map((s) => s.name);
+
+    // Sheets like BVM / CPR have a single "Sequence" section — no ordering to drill.
+    if (correctOrder.length <= 1) {
+      return h("div", { class: "empty-state" }, [
+        h("div", { class: "big" }, ["—"]),
+        h("p", {}, ["This sheet has a single continuous sequence."]),
+        h("p", { class: "muted" }, [
+          "Section Order Drill works for sheets with multiple named sections (e.g. Trauma Assessment, Medical Assessment). Use the Flashcards tab to study the steps for this sheet.",
+        ]),
+        h("p", {}, [
+          h("button", {
+            class: "btn btn-primary",
+            onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "study" }),
+          }, ["Go to Flashcards →"]),
+        ]),
+      ]);
+    }
+
+    function getMastery() {
+      return ctx.state.drills.secorder[sheet.id] || { streak: 0, attempts: 0, mastered: false };
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      // Avoid giving the user the already-correct order
+      if (a.length > 1 && a.every((v, i) => v === arr[i])) return shuffle(arr);
+      return a;
+    }
+
+    const pane = h("div", { class: "drill-pane" });
+
+    // Local drill state (lives in this closure, not in localStorage)
+    let items = shuffle(correctOrder);
+    let submitted = false;
+    let correctness = []; // per-item boolean
+
+    function render() {
+      pane.innerHTML = "";
+      const mastery = getMastery();
+
+      // ---- header ----
+      const pips = [];
+      for (let i = 0; i < SECORDER_MASTERY_RUNS; i++) {
+        pips.push(h("span", { class: "streak-pip" + (i < mastery.streak ? " filled" : "") }));
+      }
+
+      pane.appendChild(
+        h("div", { class: "drill-header" }, [
+          h("div", { class: "drill-title-row" }, [
+            h("h2", { class: "drill-title" }, ["Section Order Drill"]),
+            mastery.mastered
+              ? h("span", { class: "mastered-badge" }, ["✓ Mastered"])
+              : null,
+          ]),
+          h("p", { class: "drill-sub muted" }, [
+            mastery.mastered
+              ? "Keep your skills sharp — drag or use ↑↓ to put the sections back in exam order."
+              : `Arrange the sections in the order they appear on the skill sheet. Hit ${SECORDER_MASTERY_RUNS} in a row to master.`,
+          ]),
+          h("div", { class: "streak-row" }, [
+            h("span", { class: "streak-label" }, ["Streak "]),
+            ...pips,
+            h("span", { class: "muted" }, [
+              ` ${mastery.streak}/${SECORDER_MASTERY_RUNS}`,
+              mastery.attempts
+                ? ` · ${mastery.attempts} attempt${mastery.attempts === 1 ? "" : "s"}`
+                : "",
+            ]),
+          ]),
+          h("p", { class: "drill-hint muted" }, ["Drag on desktop · tap ↑↓ on mobile"]),
+        ])
+      );
+
+      // ---- draggable list ----
+      const list = h("div", { class: "order-list" });
+      let dragSrcIdx = null;
+
+      items.forEach((name, idx) => {
+        const isCorrect = submitted ? name === correctOrder[idx] : null;
+        const itemClass =
+          "order-item" +
+          (submitted ? (isCorrect ? " correct" : " wrong") : "");
+
+        const feedbackEl = submitted
+          ? h("span", { class: "order-check" }, [
+              isCorrect
+                ? "✓"
+                : `✗ · should be #${correctOrder.indexOf(name) + 1}`,
+            ])
+          : h("div", { class: "order-arrows" }, [
+              h("button", {
+                class: "arrow-btn",
+                disabled: idx === 0 ? "true" : null,
+                "aria-label": "Move up",
+                onclick: (e) => {
+                  e.stopPropagation();
+                  moveItem(idx, -1);
+                },
+              }, ["↑"]),
+              h("button", {
+                class: "arrow-btn",
+                disabled: idx === items.length - 1 ? "true" : null,
+                "aria-label": "Move down",
+                onclick: (e) => {
+                  e.stopPropagation();
+                  moveItem(idx, 1);
+                },
+              }, ["↓"]),
+            ]);
+
+        const item = h("div", { class: itemClass }, [
+          h("span", { class: "drag-handle", "aria-hidden": "true" }, ["⠿"]),
+          h("span", { class: "order-idx" }, [String(idx + 1)]),
+          h("span", { class: "order-name" }, [name]),
+          feedbackEl,
+        ]);
+
+        if (!submitted) {
+          item.setAttribute("draggable", "true");
+
+          item.addEventListener("dragstart", (e) => {
+            dragSrcIdx = idx;
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", String(idx));
+            // Delay class add so browser captures pre-drag snapshot
+            setTimeout(() => item.classList.add("dragging"), 0);
+          });
+
+          item.addEventListener("dragend", () => {
+            item.classList.remove("dragging");
+            dragSrcIdx = null;
+          });
+
+          item.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            list
+              .querySelectorAll(".order-item")
+              .forEach((el) => el.classList.remove("drag-over"));
+            item.classList.add("drag-over");
+          });
+
+          item.addEventListener("dragleave", (e) => {
+            if (!item.contains(e.relatedTarget)) {
+              item.classList.remove("drag-over");
+            }
+          });
+
+          item.addEventListener("drop", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            item.classList.remove("drag-over");
+            const src = dragSrcIdx;
+            if (src !== null && src !== idx) {
+              const dragged = items.splice(src, 1)[0];
+              items.splice(idx, 0, dragged);
+              dragSrcIdx = null;
+              render();
+            }
+          });
+        }
+
+        list.appendChild(item);
+      });
+
+      pane.appendChild(list);
+
+      // ---- actions / result ----
+      if (!submitted) {
+        pane.appendChild(
+          h("div", { class: "drill-actions" }, [
+            h("button", { class: "btn btn-primary", onclick: checkOrder }, [
+              "Check my order",
+            ]),
+            h("button", { class: "btn btn-ghost", onclick: reshuffleDrill }, [
+              "Reshuffle",
+            ]),
+          ])
+        );
+      } else {
+        const allCorrect = correctness.every(Boolean);
+        const m = getMastery();
+
+        pane.appendChild(
+          h("div", { class: "drill-result " + (allCorrect ? "result-pass" : "result-fail") }, [
+            h("div", { class: "result-icon" }, [allCorrect ? "✓" : "✗"]),
+            allCorrect
+              ? h("div", {}, [
+                  h("strong", {}, [m.mastered ? "Section order mastered!" : "Correct order!"]),
+                  h("p", {}, [
+                    m.mastered
+                      ? "You've locked in the exam flow for this sheet."
+                      : `Streak: ${m.streak} / ${SECORDER_MASTERY_RUNS} — keep it up!`,
+                  ]),
+                ])
+              : h("div", {}, [
+                  h("strong", {}, ["Not quite — check corrections above."]),
+                  h("p", {}, ["Streak reset to 0. Review the order and try again."]),
+                ]),
+            h("div", { class: "drill-actions" }, [
+              h("button", { class: "btn btn-primary", onclick: reshuffleDrill }, [
+                "Try again",
+              ]),
+              h("button", {
+                class: "btn",
+                onclick: () =>
+                  ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "study" }),
+              }, ["Back to flashcards"]),
+            ]),
+          ])
+        );
+
+        // Show correct order as a hint when wrong
+        if (!allCorrect) {
+          pane.appendChild(
+            h("details", { class: "hint-details" }, [
+              h("summary", { class: "muted" }, ["Show correct order"]),
+              h("ol", { class: "correct-order-list" },
+                correctOrder.map((name) => h("li", {}, [name]))
+              ),
+            ])
+          );
+        }
+      }
+    }
+
+    function moveItem(idx, dir) {
+      const newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= items.length) return;
+      [items[idx], items[newIdx]] = [items[newIdx], items[idx]];
+      render();
+    }
+
+    function checkOrder() {
+      submitted = true;
+      correctness = items.map((name, idx) => name === correctOrder[idx]);
+      const allCorrect = correctness.every(Boolean);
+
+      if (!ctx.state.drills.secorder[sheet.id]) {
+        ctx.state.drills.secorder[sheet.id] = { streak: 0, attempts: 0, mastered: false };
+      }
+      const rec = ctx.state.drills.secorder[sheet.id];
+      rec.attempts += 1;
+      if (allCorrect) {
+        rec.streak += 1;
+        if (rec.streak >= SECORDER_MASTERY_RUNS) rec.mastered = true;
+      } else {
+        rec.streak = 0;
+      }
+      ctx.save();
+      render();
+    }
+
+    function reshuffleDrill() {
+      items = shuffle(correctOrder);
+      submitted = false;
+      correctness = [];
+      render();
+    }
+
+    render();
+    return pane;
+  };
+
+  // ---------- STEP SEQUENCE DRILL ------------------------------------
+  Views.stepSeqDrill = (ctx, sheet) => {
+    // Ensure state buckets exist
+    if (!ctx.state.drills) ctx.state.drills = { secorder: {}, stepseq: {} };
+    if (!ctx.state.drills.stepseq) ctx.state.drills.stepseq = {};
+    if (!ctx.state.drills.stepseq[sheet.id]) ctx.state.drills.stepseq[sheet.id] = {};
+
+    // Only sections with 2+ steps are drillable
+    const drillableSections = sheet.sections.filter((s) => s.steps.length >= 2);
+
+    const pane = h("div", { class: "drill-pane" });
+
+    // Local drill state
+    let activeSection = drillableSections.length === 1 ? drillableSections[0] : null;
+    let items = [];          // current step-text ordering
+    let submitted = false;
+    let correctness = [];
+
+    function getSectionMastery(sectionName) {
+      return ctx.state.drills.stepseq[sheet.id][sectionName]
+        || { streak: 0, attempts: 0, mastered: false };
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      if (a.length > 1 && a.every((v, i) => v === arr[i])) return shuffle(arr);
+      return a;
+    }
+
+    function startSection(section) {
+      activeSection = section;
+      items = shuffle(section.steps.map((s) => s.text));
+      submitted = false;
+      correctness = [];
+      render();
+    }
+
+    function render() {
+      pane.innerHTML = "";
+      if (!activeSection) {
+        renderPicker();
+      } else {
+        renderDrill();
+      }
+    }
+
+    // ---- section picker ----
+    function renderPicker() {
+      const masteredCount = drillableSections.filter(
+        (s) => getSectionMastery(s.name).mastered
+      ).length;
+
+      pane.appendChild(
+        h("div", { class: "drill-header" }, [
+          h("div", { class: "drill-title-row" }, [
+            h("h2", { class: "drill-title" }, ["Step Sequence Drill"]),
+            masteredCount === drillableSections.length && drillableSections.length > 0
+              ? h("span", { class: "mastered-badge" }, ["✓ All Mastered"])
+              : null,
+          ]),
+          h("p", { class: "drill-sub muted" }, [
+            `Pick a section. Drag its steps into the correct exam order. ${STEPSEQ_MASTERY_RUNS} correct in a row = section mastered.`,
+          ]),
+        ])
+      );
+
+      if (drillableSections.length === 0) {
+        pane.appendChild(h("p", { class: "muted" }, ["No multi-step sections found."]));
+        return;
+      }
+
+      const list = h("div", { class: "section-picker" });
+      for (const section of drillableSections) {
+        const m = getSectionMastery(section.name);
+        const pips = [];
+        for (let i = 0; i < STEPSEQ_MASTERY_RUNS; i++) {
+          pips.push(
+            h("span", { class: "streak-pip" + (i < m.streak ? " filled" : "") })
+          );
+        }
+        list.appendChild(
+          h("div", {
+            class: "picker-row" + (m.mastered ? " mastered" : ""),
+            onclick: () => startSection(section),
+          }, [
+            h("div", { class: "picker-info" }, [
+              h("div", { class: "picker-name" }, [section.name]),
+              h("div", { class: "picker-meta muted" }, [
+                `${section.steps.length} steps`,
+                m.attempts
+                  ? ` · ${m.attempts} attempt${m.attempts === 1 ? "" : "s"}`
+                  : "",
+              ]),
+            ]),
+            h("div", { class: "picker-right" }, [
+              m.mastered
+                ? h("span", { class: "mastered-badge" }, ["✓"])
+                : h("div", { class: "streak-row" }, pips),
+            ]),
+            h("span", { class: "picker-arrow" }, ["→"]),
+          ])
+        );
+      }
+      pane.appendChild(list);
+    }
+
+    // ---- step ordering drill ----
+    function renderDrill() {
+      const section = activeSection;
+      const correctOrder = section.steps.map((s) => s.text);
+      const m = getSectionMastery(section.name);
+
+      const pips = [];
+      for (let i = 0; i < STEPSEQ_MASTERY_RUNS; i++) {
+        pips.push(h("span", { class: "streak-pip" + (i < m.streak ? " filled" : "") }));
+      }
+
+      pane.appendChild(
+        h("div", { class: "drill-header" }, [
+          drillableSections.length > 1
+            ? h("button", {
+                class: "btn-link",
+                style: "padding: 0 0 8px; display:block;",
+                onclick: () => { activeSection = null; render(); },
+              }, ["← All sections"])
+            : null,
+          h("div", { class: "drill-title-row" }, [
+            h("h2", { class: "drill-title" }, ["Step Sequence Drill"]),
+            m.mastered ? h("span", { class: "mastered-badge" }, ["✓ Mastered"]) : null,
+          ]),
+          h("div", { class: "card-section" }, [
+            sheet.id.toUpperCase() + " · " + section.name,
+          ]),
+          h("div", { class: "streak-row" }, [
+            h("span", { class: "streak-label" }, ["Streak "]),
+            ...pips,
+            h("span", { class: "muted" }, [
+              ` ${m.streak}/${STEPSEQ_MASTERY_RUNS}`,
+              m.attempts
+                ? ` · ${m.attempts} attempt${m.attempts === 1 ? "" : "s"}`
+                : "",
+            ]),
+          ]),
+          h("p", { class: "drill-hint muted" }, [
+            "Drag on desktop · tap ↑↓ on mobile",
+          ]),
+        ])
+      );
+
+      const list = h("div", { class: "order-list" });
+      let dragSrcIdx = null;
+
+      items.forEach((text, idx) => {
+        const isCorrect = submitted ? text === correctOrder[idx] : null;
+        const itemClass =
+          "order-item" + (submitted ? (isCorrect ? " correct" : " wrong") : "");
+
+        const feedbackEl = submitted
+          ? h("span", { class: "order-check" }, [
+              isCorrect
+                ? "✓"
+                : `✗ · should be #${correctOrder.indexOf(text) + 1}`,
+            ])
+          : h("div", { class: "order-arrows" }, [
+              h("button", {
+                class: "arrow-btn",
+                disabled: idx === 0 ? "true" : null,
+                "aria-label": "Move up",
+                onclick: (e) => { e.stopPropagation(); moveItem(idx, -1); },
+              }, ["↑"]),
+              h("button", {
+                class: "arrow-btn",
+                disabled: idx === items.length - 1 ? "true" : null,
+                "aria-label": "Move down",
+                onclick: (e) => { e.stopPropagation(); moveItem(idx, 1); },
+              }, ["↓"]),
+            ]);
+
+        const item = h("div", { class: itemClass }, [
+          h("span", { class: "drag-handle", "aria-hidden": "true" }, ["⠿"]),
+          h("span", { class: "order-idx" }, [String(idx + 1)]),
+          h("span", { class: "order-name step-name" }, [text]),
+          feedbackEl,
+        ]);
+
+        if (!submitted) {
+          item.setAttribute("draggable", "true");
+
+          item.addEventListener("dragstart", (e) => {
+            dragSrcIdx = idx;
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", String(idx));
+            setTimeout(() => item.classList.add("dragging"), 0);
+          });
+          item.addEventListener("dragend", () => {
+            item.classList.remove("dragging");
+            dragSrcIdx = null;
+          });
+          item.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+            list
+              .querySelectorAll(".order-item")
+              .forEach((el) => el.classList.remove("drag-over"));
+            item.classList.add("drag-over");
+          });
+          item.addEventListener("dragleave", (e) => {
+            if (!item.contains(e.relatedTarget)) item.classList.remove("drag-over");
+          });
+          item.addEventListener("drop", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            item.classList.remove("drag-over");
+            const src = dragSrcIdx;
+            if (src !== null && src !== idx) {
+              const dragged = items.splice(src, 1)[0];
+              items.splice(idx, 0, dragged);
+              dragSrcIdx = null;
+              render();
+            }
+          });
+        }
+
+        list.appendChild(item);
+      });
+
+      pane.appendChild(list);
+
+      if (!submitted) {
+        pane.appendChild(
+          h("div", { class: "drill-actions" }, [
+            h("button", { class: "btn btn-primary", onclick: checkOrder }, [
+              "Check my order",
+            ]),
+            h("button", { class: "btn btn-ghost", onclick: reshuffleDrill }, [
+              "Reshuffle",
+            ]),
+          ])
+        );
+      } else {
+        const allCorrect = correctness.every(Boolean);
+        const m2 = getSectionMastery(section.name);
+        pane.appendChild(
+          h("div", {
+            class: "drill-result " + (allCorrect ? "result-pass" : "result-fail"),
+          }, [
+            h("div", { class: "result-icon" }, [allCorrect ? "✓" : "✗"]),
+            allCorrect
+              ? h("div", {}, [
+                  h("strong", {}, [m2.mastered ? "Section mastered!" : "Correct order!"]),
+                  h("p", {}, [
+                    m2.mastered
+                      ? "You know this section cold."
+                      : `Streak: ${m2.streak} / ${STEPSEQ_MASTERY_RUNS} — keep going!`,
+                  ]),
+                ])
+              : h("div", {}, [
+                  h("strong", {}, ["Not quite — check corrections above."]),
+                  h("p", {}, [
+                    "Streak reset. Try again, or open Full sheet to review.",
+                  ]),
+                ]),
+            h("div", { class: "drill-actions" }, [
+              h("button", { class: "btn btn-primary", onclick: reshuffleDrill }, [
+                "Try again",
+              ]),
+              drillableSections.length > 1
+                ? h("button", {
+                    class: "btn",
+                    onclick: () => { activeSection = null; render(); },
+                  }, ["Pick another section"])
+                : null,
+              h("button", {
+                class: "btn btn-ghost",
+                onclick: () =>
+                  ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "sheet" }),
+              }, ["Full sheet →"]),
+            ]),
+          ])
+        );
+
+        if (!allCorrect) {
+          pane.appendChild(
+            h("details", { class: "hint-details" }, [
+              h("summary", { class: "muted" }, ["Show correct order"]),
+              h("ol", { class: "correct-order-list" },
+                correctOrder.map((t) => h("li", {}, [t]))
+              ),
+            ])
+          );
+        }
+      }
+    }
+
+    function moveItem(idx, dir) {
+      const newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= items.length) return;
+      [items[idx], items[newIdx]] = [items[newIdx], items[idx]];
+      render();
+    }
+
+    function checkOrder() {
+      const correctOrder = activeSection.steps.map((s) => s.text);
+      submitted = true;
+      correctness = items.map((text, idx) => text === correctOrder[idx]);
+      const allCorrect = correctness.every(Boolean);
+
+      if (!ctx.state.drills.stepseq[sheet.id][activeSection.name]) {
+        ctx.state.drills.stepseq[sheet.id][activeSection.name] = {
+          streak: 0, attempts: 0, mastered: false,
+        };
+      }
+      const rec = ctx.state.drills.stepseq[sheet.id][activeSection.name];
+      rec.attempts += 1;
+      if (allCorrect) {
+        rec.streak += 1;
+        if (rec.streak >= STEPSEQ_MASTERY_RUNS) rec.mastered = true;
+      } else {
+        rec.streak = 0;
+      }
+      ctx.save();
+      render();
+    }
+
+    function reshuffleDrill() {
+      items = shuffle(activeSection.steps.map((s) => s.text));
+      submitted = false;
+      correctness = [];
+      render();
+    }
+
+    // Auto-start single-section sheets
+    if (activeSection) {
+      items = shuffle(activeSection.steps.map((s) => s.text));
+    }
+
+    render();
     return pane;
   };
 

@@ -93,148 +93,286 @@ periodically.
 
 ## Roadmap
 
-The features below are ordered by research-backed
-evidence-to-effort ratio. Sources for the ordering: cognitive-science
-papers on active recall + procedural memory, plus practitioner advice
-from EMTLIFE / Allied Medical Training / Unitek EMT / MedicTests. See
-the chat history of the session in which this was planned for the
-full citation list.
+North star: **Can I perform this station from memory, in order, without
+critical fails, under time?** (Not just: "Do I recognize this step?")
 
 ### Already shipped
-- ✅ Structured JSON data for all 10 sheets (`preprocess.py` →
-  `data.json` + `js/data.js`)
+- ✅ Structured JSON data for all 10 sheets (`preprocess.py` → `data.json` + `js/data.js`)
 - ✅ Flashcards + SM-2 spaced repetition (`js/srs.js`)
 - ✅ Per-step + per-sheet notes, stored in `localStorage`
 - ✅ Full-sheet reference view with Critical Criteria
 - ✅ JSON export / import for backup
 - ✅ Visible roadmap panel on the home screen
-- ✅ **Mnemonic prompts on flashcard fronts** — OPQRST / SAMPLE
-  substep cards now ask "What does the **P** stand for?" with the
-  acronym rendered, missing letter highlighted (search
-  `mnemonicMatch` in `js/views.js`).
+- ✅ **Mnemonic prompts on flashcard fronts** — OPQRST / SAMPLE substep cards ask "What does the **P** stand for?" with the acronym rendered and the missing letter highlighted (see `mnemonicMatch` in `js/views.js`).
+- ✅ **Section Order Drill** — drag-to-order the major sections of each sheet; streak pips track progress to mastery (3 correct in a row); mastery badge persists on sheet cards and the Order Drill tab. Single-section sheets (BVM, CPR, etc.) show a graceful fallback. State stored under `state.drills.secorder[sheetId]`.
+- ✅ **Step Sequence Drill** — section picker lists all drillable sections with per-section streak tracking; drag or ↑↓ to reorder steps within a section; same mastery gate (3-streak); tab label shows live progress `Step Drill (2/4)`. Single-section sheets skip the picker and go straight to the steps. State stored under `state.drills.stepseq[sheetId][sectionName]`.
 
-### Up next (priority order by learning ROI)
+---
 
-#### Tier 1: Foundation — Build first
-1. **Skill-step drill mode (sequence drilling by section).**
-   *Why:* Core foundation. NREMT demands knowing both the order within
-   sections AND the order of sections themselves. Current flashcards test
-   individual items but miss sequencing entirely.
-   *How:* New tab "Step drill" next to "Flashcards". Show section header
-   + "What comes next?" Render `<input type="text">` for user to type the
-   step, or tap from a shuffled list. On submit, diff against canonical
-   order, highlight hits/misses. Feed results into an SRS record at the
-   *step-sequence* level (key: `stepseq::<sheetId>::<stepId>`).
-   Estimated: ~200 lines in `js/views.js`, new SRS bucket in `srs.js`.
+### Phase 1 — Core learning loop
 
-2. **Critical fail memorization mode.**
-   *Why:* A single critical-criteria failure automatically fails the
-   entire station. These are "do not fuck this up" items.
-   *How:* New study tab "Critical drill". Auto-extract `sheet.criticalCriteria`
-   and isolate them. Two quiz templates: (a) True/false — "Failure to X
-   **automatically fails** this station." (b) Multiple-choice — "Which is
-   **not** a critical criterion?" Track in `state.criticalScores[sheetId]`.
-   High-contrast visual alert when drilling (red border, warning icon).
-   Estimated: ~100 lines in `js/views.js`.
+#### ✅ 1. Section Order Drill *(shipped)*
+**Goal:** Memorize the major chunks of each skill sheet in the correct order
+before drilling individual steps.
 
-3. **Blank sheet recall (hide-and-reconstruct mode).**
-   *Why:* Reconstructing from pure memory (not guided) shows true
-   retention. Highest evidence-based learning gain.
-   *How:* New tab "Blank sheet". Hide all steps behind a button labeled
-   "Show step N". User sees only the section header and a numbered list
-   of buttons. Clicks "Show step 1" to reveal the canonical text, then
-   tries to reproduce it by typing (or clicks "Check" for a quick hit/miss).
-   Optional: add a `<textarea>` to write out entire section at once, then
-   diff on submit. Feed into `state.srs[blanksheet::<sheetId>::<sectionId>]`.
-   Estimated: ~150 lines in `js/views.js`.
+Users first need to learn the skeleton:
+`BSI/PPE → Scene Safety → Primary Assessment → History → Secondary Assessment → Reassessment → Critical Criteria`
 
-#### Tier 2: Realism & Pressure
-4. **Station timer with official time limits.**
-   *Why:* NREMT exams run under strict time. Practicing under pressure
-   trains performance, not just memory.
-   *How:* Display countdown timer in the top-right of any drill mode
-   (sourced from `sheet.timeLimit`). Show red overlay if user exceeds
-   limit. Save each session's `{ durationMs, lapses, passedAt }` to
-   `state.runs[sheetId] = [...]`. Display best-time + best-lapses on
-   the sheet home card.
-   Estimated: ~80 lines in `js/views.js`.
+- ✅ Show shuffled section names; user drags them into the correct order.
+- ✅ Immediate feedback on hits/misses.
+- ✅ Track mastery per sheet (streak pips + badge on sheet card and tab).
+- ✅ Require 3 correct runs before marking section order as learned.
 
-5. **Examiner mode (friend evaluation via shared session).**
-   *Why:* Real exam has an evaluator tapping checkboxes while you
-   verbalize. This is the closest simulator.
-   *How:* Generate a shareable read-only link that shows the full sheet
-   checklist. Friend opens link in separate browser, sees checkboxes
-   next to each step. As they tap, your browser (in "performer mode")
-   sees real-time which steps were marked correct/incorrect. Session
-   is ephemeral (URL token expires in 1 hour). Estimated: ~250 lines
-   (new `examiner.js` module + lightweight messaging via `localStorage`
-   polling or WebSocket if you add a backend).
+*Why this matters:* Directly solves the "what comes next?" problem.
 
-#### Tier 3: Maintenance & Meta
-6. **Random station mode (shuffle + unlock-in-order prevention).**
-   *Why:* Prevents rote order memorization. Good for maintenance once
-   skills are locked in.
-   *How:* Checkbox on the home screen: "Shuffle sheet order". New tab
-   "Random drill" — pick a random sheet + random drill mode
-   (flashcard / step-drill / blank-sheet / critical-drill). Track stats
-   separately so the user sees that shuffle-mode performance is harder
-   (motivating) but validating (true mastery if you pass shuffled).
-   Estimated: ~80 lines in `js/views.js`.
+#### ✅ 2. Step Sequence Drill *(shipped)*
+**Goal:** Learn the steps inside each section in order.
 
-7. **Claude on-demand scenario feedback.**
-   *Why:* Get AI feedback on "what did I do wrong?" for specific patient
-   scenarios. Light, user-initiated (not real-time).
-   *How:* Text field in the step-drill and blank-sheet modes: "Ask Claude
-   for feedback". User types or pastes their answer, clicks "Evaluate",
-   frontend calls an API endpoint that invokes Claude (with token rate-
-   limiting + usage tracking). Claude responds with specific correctness +
-   next-step coaching. Requires backend endpoint (e.g. Vercel function).
-   Estimated: ~150 lines frontend + 50 lines backend function.
+Example for Primary Assessment: General impression → Level of consciousness → Airway → Breathing → Circulation → Priority decision.
 
-8. **Pocket Prep companion tracker (meta-reporting).**
-   *Why:* Users study via multiple sources (Pocket Prep, NREMT sheets,
-   YouTube, etc.). Lightweight dashboard to see external progress.
-   *How:* New "Meta" tab on the Stats page. Manual entry fields:
-   - Overall Pocket Prep score
-   - Weakest subject(s)
-   - Missed-question themes
-   - Daily question streak
-   These feed a simple `state.pocketPrepMeta` object, rendered as a
-   summary card. Emoji/color badges for streak motivation.
-   Estimated: ~60 lines in `js/views.js`.
+- ✅ Pick a section; steps are shuffled.
+- ✅ User orders them (drag on desktop, ↑↓ on mobile).
+- ✅ Show missed and misplaced steps with correct-position hints.
+- ✅ Save weak sections for extra review (per-section streak tracking).
 
-#### Parking lot
-- Voice / TTS verbalization mode (read steps aloud, optional speech
-  recognition for hands-free drill).
-- Video demo link next to each section header (point to YouTube,
-  MedicTests, etc.).
-- Mini analytics: which sections you lapse on most (histogram on Stats tab).
-- Per-section mastery badges (bronze/silver/gold for consecutive correct runs).
+#### 3. Critical Fail Mode *(Highest priority)*
+**Goal:** Separate automatic-fail criteria from normal point items.
 
-### Smaller ideas / parking lot
-- Expand the canonical `mnemonic` fields in `preprocess.py` for other
-  common EMS acronyms where they map cleanly to substeps (DCAP-BTLS
-  is the obvious candidate — would need substep data on the secondary-
-  assessment body areas, which the sheets don't currently give us).
-- Surface the mnemonic + acronym in the reference view, not just on
-  the flashcard back.
-- "Critical-criteria-first" study filter on the homepage — a one-click
-  way to drill only the auto-fail items across all sheets.
-- Mini analytics on the Stats tab: which sections you lapse on most.
+- Dedicated tab/mode: "Critical Criteria."
+- Drill only critical failures; show the related sheet and section.
+- Per-card self-rating: "I know this" / "I almost missed this" / "I forgot this."
+- Critical misses resurface sooner in SRS.
+- Full simulations automatically fail if a critical criterion is missed.
+
+---
+
+### Phase 2 — Full performance recall
+
+#### 4. Blank Sheet Recall *(Very high priority)*
+**Goal:** User reconstructs an entire skill sheet from memory — the main mastery mode.
+
+- Start with a blank text area.
+- User types the full sheet from memory; allow shorthand/partial matching.
+- Compare against expected sections and steps.
+- Show: missing steps, out-of-order steps, critical criteria missed, examiner cues missed.
+- Save missed items into the review queue.
+
+#### 5. Spoken Script Mode *(Very high priority)*
+**Goal:** Memorize what to actually *say* during testing.
+
+Each step has a clean verbalization:
+`"I'm taking BSI precautions." / "The scene is safe." / "I would assess airway and breathing."`
+
+- Convert each sheet into a spoken script.
+- Practice line-by-line (typing for MVP; voice input later).
+
+#### 6. Timed Full Simulation *(High priority)*
+**Goal:** Practice under exam-like conditions.
+
+- Timer per skill sheet with a start button.
+- User performs blank recall or checklist recall.
+- End-of-session grade: completion, order, critical criteria, time.
+- Save all simulation attempts.
+
+---
+
+### Phase 3 — Examiner realism
+
+#### 7. Examiner Prompt Mode *(High priority)*
+**Goal:** Train responses to examiner cues.
+
+Example: *Examiner: "The patient is unresponsive, apneic, and pulseless."*
+Expected: Start chest compressions immediately.
+
+- Prompt cards drawn from examiner notes/cues.
+- User answers what they would do next.
+- Prompts tied to exact sheet location.
+- Missed prompts become review cards.
+
+#### 8. "What Comes Next?" Drill *(High priority)*
+**Goal:** Train procedural flow step-by-step.
+
+App shows a step → user names the next step, including section boundaries.
+
+Example: *Current: "Assesses airway." → Question: "What comes next?" → Answer: "Assesses breathing."*
+
+Likely the highest-value quick drill after section ordering.
+
+#### 9. Scenario Interruption Cards *(Medium-high priority)*
+**Goal:** Train decision points and trap moments.
+
+Example: *"You found no pulse. What should you do immediately?"*
+A) Apply AED pads  B) Begin compressions  C) Check blood pressure  D) Give oxygen
+
+- Multiple choice or short answer.
+- Focus on common test failures; stronger weighting for critical decisions.
+
+---
+
+### Phase 4 — Better SRS logic
+
+#### 10. Weakness-based SRS (upgrade from card-based) *(Medium-high priority)*
+Each item type gets its own mastery score:
+
+| Mastery type | SRS key prefix |
+|---|---|
+| Step mastery | `srs::<cardId>` (existing) |
+| Section order mastery | `secorder::<sheetId>` |
+| Section content mastery | `seccontent::<sheetId>::<sectionId>` |
+| Critical criteria mastery | `critical::<sheetId>` |
+| Full-sheet recall mastery | `fullrecall::<sheetId>` |
+| Timed performance mastery | `timed::<sheetId>` |
+
+#### 11. Missed Item Loop *(High priority)*
+After any drill, simulation, or recall attempt, immediately generate a
+mini-session with only the missed items:
+
+> *"You missed: Requests additional EMS / Determines patient priority / Verbalizes transport decision. Practice these now?"*
+
+One of the biggest speed improvements for efficient study.
+
+#### 12. Mastery Gate per sheet *(Medium priority)*
+A sheet is not mastered until all of the following pass:
+
+- Section order: passed 3×
+- Step sequence: passed 3×
+- Critical criteria: 100%
+- Blank recall: ≥90%
+- Timed simulation: passed
+- No critical fails: passed
+
+---
+
+### Phase 5 — Study plan / exam mode
+
+#### 13. Cram Mode *(High priority)*
+**Goal:** Best use of limited time before the exam.
+
+Priority order: Critical criteria → Weak sections → Section order → Examiner prompts → Full timed simulations.
+
+User picks available time (10 / 20 / 45 / 90 minutes); app generates a session:
+
+> *20-minute cram: 5 min critical fails · 5 min weak sections · 5 min what-comes-next · 5 min full sheet recall*
+
+#### 14. Random Station Mode *(Medium priority)*
+**Goal:** Prevent rote order memorization via interleaving.
+
+App randomly picks a station and mode (e.g. *Medical Assessment — Blank Recall*, then *Cardiac Arrest/AED — Critical Criteria*).
+
+#### 15. Daily Due Queue *(Medium priority)*
+**Goal:** Make the homepage actionable instead of just statistical.
+
+> *Today: 12 due flashcards · 3 weak sections · 2 critical criteria reviews · 1 full timed simulation*
+
+---
+
+### Phase 6 — Notes and mnemonics
+
+#### 16. Notes attached to mistakes *(Medium priority)*
+After missing a step twice, prompt: *"Add a memory note?"*
+Example note: *"After airway always think breathing."*
+
+#### 17. Mnemonic Builder *(Medium-low priority)*
+For any section with 3+ steps, allow a custom mnemonic.
+
+Example: Scene Size-Up (BSI, Scene Safety, MOI/NOI, Patients, Resources, C-spine)
+→ User creates: *"Big Safe Medics Pick Resources Carefully"*
+
+#### 18. Collapsed Reference View *(Medium-low priority)*
+Full-sheet view shows sections collapsed by default:
+
+```
+[+] Scene Size-Up
+[+] Primary Assessment
+[+] History Taking
+[+] Secondary Assessment
+[+] Reassessment
+[+] Critical Criteria
+```
+
+---
+
+### Phase 7 — AI / advanced features *(Later)*
+
+#### 19. AI feedback
+Not the core feature — use it to augment after core drills exist:
+- Evaluate typed blank recall and accept alternate wording.
+- Explain why order matters; turn misses into memory tricks.
+- Generate mnemonics on demand.
+- Requires a backend endpoint (e.g. Vercel function calling Claude API).
+
+#### 20. Voice Practice
+User verbalizes the station; speech-to-text checks against expected steps and highlights misses. Great feature, not needed for MVP.
+
+---
+
+### Build order (implementation slices)
+
+**Slice 1 — From flashcard app to psychomotor trainer**
+1. Section Order Drill
+2. Step Sequence Drill
+3. Critical Fail Mode
+
+**Slice 2 — Procedural memory**
+4. What Comes Next? Drill
+5. Missed Item Loop
+6. Blank Sheet Recall
+
+**Slice 3 — Exam readiness**
+7. Timed Simulation
+8. Examiner Prompt Mode
+9. Cram Mode
+
+**Then:** Random Station Mode, Daily Due Queue, Mastery Gates, Spoken Script Mode, Notes after misses, Mnemonic Builder.
+
+**Later:** AI feedback, Voice practice, Partner/examiner mode, Printable pocket scripts, Mobile polish.
+
+---
+
+### Data model additions
+
+Extend each step object with:
+
+```json
+{
+  "type": "normal | critical | examinerCue | sequenceSensitive | timeSensitive",
+  "expectedOrder": 1,
+  "sectionOrder": 1,
+  "spokenScript": "I would assess airway.",
+  "acceptableAnswers": ["assess airway", "checks airway", "airway"],
+  "commonMistakes": [],
+  "mastery": {
+    "step": 0,
+    "sequence": 0,
+    "critical": 0,
+    "fullRecall": 0
+  }
+}
+```
+
+Add an attempt record schema:
+
+```json
+{
+  "attemptId": "uuid",
+  "sheetId": "trauma-assessment",
+  "mode": "blankRecall",
+  "startedAt": "…",
+  "durationSeconds": 420,
+  "missedStepIds": [],
+  "outOfOrderStepIds": [],
+  "criticalMissIds": [],
+  "passed": false
+}
+```
+
+---
 
 ### Picking the work back up cold
 
 If you're returning in a fresh session, here's the orienting tour:
 
-- `preprocess.py` holds the canonical data for all 10 sheets as Python
-  dicts. Edit there, re-run `python3 preprocess.py`, reload the page.
-- The frontend is six small files in `js/`. Start with `js/views.js`
-  (~800 lines, all the rendering). New study modes are new entries in
-  the `Views` object plus a tab in `renderTabs`.
-- SRS lives in `js/srs.js`. New SRS targets (section-level, run-
-  through best times, quiz scores) should add their own top-level
-  keys on `state` rather than mixing with `state.srs.<cardId>`.
-- The DOM-shim end-to-end test pattern from the build session is the
-  fastest way to catch regressions — render every view via the shim
-  and check no exception fires. See git history / chat log for the
-  exact harness.
+- `preprocess.py` holds the canonical data for all 10 sheets as Python dicts. Edit there, re-run `python3 preprocess.py`, reload the page.
+- The frontend is six small files in `js/`. Start with `js/views.js` (~800 lines, all the rendering). New study modes are new entries in the `Views` object plus a tab in `renderTabs`.
+- SRS lives in `js/srs.js`. New SRS targets (section-level, run-through best times, quiz scores) should add their own top-level keys on `state` rather than mixing with `state.srs.<cardId>`.
+- The DOM-shim end-to-end test pattern from the build session is the fastest way to catch regressions — render every view via the shim and check no exception fires. See git history / chat log for the exact harness.

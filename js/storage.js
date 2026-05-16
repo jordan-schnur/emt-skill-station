@@ -20,6 +20,7 @@
     srs: {},
     notes: { step: {}, sheet: {} },
     stats: { totalReviews: 0, lastReviewedAt: null },
+    drills: { secorder: {}, stepseq: {} },
   });
 
   function load() {
@@ -35,6 +36,12 @@
         notes: { ...fresh.notes, ...(parsed.notes || {}) },
         stats: { ...fresh.stats, ...(parsed.stats || {}) },
         srs: parsed.srs || {},
+        drills: {
+          ...fresh.drills,
+          ...(parsed.drills || {}),
+          secorder: (parsed.drills && parsed.drills.secorder) ? { ...parsed.drills.secorder } : {},
+          stepseq:  (parsed.drills && parsed.drills.stepseq)  ? { ...parsed.drills.stepseq  } : {},
+        },
       };
     } catch (err) {
       console.error("Failed to load state", err);
