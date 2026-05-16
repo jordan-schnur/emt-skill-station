@@ -1648,6 +1648,8 @@
     let phase = "input";
     let lastResults = null;
     let textarea = null;
+    let missedSteps = [];
+    let missedIdx = 0;
 
     function getOrCreateRec() {
       if (!ctx.state.drills.blankrecall[sheet.id]) {
@@ -1659,6 +1661,7 @@
     function render() {
       pane.innerHTML = "";
       if (phase === "input") renderInput();
+      else if (phase === "missed") renderMissedCard();
       else renderResults();
     }
 
@@ -1741,6 +1744,50 @@
       render();
     }
 
+    function renderMissedCard() {
+      const step = missedSteps[missedIdx];
+      const total = missedSteps.length;
+      let revealed = false;
+
+      pane.appendChild(
+        h("div", { class: "drill-header" }, [
+          h("h2", {}, ["Missed Step Review"]),
+          h("div", { class: "study-meta" }, [
+            h("span", {}, [`Step ${missedIdx + 1} of ${total}`]),
+          ]),
+        ])
+      );
+
+      const answer = h("div", { class: "card-answer", style: "display:none" }, [step.text]);
+
+      const nextLabel = missedIdx + 1 < total ? "Next →" : "Back to results";
+      const nextBtn = h("button", { class: "btn btn-primary", style: "display:none", onclick: () => {
+        if (missedIdx + 1 < total) {
+          missedIdx++;
+          render();
+        } else {
+          phase = "results";
+          render();
+        }
+      } }, [nextLabel]);
+
+      const revealBtn = h("button", { class: "btn btn-primary", onclick: () => {
+        revealed = true;
+        answer.style.display = "";
+        revealBtn.style.display = "none";
+        nextBtn.style.display = "";
+      } }, ["Reveal step"]);
+
+      pane.appendChild(
+        h("div", { class: "card" }, [
+          h("div", { class: "card-section" }, [step.sectionName]),
+          h("div", { class: "card-prompt" }, ["What is this step?"]),
+          answer,
+          h("div", { class: "card-actions" }, [revealBtn, nextBtn]),
+        ])
+      );
+    }
+
     function renderResults() {
       const results = lastResults;
       const matched = results.filter((r) => r.matched).length;
@@ -1774,6 +1821,22 @@
         listEl.appendChild(row);
       });
       pane.appendChild(listEl);
+
+      const missedResults = results.filter((r) => !r.matched);
+      if (missedResults.length > 0) {
+        pane.appendChild(
+          h("div", { class: "drill-actions" }, [
+            h("button", { class: "btn btn-primary", onclick: () => {
+              missedSteps = missedResults.map((r) => r.expected);
+              missedIdx = 0;
+              phase = "missed";
+              render();
+            } }, [
+              `Practice ${missedResults.length} missed step${missedResults.length === 1 ? "" : "s"} →`,
+            ]),
+          ])
+        );
+      }
 
       pane.appendChild(
         h("div", { class: "drill-actions" }, [

@@ -107,6 +107,9 @@ critical fails, under time?** (Not just: "Do I recognize this step?")
 - ✅ **Section Order Drill** — drag-to-order the major sections of each sheet; streak pips track progress to mastery (3 correct in a row); mastery badge persists on sheet cards and the Order Drill tab. Single-section sheets (BVM, CPR, etc.) show a graceful fallback. State stored under `state.drills.secorder[sheetId]`.
 - ✅ **Step Sequence Drill** — section picker lists all drillable sections with per-section streak tracking; drag or ↑↓ to reorder steps within a section; same mastery gate (3-streak); tab label shows live progress `Step Drill (2/4)`. Single-section sheets skip the picker and go straight to the steps. State stored under `state.drills.stepseq[sheetId][sectionName]`.
 - ✅ **Critical Criteria Drill** — dedicated "Critical Criteria" tab on every sheet drills only auto-fail criteria with SRS scheduling. Three-button self-rating (✗ Would fail / ~ Close call / ✓ Know it cold); "again" resurfaces in 30 s. Tab label shows live mastery progress `Critical Criteria (1/3)` → `Critical Criteria ✓`. Card IDs stored under `state.srs["critical::<sheetId>::<idx>"]`.
+- ✅ **What's Next? Drill** — multiple-choice drill: app shows a step and asks which step comes next; 3-streak mastery gate; tab label shows live progress `What's Next? (2/3)` → `What's Next? ✓`. State stored under `state.drills.whatnext[sheetId]`.
+- ✅ **Missed Item Loop** — after any Blank Recall attempt with missed steps, a "Practice X missed steps →" button launches a mini reveal-card session for just the misses; after working through all missed cards the view returns to the results screen. Embedded in `blankRecall` in `js/views.js`.
+- ✅ **Blank Sheet Recall** — textarea where the user types every step from memory; fuzzy Jaccard matching accepts shorthand; results view shows ✓/✗/~ (out-of-order) per step with score and best-attempt tracking. State stored under `state.drills.blankrecall[sheetId]`.
 
 ---
 
@@ -150,14 +153,14 @@ Example for Primary Assessment: General impression → Level of consciousness �
 
 ### Phase 2 — Full performance recall
 
-#### 4. Blank Sheet Recall *(Very high priority)*
+#### ✅ 4. Blank Sheet Recall *(shipped)*
 **Goal:** User reconstructs an entire skill sheet from memory — the main mastery mode.
 
-- Start with a blank text area.
-- User types the full sheet from memory; allow shorthand/partial matching.
-- Compare against expected sections and steps.
-- Show: missing steps, out-of-order steps, critical criteria missed, examiner cues missed.
-- Save missed items into the review queue.
+- ✅ Start with a blank text area.
+- ✅ User types the full sheet from memory; allow shorthand/partial matching (fuzzy Jaccard).
+- ✅ Compare against expected sections and steps.
+- ✅ Show: missing steps and out-of-order steps per row.
+- ✅ Save missed items into the Missed Item Loop (Practice X missed steps mini-session).
 
 #### 5. Spoken Script Mode *(Very high priority)*
 **Goal:** Memorize what to actually *say* during testing.
@@ -191,14 +194,15 @@ Expected: Start chest compressions immediately.
 - Prompts tied to exact sheet location.
 - Missed prompts become review cards.
 
-#### 8. "What Comes Next?" Drill *(High priority)*
+#### ✅ 8. "What Comes Next?" Drill *(shipped)*
 **Goal:** Train procedural flow step-by-step.
 
-App shows a step → user names the next step, including section boundaries.
+App shows a step → user picks the next step from 4 choices (multiple choice).
 
 Example: *Current: "Assesses airway." → Question: "What comes next?" → Answer: "Assesses breathing."*
 
-Likely the highest-value quick drill after section ordering.
+- ✅ 3-streak mastery gate; tab label shows live progress.
+- ✅ 4-choice multiple choice with immediate correct/wrong feedback.
 
 #### 9. Scenario Interruption Cards *(Medium-high priority)*
 **Goal:** Train decision points and trap moments.
@@ -225,13 +229,13 @@ Each item type gets its own mastery score:
 | Full-sheet recall mastery | `fullrecall::<sheetId>` |
 | Timed performance mastery | `timed::<sheetId>` |
 
-#### 11. Missed Item Loop *(High priority)*
-After any drill, simulation, or recall attempt, immediately generate a
-mini-session with only the missed items:
+#### ✅ 11. Missed Item Loop *(shipped — in Blank Recall)*
+After a Blank Recall attempt, a "Practice X missed steps →" button launches a
+mini reveal-card session for just the missed steps.
 
-> *"You missed: Requests additional EMS / Determines patient priority / Verbalizes transport decision. Practice these now?"*
+> *"Practice 3 missed steps → [Reveal step] → [Next →]"*
 
-One of the biggest speed improvements for efficient study.
+Embedded in Blank Recall. Future: extend to Critical Criteria and other drills.
 
 #### 12. Mastery Gate per sheet *(Medium priority)*
 A sheet is not mastered until all of the following pass:
@@ -316,9 +320,9 @@ User verbalizes the station; speech-to-text checks against expected steps and hi
 3. Critical Fail Mode
 
 **Slice 2 — Procedural memory**
-4. What Comes Next? Drill
-5. Missed Item Loop
-6. Blank Sheet Recall
+4. ✅ What Comes Next? Drill
+5. ✅ Missed Item Loop (in Blank Recall)
+6. ✅ Blank Sheet Recall
 
 **Slice 3 — Exam readiness**
 7. Timed Simulation

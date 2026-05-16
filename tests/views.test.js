@@ -928,5 +928,121 @@ describe("Views – DOM Rendering and UI", () => {
       expect(recallTab).toBeTruthy();
       expect(recallTab.textContent).toContain("80%");
     });
+
+    // ---------- Missed Item Loop ----------------------------------------
+    it("should show 'Practice missed steps' button when steps are missed", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.blankRecall(ctx, sheet);
+      const ta = view.querySelector("textarea.recall-textarea");
+      ta.value = "takes ppe precautions"; // only 1 of 7 steps
+      const submitBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("Check my recall")
+      );
+      submitBtn.click();
+      const practiceBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("missed step")
+      );
+      expect(practiceBtn).toBeTruthy();
+      expect(practiceBtn.textContent).toMatch(/Practice \d+ missed step/);
+    });
+
+    it("should NOT show 'Practice missed steps' button when all steps are recalled", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.blankRecall(ctx, sheet);
+      const seq = window.buildFlatSequence(sheet);
+      const ta = view.querySelector("textarea.recall-textarea");
+      ta.value = seq.map((s) => s.text).join("\n");
+      const submitBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("Check my recall")
+      );
+      submitBtn.click();
+      const practiceBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("missed step")
+      );
+      expect(practiceBtn).toBeFalsy();
+    });
+
+    it("should enter missed step review when Practice button is clicked", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.blankRecall(ctx, sheet);
+      const ta = view.querySelector("textarea.recall-textarea");
+      ta.value = "takes ppe precautions";
+      const submitBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("Check my recall")
+      );
+      submitBtn.click();
+      const practiceBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("missed step")
+      );
+      practiceBtn.click();
+      // Should show missed step review card
+      expect(view.querySelector(".card-prompt").textContent).toContain("What is this step?");
+      expect(view.querySelector(".card-section")).toBeTruthy();
+    });
+
+    it("should reveal step text when Reveal step is clicked in missed loop", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.blankRecall(ctx, sheet);
+      const ta = view.querySelector("textarea.recall-textarea");
+      ta.value = "takes ppe precautions";
+      const submitBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("Check my recall")
+      );
+      submitBtn.click();
+      const practiceBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("missed step")
+      );
+      practiceBtn.click();
+      const revealBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("Reveal step")
+      );
+      expect(revealBtn).toBeTruthy();
+      revealBtn.click();
+      // Answer is now visible
+      const answer = view.querySelector(".card-answer");
+      expect(answer.style.display).not.toBe("none");
+    });
+
+    it("should return to results after completing missed loop", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.blankRecall(ctx, sheet);
+      const ta = view.querySelector("textarea.recall-textarea");
+      // Type just one step — the others will be missed
+      ta.value = "takes ppe precautions";
+      const submitBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("Check my recall")
+      );
+      submitBtn.click();
+      const practiceBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("missed step")
+      );
+      practiceBtn.click();
+
+      // Walk through ALL missed steps by clicking reveal then next/done on each
+      let keepGoing = true;
+      while (keepGoing) {
+        const revealBtn = Array.from(view.querySelectorAll("button")).find(
+          (b) => b.textContent.includes("Reveal step")
+        );
+        if (revealBtn) revealBtn.click();
+        const nextBtn = Array.from(view.querySelectorAll("button")).find(
+          (b) => b.textContent.includes("Next →") || b.textContent.includes("Back to results")
+        );
+        if (nextBtn) {
+          nextBtn.click();
+          keepGoing = !view.querySelector("textarea.recall-textarea") && !view.querySelector(".recall-results");
+        } else {
+          keepGoing = false;
+        }
+      }
+
+      // Should be back at results
+      expect(view.querySelector(".recall-results")).toBeTruthy();
+    });
   });
 });
