@@ -1,0 +1,108 @@
+# Claude Development Instructions for NREMT Study Tool
+
+## Critical Rule
+**Every feature must have tests, and you must run the tests yourself before saying it's done.**
+
+## Workflow for Any Task
+
+1. **Understand Requirements**
+   - Read the task or user request carefully
+   - Check DEVELOPMENT.md for patterns and standards
+
+2. **Write Tests First**
+   - Create unit tests for business logic (Jest)
+   - Create E2E tests for user workflows (Playwright)
+   - Tests should fail before implementation (TDD)
+
+3. **Implement the Feature**
+   - Write the actual code
+   - Tests should start passing
+
+4. **Run All Tests**
+   - `npm test` - Must pass
+   - `npm run test:e2e:browser` - Must pass (if relevant)
+   - Check for warnings/errors in console
+
+5. **Verify Visually** (Use computer use if needed)
+   - Take screenshots of working feature
+   - Navigate through the app to test user workflow
+   - Confirm test results with `npm test`
+
+6. **Mark Complete Only When**
+   - ✅ All tests pass (npm test = pass)
+   - ✅ All E2E tests pass (npm run test:e2e:browser = pass)
+   - ✅ You've run the tests yourself
+   - ✅ Coverage thresholds met (70% statements/functions/lines, 60% branches)
+   - ✅ No console errors/warnings
+
+## Important Testing Details
+
+### Jest Unit Tests
+- Location: `tests/*.test.js`
+- Run: `npm test`
+- Used for: Functions, business logic, state management
+- Coverage required: 70%
+
+### Playwright E2E Tests
+- Location: `tests/e2e/*.spec.js`
+- Run: `npm run test:e2e:browser`
+- Used for: User workflows, navigation, UI interactions
+- Requires: `npm run test:playwright:install` (one-time, needs internet)
+
+### Test Fixtures
+- File: `tests/fixtures.js`
+- Use these instead of creating new mock data
+- Examples: createMockSheet(), createStateWithNotes(), createEmptyState()
+
+## Key Files
+- `DEVELOPMENT.md` - Full development guide
+- `E2E_TESTING.md` - E2E test setup and troubleshooting
+- `TESTING.md` - General testing info
+- `jest.config.js` - Jest configuration
+- `playwright.config.js` - Playwright configuration
+
+## When Tests Fail
+
+1. Read the error message carefully
+2. Check if it's:
+   - A real bug in the code → Fix the code
+   - A bad test → Fix the test
+   - A setup issue → Check configuration
+3. Run `npm test` again to verify fix
+4. Never move forward with failing tests
+
+## Use Computer Use For
+
+- Taking final screenshots of working features
+- Verifying E2E tests run successfully
+- Debugging visual issues
+- Checking console for errors/warnings
+- Confirming user workflows work as expected
+
+## Commands Cheat Sheet
+
+```bash
+npm test                      # Run all unit tests
+npm run test:watch           # Watch mode
+npm run test:all             # Verbose with coverage
+npm run test:e2e:browser     # E2E tests
+npm run test:ci              # Full pipeline
+npm run test:playwright:install  # Install browsers
+npm run serve                # Start dev server
+```
+
+## Definition of "Done"
+
+A task is NOT done until:
+- ✅ Tests written for the feature
+- ✅ All tests passing locally
+- ✅ You've personally run `npm test` and seen green results
+- ✅ E2E tests pass (if user-facing feature)
+- ✅ Code coverage adequate
+- ✅ Feature verified to work with computer use if applicable
+
+When in doubt, ask the user what "done" means and run the test suite.
+
+## Remember
+Testing catches bugs early. A 10-minute test run now saves 10 hours of debugging later.
+Don't ship code you haven't tested yourself.

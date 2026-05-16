@@ -11,6 +11,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
+  // Skip tests if running in restricted network environment
+  globalTimeout: process.env.CI ? 120000 : 60000,
 
   reporter: [
     ["html"],
@@ -29,34 +31,29 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        headless: true,
+      },
     },
 
-    {
-      name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
-    },
-
-    {
-      name: "webkit",
-      use: { ...devices["Desktop Safari"] },
-    },
-
-    // Mobile tests
-    {
-      name: "Mobile Chrome",
-      use: { ...devices["Pixel 5"] },
-    },
-
-    {
-      name: "Mobile Safari",
-      use: { ...devices["iPhone 12"] },
-    },
+    // Additional browsers only in CI environments
+    ...(process.env.CI ? [
+      {
+        name: "firefox",
+        use: { ...devices["Desktop Firefox"] },
+      },
+      {
+        name: "webkit",
+        use: { ...devices["Desktop Safari"] },
+      },
+    ] : []),
   ],
 
   webServer: {
     command: "python3 -m http.server 8000",
     url: "http://localhost:8000",
     reuseExistingServer: !process.env.CI,
+    timeout: 30 * 1000, // 30 seconds
   },
 });

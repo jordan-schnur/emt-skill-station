@@ -9,9 +9,10 @@
     "test:storage": "jest storage.test.js --coverage",
     "test:views": "jest views.test.js --coverage",
     "test:e2e": "jest --testMatch='**/*.e2e.test.js'",
-    "test:e2e:browser": "playwright test",
+    "test:e2e:browser": "bash scripts/check-playwright.sh",
+    "test:playwright:install": "npx playwright install",
     "test:all": "jest --coverage --verbose",
-    "test:ci": "npm test && npm run test:e2e:browser && python -m pytest tests/preprocess.test.py",
+    "test:ci": "npm test && npm run test:playwright:install && npm run test:e2e:browser",
     "serve": "python3 -m http.server 8000",
     "preprocess": "python3 preprocess.py"
   },

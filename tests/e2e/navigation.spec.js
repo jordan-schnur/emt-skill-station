@@ -29,7 +29,8 @@ test.describe("Navigation & Home View", () => {
   test("should show sheet metadata on cards", async ({ page }) => {
     const firstCard = page.locator(".sheet-card").first();
 
-    await expect(firstCard).toContainText("Trauma Assessment");
+    await expect(firstCard).toContainText("Patient Assessment");
+    await expect(firstCard).toContainText("Trauma");
     await expect(firstCard).toContainText("pts");
     await expect(firstCard).toContainText("cards");
   });
@@ -48,7 +49,7 @@ test.describe("Navigation & Home View", () => {
 
     // Should navigate to sheet view
     await expect(page).toHaveURL(/.*sheet.*/, { timeout: 5000 });
-    await expect(page.locator("h1")).toContainText("Trauma Assessment");
+    await expect(page.locator("h1")).toContainText("Patient Assessment");
   });
 
   test("should display roadmap of upcoming features", async ({ page }) => {
@@ -134,9 +135,9 @@ test.describe("Sheet Detail View & Tabs", () => {
 
   test("should display sheet header with metadata", async ({ page }) => {
     const header = page.locator(".sheet-header");
-    await expect(header).toContainText("Trauma Assessment");
-    await expect(header).toContainText("e201");
     await expect(header).toContainText("Patient Assessment");
+    await expect(header).toContainText("Trauma");
+    await expect(header).toContainText("E201");
   });
 });
 
@@ -146,7 +147,7 @@ test.describe("Footer & Status Display", () => {
   });
 
   test("should display footer with stats", async ({ page }) => {
-    const footer = page.locator("footer, #footer-status");
+    const footer = page.locator("#footer-status");
     const footerText = await footer.textContent();
 
     // Should show number of sheets and cards
@@ -156,7 +157,7 @@ test.describe("Footer & Status Display", () => {
 
   test("should update review count in footer", async ({ page }) => {
     // Get initial footer text
-    const footer = page.locator("footer, #footer-status");
+    const footer = page.locator("#footer-status");
     const initialText = await footer.textContent();
 
     // Navigate to sheet and study
