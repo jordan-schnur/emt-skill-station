@@ -391,4 +391,215 @@ describe("Views – DOM Rendering and UI", () => {
       expect(badges.length).toBeGreaterThan(0);
     });
   });
+
+  describe("Views.criticalDrill – Critical Fail Mode", () => {
+    it("should render without crashing", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      expect(() => window.Views.criticalDrill(ctx, sheet)).not.toThrow();
+    });
+
+    it("should show a fallback when criticalCriteria is empty", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet({ criticalCriteria: [] });
+      const view = window.Views.criticalDrill(ctx, sheet);
+      expect(view.className).toContain("empty-state");
+    });
+
+    it("should show criterion count in card meta", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet(); // has 3 criticalCriteria
+      const view = window.Views.criticalDrill(ctx, sheet);
+      // "Criterion 1 of 3"
+      expect(view.textContent).toContain("Criterion 1 of");
+      expect(view.textContent).toContain("3");
+    });
+
+    it("should display the crit-badge on the card", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.criticalDrill(ctx, sheet);
+      const badge = view.querySelector(".crit-badge");
+      expect(badge).toBeTruthy();
+      expect(badge.textContent).toContain("Auto-fail");
+    });
+
+    it("should hide grade buttons until card is revealed", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.criticalDrill(ctx, sheet);
+      const gradeRow = view.querySelector(".grade-row");
+      expect(gradeRow).toBeTruthy();
+      expect(gradeRow.style.display).toBe("none");
+    });
+
+    it("should hide the criterion answer until revealed", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.criticalDrill(ctx, sheet);
+      const answer = view.querySelector(".crit-answer");
+      expect(answer).toBeTruthy();
+      expect(answer.style.display).toBe("none");
+    });
+
+    it("should show 3 grade buttons (not 4) after reveal", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.criticalDrill(ctx, sheet);
+
+      const revealBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("Reveal")
+      );
+      expect(revealBtn).toBeTruthy();
+      revealBtn.click();
+
+      const gradeRow = view.querySelector(".crit-grade-row");
+      expect(gradeRow.style.display).not.toBe("none");
+      const grades = gradeRow.querySelectorAll(".grade");
+      expect(grades.length).toBe(3); // again, hard, easy only
+    });
+
+    it("should reveal the criterion text after clicking reveal", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.criticalDrill(ctx, sheet);
+
+      const revealBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("Reveal")
+      );
+      revealBtn.click();
+
+      const answer = view.querySelector(".crit-answer");
+      expect(answer.style.display).not.toBe("none");
+      // Criterion text should be shown
+      expect(answer.textContent).toBeTruthy();
+    });
+
+    it("should save to state.srs under critical:: key when graded", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.criticalDrill(ctx, sheet);
+
+      const revealBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("Reveal")
+      );
+      revealBtn.click();
+
+      const easyBtn = view.querySelector(".grade.easy");
+      easyBtn.click();
+
+      const critId = `critical::${sheet.id}::0`;
+      expect(ctx.state.srs[critId]).toBeDefined();
+      expect(ctx.state.srs[critId].reps).toBeGreaterThan(0);
+      expect(ctx.save).toHaveBeenCalled();
+    });
+
+    it("should increment totalReviews when graded", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const before = ctx.state.stats.totalReviews;
+
+      const view = window.Views.criticalDrill(ctx, sheet);
+      const revealBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("Reveal")
+      );
+      revealBtn.click();
+      view.querySelector(".grade.hard").click();
+
+      expect(ctx.state.stats.totalReviews).toBe(before + 1);
+    });
+
+    it("should set due to 30 s in the future when graded 'again'", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.criticalDrill(ctx, sheet);
+
+      const revealBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("Reveal")
+      );
+      revealBtn.click();
+      view.querySelector(".grade.again").click();
+
+      const critId = `critical::${sheet.id}::0`;
+      const rec = ctx.state.srs[critId];
+      expect(rec).toBeDefined();
+      // due should be roughly now + 30 s (within 5 s tolerance)
+      expect(rec.due).toBeGreaterThan(Date.now() + 25 * 1000);
+      expect(rec.due).toBeLessThan(Date.now() + 35 * 1000);
+    });
+
+    it("should show 'all on schedule' when all criteria are future-due", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      // Pre-seed all criteria as future-due
+      sheet.criticalCriteria.forEach((_, i) => {
+        ctx.state.srs[`critical::${sheet.id}::${i}`] = {
+          ease: 2.5, interval: 1, reps: 1,
+          due: Date.now() + 24 * 60 * 60 * 1000, // tomorrow
+          lastGrade: "easy", lapses: 0, lastReviewed: Date.now(),
+        };
+      });
+
+      const view = window.Views.criticalDrill(ctx, sheet);
+      expect(view.textContent).toContain("on schedule");
+    });
+
+    it("should show 'Drill all anyway' button when nothing is due", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      sheet.criticalCriteria.forEach((_, i) => {
+        ctx.state.srs[`critical::${sheet.id}::${i}`] = {
+          ease: 2.5, interval: 1, reps: 1,
+          due: Date.now() + 24 * 60 * 60 * 1000,
+          lastGrade: "easy", lapses: 0, lastReviewed: Date.now(),
+        };
+      });
+
+      const view = window.Views.criticalDrill(ctx, sheet);
+      const cramBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("anyway")
+      );
+      expect(cramBtn).toBeTruthy();
+    });
+
+    it("should show all criteria reviewed in tab label after completing all", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet(); // 3 criticalCriteria
+      // Simulate having reviewed all 3
+      sheet.criticalCriteria.forEach((_, i) => {
+        ctx.state.srs[`critical::${sheet.id}::${i}`] = {
+          ease: 2.65, interval: 6, reps: 2,
+          due: Date.now() + 6 * 24 * 60 * 60 * 1000,
+          lastGrade: "easy", lapses: 0, lastReviewed: Date.now(),
+        };
+      });
+
+      ctx.route = { view: "sheet", sheetId: sheet.id, tab: "critical" };
+      const view = window.Views.sheet(ctx);
+      const tabs = Array.from(view.querySelectorAll(".tabs button"));
+      const critTab = tabs.find((t) => t.textContent.includes("Critical Criteria"));
+      expect(critTab).toBeTruthy();
+      // All 3 reviewed → shows ✓
+      expect(critTab.textContent).toContain("✓");
+    });
+
+    it("should show partial progress in tab label when some reviewed", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet(); // 3 criticalCriteria
+      // Simulate having reviewed only 1
+      ctx.state.srs[`critical::${sheet.id}::0`] = {
+        ease: 2.5, interval: 1, reps: 1,
+        due: Date.now() + 24 * 60 * 60 * 1000,
+        lastGrade: "easy", lapses: 0, lastReviewed: Date.now(),
+      };
+
+      ctx.route = { view: "sheet", sheetId: sheet.id, tab: "critical" };
+      const view = window.Views.sheet(ctx);
+      const tabs = Array.from(view.querySelectorAll(".tabs button"));
+      const critTab = tabs.find((t) => t.textContent.includes("Critical Criteria"));
+      expect(critTab).toBeTruthy();
+      // 1 of 3 reviewed → shows (1/3)
+      expect(critTab.textContent).toContain("1/3");
+    });
+  });
 });

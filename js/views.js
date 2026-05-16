@@ -64,8 +64,8 @@
           "Step Sequence Drill — pick a section, drag its steps into the correct exam order",
         ]),
         h("li", {}, [
-          h("span", { class: "tag" }, ["soon"]),
-          "Critical Fail Mode — drill only the auto-fail criteria with spaced repetition",
+          h("span", { class: "tag shipped" }, ["✓ live"]),
+          "Critical Criteria Drill — drill only the auto-fail criteria with spaced repetition",
         ]),
         h("li", {}, [
           h("span", { class: "tag" }, ["soon"]),
@@ -143,11 +143,12 @@
         ]),
       ]),
       renderTabs(ctx, sheet, tab),
-      tab === "study"   ? Views.study(ctx, sheet)
-      : tab === "sheet" ? Views.reference(ctx, sheet)
-      : tab === "notes" ? Views.notes(ctx, sheet)
-      : tab === "order" ? Views.sectionOrderDrill(ctx, sheet)
-      : tab === "steps" ? Views.stepSeqDrill(ctx, sheet)
+      tab === "study"    ? Views.study(ctx, sheet)
+      : tab === "sheet"  ? Views.reference(ctx, sheet)
+      : tab === "notes"  ? Views.notes(ctx, sheet)
+      : tab === "order"  ? Views.sectionOrderDrill(ctx, sheet)
+      : tab === "steps"  ? Views.stepSeqDrill(ctx, sheet)
+      : tab === "critical" ? Views.criticalDrill(ctx, sheet)
       : Views.notFound()
     );
     return wrap;
@@ -173,11 +174,27 @@
           ? `Step Drill (${masteredSecCount}/${drillableSections.length})`
           : "Step Drill";
 
+    // Critical Criteria tab label — shows how many criteria have been reviewed at least once
+    const criticalCount = (sheet.criticalCriteria || []).length;
+    let critKnownCount = 0;
+    for (let ci = 0; ci < criticalCount; ci++) {
+      const rec = ctx.state.srs[`critical::${sheet.id}::${ci}`];
+      if (rec && rec.reps > 0) critKnownCount++;
+    }
+    const critLabel = criticalCount === 0
+      ? "Critical Criteria"
+      : critKnownCount === criticalCount
+        ? "Critical Criteria ✓"
+        : critKnownCount > 0
+          ? `Critical Criteria (${critKnownCount}/${criticalCount})`
+          : "Critical Criteria";
+
     const tabs = [
       { id: "study", label: "Flashcards (SRS)" },
       // Only show Order Drill tab for sheets with multiple sections
       ...(sheet.sections.length > 1 ? [{ id: "order", label: orderLabel }] : []),
       { id: "steps", label: stepLabel },
+      { id: "critical", label: critLabel },
       { id: "sheet", label: "Full sheet" },
       { id: "notes", label: "Notes" },
     ];
@@ -1282,6 +1299,209 @@
     }
 
     render();
+    return pane;
+  };
+
+  // ---------- CRITICAL FAIL MODE -------------------------------------
+  /**
+   * Drill all critical criteria for a sheet with SRS scheduling.
+   * Each criterion is revealed on demand; the user self-rates:
+   *   ✗ Would fail   → "again"  (resurfaces in 30 s)
+   *   ~ Close call   → "hard"
+   *   ✓ Know it cold → "easy"
+   * Card IDs: "critical::<sheetId>::<idx>" stored in state.srs.
+   */
+  Views.criticalDrill = (ctx, sheet) => {
+    const criteria = sheet.criticalCriteria || [];
+
+    if (criteria.length === 0) {
+      return h("div", { class: "empty-state" }, [
+        h("div", { class: "big" }, ["—"]),
+        h("p", {}, ["No critical criteria found for this sheet."]),
+        h("p", {}, [
+          h("button", {
+            class: "btn btn-primary",
+            onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "sheet" }),
+          }, ["View full sheet →"]),
+        ]),
+      ]);
+    }
+
+    const now = Date.now();
+    const allCards = criteria.map((text, idx) => ({
+      id: `critical::${sheet.id}::${idx}`,
+      text,
+      idx,
+      section: "CRITICAL CRITERIA",
+    }));
+
+    const pane = h("div", { class: "study-pane" });
+
+    function buildCritQueue(cram) {
+      if (cram) {
+        return allCards.map((card) => ({ card, rec: SRS.getRecord(ctx.state, card.id) }));
+      }
+      const due = [];
+      const fresh = [];
+      for (const card of allCards) {
+        const rec = ctx.state.srs[card.id];
+        if (!rec || !rec.due || rec.due <= 0) {
+          fresh.push({ card, rec: SRS.defaultRecord() });
+        } else if (rec.due <= now) {
+          due.push({ card, rec });
+        }
+        // future-due: not shown until SRS says it's time
+      }
+      due.sort((a, b) => a.rec.due - b.rec.due);
+      return [...due, ...fresh];
+    }
+
+    let queue = buildCritQueue(false);
+
+    function startSession(q) {
+      queue = q;
+      showAt(0);
+    }
+
+    function showAt(i) {
+      pane.innerHTML = "";
+
+      if (queue.length === 0) {
+        // Nothing due: all criteria are scheduled for the future
+        pane.appendChild(
+          h("div", { class: "empty-state" }, [
+            h("div", { class: "big" }, ["✓"]),
+            h("p", {}, ["All critical criteria are on schedule."]),
+            h("p", { class: "muted" }, ["SRS will bring these back when it's time."]),
+            h("p", {}, [
+              h("button", {
+                class: "btn btn-primary",
+                onclick: () => startSession(buildCritQueue(true)),
+              }, ["Drill all anyway →"]),
+              " ",
+              h("button", { class: "btn", onclick: () => ctx.navigate({ view: "home" }) }, ["Home"]),
+            ]),
+          ])
+        );
+        return;
+      }
+
+      if (i >= queue.length) {
+        pane.appendChild(
+          h("div", { class: "empty-state" }, [
+            h("div", { class: "big" }, ["✓"]),
+            h("p", {}, ["Critical criteria session complete."]),
+            h("p", { class: "muted" }, [
+              `Reviewed ${queue.length} criterion${queue.length === 1 ? "" : "ia"}.`,
+            ]),
+            h("p", {}, [
+              h("button", {
+                class: "btn btn-primary",
+                onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "critical" }),
+              }, ["Go again"]),
+              " ",
+              h("button", { class: "btn", onclick: () => ctx.navigate({ view: "home" }) }, ["Home"]),
+            ]),
+          ])
+        );
+        return;
+      }
+
+      pane.appendChild(buildCritCard(i));
+    }
+
+    function buildCritCard(i) {
+      const { card } = queue[i];
+      let revealed = false;
+
+      const meta = h("div", { class: "study-meta" }, [
+        h("span", {}, [`Criterion ${i + 1} of ${queue.length}`]),
+        h("span", {}, [SRS.describeDue(ctx.state.srs[card.id])]),
+      ]);
+
+      const sheetLabel = h("div", { class: "card-section" }, [
+        sheet.id.toUpperCase() + " · CRITICAL CRITERIA",
+      ]);
+
+      const critBadge = h("div", { class: "crit-badge" }, ["⚠ Auto-fail if missed"]);
+
+      const prompt = h("div", { class: "card-prompt" }, [
+        "Reveal this criterion — then rate whether you'd catch it in the exam.",
+      ]);
+
+      const answer = h("div", { class: "card-answer crit-answer", style: "display:none" }, [card.text]);
+
+      const reveal = h("button", { class: "btn btn-primary", onclick: () => doReveal() }, [
+        "Reveal  ", h("span", { class: "kbd" }, ["space"]),
+      ]);
+
+      // 3-button rating (no "Good" — just fail/almost/know)
+      const grades = h("div", { class: "grade-row crit-grade-row", style: "display:none" }, [
+        h("button", { class: "grade again", onclick: () => doGrade("again") }, [
+          "✗ Would fail", h("small", {}, ["< 30 sec"]),
+        ]),
+        h("button", { class: "grade hard", onclick: () => doGrade("hard") }, [
+          "~ Close call", h("small", {}, [dueLabel("hard", ctx, card)]),
+        ]),
+        h("button", { class: "grade easy", onclick: () => doGrade("easy") }, [
+          "✓ Know it cold", h("small", {}, [dueLabel("easy", ctx, card)]),
+        ]),
+      ]);
+
+      const actions = h("div", { class: "card-actions" }, [reveal]);
+
+      const cardEl = h("div", { class: "card crit-card" }, [
+        sheetLabel,
+        critBadge,
+        prompt,
+        answer,
+        actions,
+        grades,
+      ]);
+
+      function doReveal() {
+        if (revealed) return;
+        revealed = true;
+        answer.style.display = "";
+        reveal.style.display = "none";
+        grades.style.display = "";
+      }
+
+      function doGrade(name) {
+        const before = SRS.getRecord(ctx.state, card.id);
+        const after = SRS.grade(before, name);
+        // Critical criteria resurface faster on "again" — 30 s instead of 1 min
+        if (name === "again") {
+          after.due = Date.now() + 30 * 1000;
+        }
+        ctx.state.srs[card.id] = after;
+        ctx.state.stats.totalReviews += 1;
+        ctx.state.stats.lastReviewedAt = Date.now();
+        ctx.save();
+        if (name === "again") {
+          queue.push({ card, rec: after });
+        }
+        showAt(i + 1);
+      }
+
+      // Keyboard: space/enter to reveal; 1/2/3 to grade
+      cardEl.tabIndex = 0;
+      cardEl.addEventListener("keydown", (e) => {
+        if (!revealed && (e.key === " " || e.key === "Enter")) {
+          e.preventDefault();
+          doReveal();
+        } else if (revealed) {
+          if (e.key === "1") doGrade("again");
+          if (e.key === "2") doGrade("hard");
+          if (e.key === "3") doGrade("easy");
+        }
+      });
+      setTimeout(() => cardEl.focus(), 0);
+
+      return h("div", {}, [meta, cardEl]);
+    }
+
+    showAt(0);
     return pane;
   };
 

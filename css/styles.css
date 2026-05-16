@@ -1341,6 +1341,45 @@ a:hover, .link:hover { text-decoration: underline; }
   }
 }
 
+/* -- Critical Fail Mode ------------------------------------------- */
+
+/* Badge shown on card front: "⚠ Auto-fail if missed" */
+.crit-badge {
+  display: inline-block;
+  background: rgba(229, 83, 75, 0.10);
+  color: var(--again);
+  border: 1px solid rgba(229, 83, 75, 0.28);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  margin: 8px 0 4px;
+  letter-spacing: 0.3px;
+}
+
+/* Card gets a red left accent to distinguish from regular SRS cards */
+.crit-card {
+  border-left: 3px solid var(--again);
+}
+
+/* Revealed answer is displayed prominently */
+.crit-answer {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  padding: 16px 18px;
+  background: rgba(229, 83, 75, 0.06);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--again);
+  margin: 14px 0;
+  line-height: 1.45;
+}
+
+/* 3-column grid instead of the default 4-column SRS grade row */
+.crit-grade-row {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 /* -- small utilities ---------------------------------------------- */
 .muted { color: var(--text-dim); }
 .row-wrap { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }

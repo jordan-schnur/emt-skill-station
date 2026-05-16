@@ -106,6 +106,7 @@ critical fails, under time?** (Not just: "Do I recognize this step?")
 - ✅ **Mnemonic prompts on flashcard fronts** — OPQRST / SAMPLE substep cards ask "What does the **P** stand for?" with the acronym rendered and the missing letter highlighted (see `mnemonicMatch` in `js/views.js`).
 - ✅ **Section Order Drill** — drag-to-order the major sections of each sheet; streak pips track progress to mastery (3 correct in a row); mastery badge persists on sheet cards and the Order Drill tab. Single-section sheets (BVM, CPR, etc.) show a graceful fallback. State stored under `state.drills.secorder[sheetId]`.
 - ✅ **Step Sequence Drill** — section picker lists all drillable sections with per-section streak tracking; drag or ↑↓ to reorder steps within a section; same mastery gate (3-streak); tab label shows live progress `Step Drill (2/4)`. Single-section sheets skip the picker and go straight to the steps. State stored under `state.drills.stepseq[sheetId][sectionName]`.
+- ✅ **Critical Criteria Drill** — dedicated "Critical Criteria" tab on every sheet drills only auto-fail criteria with SRS scheduling. Three-button self-rating (✗ Would fail / ~ Close call / ✓ Know it cold); "again" resurfaces in 30 s. Tab label shows live mastery progress `Critical Criteria (1/3)` → `Critical Criteria ✓`. Card IDs stored under `state.srs["critical::<sheetId>::<idx>"]`.
 
 ---
 
@@ -135,14 +136,15 @@ Example for Primary Assessment: General impression → Level of consciousness �
 - ✅ Show missed and misplaced steps with correct-position hints.
 - ✅ Save weak sections for extra review (per-section streak tracking).
 
-#### 3. Critical Fail Mode *(Highest priority)*
+#### ✅ 3. Critical Fail Mode *(shipped)*
 **Goal:** Separate automatic-fail criteria from normal point items.
 
-- Dedicated tab/mode: "Critical Criteria."
-- Drill only critical failures; show the related sheet and section.
-- Per-card self-rating: "I know this" / "I almost missed this" / "I forgot this."
-- Critical misses resurface sooner in SRS.
-- Full simulations automatically fail if a critical criterion is missed.
+- ✅ Dedicated "Critical Criteria" tab on every sheet.
+- ✅ SRS-ordered drill: due criteria first, never-seen last.
+- ✅ Per-card self-rating: "✗ Would fail" / "~ Close call" / "✓ Know it cold".
+- ✅ Critical misses resurface in 30 s (vs. 60 s for normal flashcards).
+- ✅ Tab label shows live progress: `Critical Criteria (1/3)` → `Critical Criteria ✓`.
+- Full simulations automatically fail if a critical criterion is missed *(future — no simulation mode yet)*.
 
 ---
 
