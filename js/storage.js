@@ -20,7 +20,7 @@
     srs: {},
     notes: { step: {}, sheet: {} },
     stats: { totalReviews: 0, lastReviewedAt: null },
-    drills: { secorder: {}, stepseq: {} },
+    drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {} },
   });
 
   function load() {
@@ -39,8 +39,10 @@
         drills: {
           ...fresh.drills,
           ...(parsed.drills || {}),
-          secorder: (parsed.drills && parsed.drills.secorder) ? { ...parsed.drills.secorder } : {},
-          stepseq:  (parsed.drills && parsed.drills.stepseq)  ? { ...parsed.drills.stepseq  } : {},
+          secorder:    (parsed.drills && parsed.drills.secorder)    ? { ...parsed.drills.secorder }    : {},
+          stepseq:     (parsed.drills && parsed.drills.stepseq)     ? { ...parsed.drills.stepseq }     : {},
+          whatnext:    (parsed.drills && parsed.drills.whatnext)    ? { ...parsed.drills.whatnext }    : {},
+          blankrecall: (parsed.drills && parsed.drills.blankrecall) ? { ...parsed.drills.blankrecall } : {},
         },
       };
     } catch (err) {
@@ -87,6 +89,14 @@
       notes: { ...fresh.notes, ...(parsed.notes || {}) },
       stats: { ...fresh.stats, ...(parsed.stats || {}) },
       srs: parsed.srs || {},
+      drills: {
+        ...fresh.drills,
+        ...(parsed.drills || {}),
+        secorder:    (parsed.drills && parsed.drills.secorder)    ? { ...parsed.drills.secorder }    : {},
+        stepseq:     (parsed.drills && parsed.drills.stepseq)     ? { ...parsed.drills.stepseq }     : {},
+        whatnext:    (parsed.drills && parsed.drills.whatnext)    ? { ...parsed.drills.whatnext }    : {},
+        blankrecall: (parsed.drills && parsed.drills.blankrecall) ? { ...parsed.drills.blankrecall } : {},
+      },
     };
   }
 

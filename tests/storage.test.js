@@ -47,7 +47,7 @@ describe("Storage – localStorage wrapper", () => {
 
       const loaded = window.Storage.load();
 
-      expect(loaded.drills).toEqual({ secorder: {}, stepseq: {} });
+      expect(loaded.drills).toEqual({ secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {} });
       expect(loaded.srs).toEqual(old.srs);
     });
 

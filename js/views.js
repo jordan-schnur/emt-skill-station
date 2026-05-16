@@ -28,8 +28,9 @@
   };
 
   const Views = {};
-  const SECORDER_MASTERY_RUNS = 3;
-  const STEPSEQ_MASTERY_RUNS  = 3;
+  const SECORDER_MASTERY_RUNS  = 3;
+  const STEPSEQ_MASTERY_RUNS   = 3;
+  const WHATNEXT_MASTERY_RUNS  = 3;
 
   // ---------- HOME ----------------------------------------------------
   Views.home = (ctx) => {
@@ -146,9 +147,11 @@
       tab === "study"    ? Views.study(ctx, sheet)
       : tab === "sheet"  ? Views.reference(ctx, sheet)
       : tab === "notes"  ? Views.notes(ctx, sheet)
-      : tab === "order"  ? Views.sectionOrderDrill(ctx, sheet)
-      : tab === "steps"  ? Views.stepSeqDrill(ctx, sheet)
+      : tab === "order"   ? Views.sectionOrderDrill(ctx, sheet)
+      : tab === "steps"   ? Views.stepSeqDrill(ctx, sheet)
       : tab === "critical" ? Views.criticalDrill(ctx, sheet)
+      : tab === "whatnext" ? Views.whatNextDrill(ctx, sheet)
+      : tab === "recall"  ? Views.blankRecall(ctx, sheet)
       : Views.notFound()
     );
     return wrap;
@@ -189,12 +192,26 @@
           ? `Critical Criteria (${critKnownCount}/${criticalCount})`
           : "Critical Criteria";
 
+    const wnRec = ctx.state.drills && ctx.state.drills.whatnext && ctx.state.drills.whatnext[sheet.id];
+    const whatNextLabel = wnRec && wnRec.mastered
+      ? "What's Next? ✓"
+      : wnRec && wnRec.streak > 0
+        ? `What's Next? (${wnRec.streak}/${WHATNEXT_MASTERY_RUNS})`
+        : "What's Next?";
+
+    const brRec = ctx.state.drills && ctx.state.drills.blankrecall && ctx.state.drills.blankrecall[sheet.id];
+    const recallLabel = brRec && brRec.bestPct > 0
+      ? `Blank Recall (${brRec.bestPct}%)`
+      : "Blank Recall";
+
     const tabs = [
       { id: "study", label: "Flashcards (SRS)" },
       // Only show Order Drill tab for sheets with multiple sections
       ...(sheet.sections.length > 1 ? [{ id: "order", label: orderLabel }] : []),
       { id: "steps", label: stepLabel },
       { id: "critical", label: critLabel },
+      { id: "whatnext", label: whatNextLabel },
+      { id: "recall", label: recallLabel },
       { id: "sheet", label: "Full sheet" },
       { id: "notes", label: "Notes" },
     ];
@@ -490,6 +507,49 @@
       );
     }
     return wrap;
+  }
+
+  function buildFlatSequence(sheet) {
+    const seq = [];
+    for (const section of sheet.sections) {
+      for (const step of section.steps) {
+        seq.push({ text: step.text, sectionName: section.name });
+        for (const sub of (step.substeps || [])) {
+          seq.push({ text: sub.text, sectionName: section.name });
+        }
+      }
+    }
+    return seq;
+  }
+
+  function tokenize(text) {
+    return text.toLowerCase().replace(/[^a-z0-9\s]/g, "").split(/\s+/).filter(Boolean);
+  }
+
+  function jaccardSimilarity(a, b) {
+    const setA = new Set(tokenize(a));
+    const setB = new Set(tokenize(b));
+    if (setA.size === 0 && setB.size === 0) return 1;
+    let intersection = 0;
+    for (const tok of setA) { if (setB.has(tok)) intersection++; }
+    const union = setA.size + setB.size - intersection;
+    return union === 0 ? 0 : intersection / union;
+  }
+
+  function matchLines(typedLines, expectedSteps, threshold = 0.45) {
+    const available = [...typedLines];
+    return expectedSteps.map((expected) => {
+      let bestScore = 0, bestIdx = -1;
+      available.forEach((line, i) => {
+        const s = jaccardSimilarity(line, expected.text);
+        if (s > bestScore) { bestScore = s; bestIdx = i; }
+      });
+      if (bestScore >= threshold && bestIdx !== -1) {
+        const matched = available.splice(bestIdx, 1)[0];
+        return { expected, matched: true, typedLine: matched, score: bestScore };
+      }
+      return { expected, matched: false, typedLine: null, score: bestScore };
+    });
   }
 
   function openInlineNote(ctx, card, noteEl, onChange) {
@@ -1252,8 +1312,146 @@
               ),
             ])
           );
+          const missedTexts = items.filter((_, idx) => !correctness[idx]);
+          if (missedTexts.length > 0) {
+            pane.appendChild(
+              h("div", { class: "drill-actions" }, [
+                h("button", { class: "btn btn-primary", onclick: () => startMiniDrill(missedTexts) }, [
+                  `Practice ${missedTexts.length} missed step${missedTexts.length === 1 ? "" : "s"} →`,
+                ]),
+              ])
+            );
+          }
         }
       }
+    }
+
+    function startMiniDrill(missedTexts) {
+      const miniCorrect = activeSection.steps.map((s) => s.text).filter((t) => missedTexts.includes(t));
+      let miniItems = shuffle([...missedTexts]);
+      let miniSubmitted = false;
+      let miniCorrectness = [];
+      let dragSrcIdx = null;
+
+      function renderMini() {
+        pane.innerHTML = "";
+        pane.appendChild(
+          h("div", { class: "drill-header" }, [
+            h("h2", { class: "drill-title" }, ["Practicing missed steps"]),
+            h("div", { class: "card-section" }, [activeSection.name]),
+            h("p", { class: "drill-hint muted" }, ["Drag on desktop · tap ↑↓ on mobile"]),
+          ])
+        );
+
+        const list = h("div", { class: "order-list" });
+        miniItems.forEach((text, idx) => {
+          let itemClass = "order-item";
+          let feedbackEl = h("span", {});
+          if (miniSubmitted) {
+            itemClass += miniCorrectness[idx] ? " item-correct" : " item-wrong";
+            if (!miniCorrectness[idx]) {
+              const correctPos = miniCorrect.indexOf(text);
+              feedbackEl = h("span", { class: "order-feedback" }, [
+                `→ position ${correctPos + 1}`,
+              ]);
+            }
+          }
+
+          const item = h("div", { class: itemClass }, [
+            h("span", { class: "drag-handle", "aria-hidden": "true" }, ["⠿"]),
+            h("span", { class: "order-idx" }, [String(idx + 1)]),
+            h("span", { class: "order-name step-name" }, [text]),
+            feedbackEl,
+            h("div", { class: "arrow-btns" }, [
+              h("button", {
+                class: "arrow-btn",
+                disabled: idx === 0 ? "true" : null,
+                "aria-label": "Move up",
+                onclick: (e) => { e.stopPropagation(); miniMove(idx, -1); },
+              }, ["↑"]),
+              h("button", {
+                class: "arrow-btn",
+                disabled: idx === miniItems.length - 1 ? "true" : null,
+                "aria-label": "Move down",
+                onclick: (e) => { e.stopPropagation(); miniMove(idx, 1); },
+              }, ["↓"]),
+            ]),
+          ]);
+
+          if (!miniSubmitted) {
+            item.setAttribute("draggable", "true");
+            item.addEventListener("dragstart", (e) => {
+              dragSrcIdx = idx;
+              e.dataTransfer.effectAllowed = "move";
+              setTimeout(() => item.classList.add("dragging"), 0);
+            });
+            item.addEventListener("dragend", () => {
+              item.classList.remove("dragging");
+              dragSrcIdx = null;
+            });
+            item.addEventListener("dragover", (e) => {
+              e.preventDefault();
+              list.querySelectorAll(".order-item").forEach((el) => el.classList.remove("drag-over"));
+              item.classList.add("drag-over");
+            });
+            item.addEventListener("dragleave", (e) => {
+              if (!item.contains(e.relatedTarget)) item.classList.remove("drag-over");
+            });
+            item.addEventListener("drop", (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              item.classList.remove("drag-over");
+              const src = dragSrcIdx;
+              if (src !== null && src !== idx) {
+                const dragged = miniItems.splice(src, 1)[0];
+                miniItems.splice(idx, 0, dragged);
+                dragSrcIdx = null;
+                renderMini();
+              }
+            });
+          }
+          list.appendChild(item);
+        });
+        pane.appendChild(list);
+
+        if (!miniSubmitted) {
+          pane.appendChild(
+            h("div", { class: "drill-actions" }, [
+              h("button", { class: "btn btn-primary", onclick: miniCheck }, ["Check my order"]),
+            ])
+          );
+        } else {
+          const allOk = miniCorrectness.every(Boolean);
+          pane.appendChild(
+            h("div", { class: "drill-result " + (allOk ? "result-pass" : "result-fail") }, [
+              h("div", { class: "result-icon" }, [allOk ? "✓" : "✗"]),
+              h("div", {}, [
+                h("strong", {}, [allOk ? "Got them all!" : "Check corrections above."]),
+              ]),
+            ])
+          );
+          pane.appendChild(
+            h("div", { class: "drill-actions" }, [
+              h("button", { class: "btn btn-primary", onclick: reshuffleDrill }, ["Back to full drill"]),
+            ])
+          );
+        }
+      }
+
+      function miniMove(idx, dir) {
+        const newIdx = idx + dir;
+        if (newIdx < 0 || newIdx >= miniItems.length) return;
+        [miniItems[idx], miniItems[newIdx]] = [miniItems[newIdx], miniItems[idx]];
+        renderMini();
+      }
+
+      function miniCheck() {
+        miniCorrectness = miniItems.map((t, i) => t === miniCorrect[i]);
+        miniSubmitted = true;
+        renderMini();
+      }
+
+      renderMini();
     }
 
     function moveItem(idx, dir) {
@@ -1296,6 +1494,296 @@
     // Auto-start single-section sheets
     if (activeSection) {
       items = shuffle(activeSection.steps.map((s) => s.text));
+    }
+
+    render();
+    return pane;
+  };
+
+  // ---------- WHAT'S NEXT? DRILL -------------------------------------
+  Views.whatNextDrill = (ctx, sheet) => {
+    if (!ctx.state.drills.whatnext) ctx.state.drills.whatnext = {};
+    if (!ctx.state.drills.whatnext[sheet.id]) {
+      ctx.state.drills.whatnext[sheet.id] = { streak: 0, attempts: 0, mastered: false };
+    }
+
+    const seq = buildFlatSequence(sheet);
+
+    if (seq.length < 2) {
+      return h("div", { class: "empty-state" }, [
+        h("div", { class: "big" }, ["—"]),
+        h("p", {}, ["This sheet doesn't have enough steps for this drill."]),
+      ]);
+    }
+
+    function shuffleArr(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    const pane = h("div", { class: "drill-pane" });
+    let currentIdx = 0;
+    let choices = [];
+    let answered = false;
+    let selectedChoice = null;
+
+    function pickRound() {
+      currentIdx = Math.floor(Math.random() * (seq.length - 1));
+      const correctNext = seq[currentIdx + 1].text;
+      const promptText = seq[currentIdx].text;
+      const pool = seq.map((s) => s.text).filter((t) => t !== promptText && t !== correctNext);
+      const distractors = shuffleArr(pool).slice(0, 3);
+      choices = shuffleArr([correctNext, ...distractors]);
+      answered = false;
+      selectedChoice = null;
+    }
+
+    function getRec() {
+      return ctx.state.drills.whatnext[sheet.id];
+    }
+
+    function render() {
+      pane.innerHTML = "";
+      const rec = getRec();
+
+      const pips = [];
+      for (let i = 0; i < WHATNEXT_MASTERY_RUNS; i++) {
+        pips.push(h("span", { class: "streak-pip" + (i < rec.streak ? " filled" : "") }));
+      }
+      pane.appendChild(
+        h("div", { class: "drill-header" }, [
+          h("div", { class: "drill-title-row" }, [
+            h("h2", { class: "drill-title" }, ["What's Next?"]),
+            rec.mastered ? h("span", { class: "mastered-badge" }, ["✓ Mastered"]) : null,
+          ]),
+          h("div", { class: "streak-row" }, [
+            h("span", { class: "streak-label" }, ["Streak "]),
+            ...pips,
+            h("span", { class: "muted" }, [` ${rec.streak}/${WHATNEXT_MASTERY_RUNS}`]),
+          ]),
+        ])
+      );
+
+      pane.appendChild(
+        h("div", { class: "whatnext-prompt" }, [
+          h("div", { class: "card-section" }, [seq[currentIdx].sectionName]),
+          h("div", { class: "whatnext-prompt-text" }, [seq[currentIdx].text]),
+          h("div", { class: "whatnext-question" }, ["What comes next?"]),
+        ])
+      );
+
+      const correctText = seq[currentIdx + 1].text;
+      const letters = ["A", "B", "C", "D"];
+      const choiceEls = choices.map((text, i) => {
+        let cls = "whatnext-choice";
+        if (answered) {
+          if (text === correctText) cls += " correct";
+          else if (text === selectedChoice) cls += " wrong";
+          else cls += " dim";
+        }
+        return h("button", {
+          class: cls,
+          disabled: answered,
+          onclick: () => checkChoice(text),
+        }, [
+          h("span", { class: "choice-letter" }, [letters[i]]),
+          h("span", { class: "choice-text" }, [text]),
+        ]);
+      });
+      pane.appendChild(h("div", { class: "whatnext-choices" }, choiceEls));
+
+      if (answered) {
+        const isCorrect = selectedChoice === correctText;
+        pane.appendChild(
+          h("div", { class: isCorrect ? "drill-result result-pass" : "drill-result result-fail" }, [
+            h("div", { class: "result-icon" }, [isCorrect ? "✓" : "✗"]),
+            h("p", {}, [isCorrect ? "Correct!" : `The next step is: "${correctText}"`]),
+            ...(!isCorrect ? [h("p", { class: "muted" }, [`Section: ${seq[currentIdx + 1].sectionName}`])] : []),
+          ])
+        );
+        pane.appendChild(
+          h("div", { class: "drill-actions" }, [
+            h("button", { class: "btn btn-primary", onclick: () => nextQuestion() }, ["Next question →"]),
+          ])
+        );
+      }
+    }
+
+    function checkChoice(chosen) {
+      answered = true;
+      selectedChoice = chosen;
+      const isCorrect = chosen === seq[currentIdx + 1].text;
+      const rec = getRec();
+      rec.attempts += 1;
+      if (isCorrect) {
+        rec.streak += 1;
+        if (rec.streak >= WHATNEXT_MASTERY_RUNS) rec.mastered = true;
+      } else {
+        rec.streak = 0;
+      }
+      ctx.save();
+      render();
+    }
+
+    function nextQuestion() {
+      pickRound();
+      render();
+    }
+
+    pickRound();
+    render();
+    return pane;
+  };
+
+  // ---------- BLANK SHEET RECALL ------------------------------------
+  Views.blankRecall = (ctx, sheet) => {
+    if (!ctx.state.drills.blankrecall) ctx.state.drills.blankrecall = {};
+
+    const expectedSteps = buildFlatSequence(sheet);
+    const pane = h("div", { class: "drill-pane" });
+    let phase = "input";
+    let lastResults = null;
+    let textarea = null;
+
+    function getOrCreateRec() {
+      if (!ctx.state.drills.blankrecall[sheet.id]) {
+        ctx.state.drills.blankrecall[sheet.id] = { attempts: 0, lastAttemptAt: null, lastScore: null, bestPct: 0 };
+      }
+      return ctx.state.drills.blankrecall[sheet.id];
+    }
+
+    function render() {
+      pane.innerHTML = "";
+      if (phase === "input") renderInput();
+      else renderResults();
+    }
+
+    function renderInput() {
+      const rec = ctx.state.drills.blankrecall[sheet.id];
+      pane.appendChild(
+        h("div", { class: "drill-header" }, [
+          h("h2", {}, ["Blank Sheet Recall"]),
+          rec && rec.bestPct > 0
+            ? h("span", { class: "mastered-badge" }, [`Best: ${rec.bestPct}%`])
+            : null,
+        ])
+      );
+      pane.appendChild(
+        h("p", { class: "muted" }, [
+          "Write every step from memory, one per line. Word-for-word isn't required — we use fuzzy matching.",
+        ])
+      );
+      textarea = h("textarea", {
+        class: "recall-textarea",
+        rows: "20",
+        placeholder: "Step 1\nStep 2\n...",
+      }, []);
+      pane.appendChild(textarea);
+      pane.appendChild(
+        h("div", { class: "drill-actions" }, [
+          h("button", { class: "btn btn-primary", onclick: onSubmit }, ["Check my recall"]),
+          h("button", {
+            class: "btn btn-ghost",
+            onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "sheet" }),
+          }, ["View full sheet →"]),
+        ])
+      );
+      if (rec && rec.attempts > 0) {
+        pane.appendChild(
+          h("p", { class: "muted small" }, [
+            `${rec.attempts} attempt${rec.attempts === 1 ? "" : "s"} · best ${rec.bestPct}%`,
+          ])
+        );
+      }
+    }
+
+    function onSubmit() {
+      const raw = textarea ? textarea.value : "";
+      const typedLines = raw.split("\n").map((s) => s.trim()).filter(Boolean);
+      if (!typedLines.length) {
+        ctx.toast("Type at least one step.");
+        return;
+      }
+      lastResults = matchLines(typedLines, expectedSteps);
+
+      // Detect out-of-order: matched items whose expected index is less than the previous matched item's expected index
+      const matchedIndices = [];
+      lastResults.forEach((r, i) => {
+        if (r.matched) matchedIndices.push({ resultIdx: i, expectedIdx: i });
+      });
+      // Mark out-of-order: if a matched item's position in expectedSteps is behind a previously matched item
+      let lastExpectedIdx = -1;
+      lastResults.forEach((r) => {
+        if (!r.matched) return;
+        const eIdx = expectedSteps.indexOf(r.expected);
+        if (eIdx < lastExpectedIdx) {
+          r.outOfOrder = true;
+        } else {
+          lastExpectedIdx = eIdx;
+        }
+      });
+
+      const rec = getOrCreateRec();
+      const matched = lastResults.filter((r) => r.matched).length;
+      const total = lastResults.length;
+      const pct = Math.round((matched / total) * 100);
+      rec.attempts += 1;
+      rec.lastAttemptAt = Date.now();
+      rec.lastScore = { matched, missed: total - matched, total, pct };
+      rec.bestPct = Math.max(rec.bestPct, pct);
+      ctx.save();
+
+      phase = "results";
+      render();
+    }
+
+    function renderResults() {
+      const results = lastResults;
+      const matched = results.filter((r) => r.matched).length;
+      const total = results.length;
+      const pct = Math.round((matched / total) * 100);
+
+      const scoreClass = pct >= 80 ? "score-good" : pct >= 50 ? "score-ok" : "score-poor";
+      pane.appendChild(
+        h("div", { class: "drill-header" }, [
+          h("h2", {}, ["Blank Sheet Recall"]),
+          h("div", { class: "recall-score " + scoreClass }, [
+            `${matched} / ${total} steps recalled (${pct}%)`,
+          ]),
+        ])
+      );
+
+      const listEl = h("div", { class: "recall-results" });
+      results.forEach((r) => {
+        let icon, cls;
+        if (r.matched && r.outOfOrder) { icon = "~"; cls = "recall-ooo"; }
+        else if (r.matched)            { icon = "✓"; cls = "recall-match"; }
+        else                           { icon = "✗"; cls = "recall-miss"; }
+
+        const row = h("div", { class: "recall-row " + cls }, [
+          h("span", { class: "recall-icon" }, [icon]),
+          h("span", { class: "recall-step" }, [r.expected.text]),
+        ]);
+        if (r.matched && r.score < 0.9 && r.typedLine) {
+          row.appendChild(h("div", { class: "recall-typed muted small" }, [`you wrote: "${r.typedLine}"`]));
+        }
+        listEl.appendChild(row);
+      });
+      pane.appendChild(listEl);
+
+      pane.appendChild(
+        h("div", { class: "drill-actions" }, [
+          h("button", { class: "btn btn-primary", onclick: () => { phase = "input"; render(); } }, ["Try again"]),
+          h("button", {
+            class: "btn btn-ghost",
+            onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "sheet" }),
+          }, ["View full sheet →"]),
+        ])
+      );
     }
 
     render();
@@ -1621,6 +2109,7 @@
           Object.assign(ctx.state, {
             version: 1, srs: {}, notes: { step: {}, sheet: {} },
             stats: { totalReviews: 0, lastReviewedAt: null },
+            drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {} },
           });
           ctx.toast("Reset complete");
           ctx.refresh();
@@ -1643,4 +2132,7 @@
 
   global.Views = Views;
   global.h = h;
+  global.buildFlatSequence = buildFlatSequence;
+  global.jaccardSimilarity = jaccardSimilarity;
+  global.matchLines = matchLines;
 })(window);

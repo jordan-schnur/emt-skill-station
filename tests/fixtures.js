@@ -67,7 +67,7 @@ export function createEmptyState() {
     srs: {},
     notes: { step: {}, sheet: {} },
     stats: { totalReviews: 0, lastReviewedAt: null },
-    drills: { secorder: {}, stepseq: {} },
+    drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {} },
   };
 }
 
@@ -162,6 +162,8 @@ export function createStateWithDrills() {
         },
       },
     },
+    whatnext: {},
+    blankrecall: {},
   };
   return state;
 }
@@ -191,6 +193,33 @@ export function setupMockNREMTData() {
     ],
     totalCards: 100,
   };
+}
+
+/**
+ * State with What's Next? drill progress
+ */
+export function createStateWithWhatnext() {
+  const state = createEmptyState();
+  state.drills.whatnext = {
+    "e201": { streak: 2, attempts: 4, mastered: false },
+  };
+  return state;
+}
+
+/**
+ * State with Blank Sheet Recall progress
+ */
+export function createStateWithBlankrecall() {
+  const state = createEmptyState();
+  state.drills.blankrecall = {
+    "e201": {
+      attempts: 3,
+      lastAttemptAt: Date.now() - 60000,
+      lastScore: { matched: 4, missed: 1, total: 5, pct: 80 },
+      bestPct: 80,
+    },
+  };
+  return state;
 }
 
 /**
