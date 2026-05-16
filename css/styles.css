@@ -1415,6 +1415,7 @@ a:hover, .link:hover { text-decoration: underline; }
   align-items: flex-start;
   gap: 12px;
   background: var(--bg-elev);
+  color: var(--text);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 13px 16px;
@@ -1448,13 +1449,14 @@ a:hover, .link:hover { text-decoration: underline; }
 }
 
 .whatnext-choice.dim {
-  opacity: 0.4;
+  opacity: 0.55;
+  color: var(--text-dim);
 }
 
 .choice-letter {
   font-weight: 700;
   font-size: 13px;
-  color: var(--text-mute);
+  color: var(--text-dim);
   min-width: 20px;
   padding-top: 1px;
   flex-shrink: 0;

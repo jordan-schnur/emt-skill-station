@@ -426,66 +426,50 @@ describe("Views – DOM Rendering and UI", () => {
       expect(badge.textContent).toContain("Auto-fail");
     });
 
-    it("should hide grade buttons until card is revealed", () => {
+    it("should show grade buttons immediately without reveal step", () => {
       const ctx = createMockContext();
       const sheet = createMockSheet();
       const view = window.Views.criticalDrill(ctx, sheet);
       const gradeRow = view.querySelector(".grade-row");
       expect(gradeRow).toBeTruthy();
-      expect(gradeRow.style.display).toBe("none");
+      // Grade buttons visible immediately — no reveal needed
+      expect(gradeRow.style.display).not.toBe("none");
     });
 
-    it("should hide the criterion answer until revealed", () => {
+    it("should show the criterion text immediately on the card", () => {
       const ctx = createMockContext();
       const sheet = createMockSheet();
       const view = window.Views.criticalDrill(ctx, sheet);
       const answer = view.querySelector(".crit-answer");
       expect(answer).toBeTruthy();
-      expect(answer.style.display).toBe("none");
+      expect(answer.style.display).not.toBe("none");
+      expect(answer.textContent).toBeTruthy();
     });
 
-    it("should show 3 grade buttons (not 4) after reveal", () => {
+    it("should show 3 grade buttons (not 4) immediately", () => {
       const ctx = createMockContext();
       const sheet = createMockSheet();
       const view = window.Views.criticalDrill(ctx, sheet);
-
-      const revealBtn = Array.from(view.querySelectorAll("button")).find(
-        (b) => b.textContent.includes("Reveal")
-      );
-      expect(revealBtn).toBeTruthy();
-      revealBtn.click();
-
       const gradeRow = view.querySelector(".crit-grade-row");
-      expect(gradeRow.style.display).not.toBe("none");
+      expect(gradeRow).toBeTruthy();
       const grades = gradeRow.querySelectorAll(".grade");
       expect(grades.length).toBe(3); // again, hard, easy only
     });
 
-    it("should reveal the criterion text after clicking reveal", () => {
+    it("should not have a Reveal button on the critical criteria card", () => {
       const ctx = createMockContext();
       const sheet = createMockSheet();
       const view = window.Views.criticalDrill(ctx, sheet);
-
       const revealBtn = Array.from(view.querySelectorAll("button")).find(
-        (b) => b.textContent.includes("Reveal")
+        (b) => b.textContent.includes("Reveal") && !b.textContent.includes("Reveal step")
       );
-      revealBtn.click();
-
-      const answer = view.querySelector(".crit-answer");
-      expect(answer.style.display).not.toBe("none");
-      // Criterion text should be shown
-      expect(answer.textContent).toBeTruthy();
+      expect(revealBtn).toBeFalsy();
     });
 
     it("should save to state.srs under critical:: key when graded", () => {
       const ctx = createMockContext();
       const sheet = createMockSheet();
       const view = window.Views.criticalDrill(ctx, sheet);
-
-      const revealBtn = Array.from(view.querySelectorAll("button")).find(
-        (b) => b.textContent.includes("Reveal")
-      );
-      revealBtn.click();
 
       const easyBtn = view.querySelector(".grade.easy");
       easyBtn.click();
@@ -502,10 +486,6 @@ describe("Views – DOM Rendering and UI", () => {
       const before = ctx.state.stats.totalReviews;
 
       const view = window.Views.criticalDrill(ctx, sheet);
-      const revealBtn = Array.from(view.querySelectorAll("button")).find(
-        (b) => b.textContent.includes("Reveal")
-      );
-      revealBtn.click();
       view.querySelector(".grade.hard").click();
 
       expect(ctx.state.stats.totalReviews).toBe(before + 1);
@@ -516,10 +496,6 @@ describe("Views – DOM Rendering and UI", () => {
       const sheet = createMockSheet();
       const view = window.Views.criticalDrill(ctx, sheet);
 
-      const revealBtn = Array.from(view.querySelectorAll("button")).find(
-        (b) => b.textContent.includes("Reveal")
-      );
-      revealBtn.click();
       view.querySelector(".grade.again").click();
 
       const critId = `critical::${sheet.id}::0`;

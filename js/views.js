@@ -1963,7 +1963,6 @@
 
     function buildCritCard(i) {
       const { card } = queue[i];
-      let revealed = false;
 
       const meta = h("div", { class: "study-meta" }, [
         h("span", {}, [`Criterion ${i + 1} of ${queue.length}`]),
@@ -1976,18 +1975,15 @@
 
       const critBadge = h("div", { class: "crit-badge" }, ["⚠ Auto-fail if missed"]);
 
+      // Show criterion text immediately — user rates whether they'd catch it
+      const criterionText = h("div", { class: "card-answer crit-answer" }, [card.text]);
+
       const prompt = h("div", { class: "card-prompt" }, [
-        "Reveal this criterion — then rate whether you'd catch it in the exam.",
+        "Would you catch this in an exam?",
       ]);
 
-      const answer = h("div", { class: "card-answer crit-answer", style: "display:none" }, [card.text]);
-
-      const reveal = h("button", { class: "btn btn-primary", onclick: () => doReveal() }, [
-        "Reveal  ", h("span", { class: "kbd" }, ["space"]),
-      ]);
-
-      // 3-button rating (no "Good" — just fail/almost/know)
-      const grades = h("div", { class: "grade-row crit-grade-row", style: "display:none" }, [
+      // 3-button rating shown directly — no reveal step needed
+      const grades = h("div", { class: "grade-row crit-grade-row" }, [
         h("button", { class: "grade again", onclick: () => doGrade("again") }, [
           "✗ Would fail", h("small", {}, ["< 30 sec"]),
         ]),
@@ -1999,24 +1995,13 @@
         ]),
       ]);
 
-      const actions = h("div", { class: "card-actions" }, [reveal]);
-
       const cardEl = h("div", { class: "card crit-card" }, [
         sheetLabel,
         critBadge,
+        criterionText,
         prompt,
-        answer,
-        actions,
         grades,
       ]);
-
-      function doReveal() {
-        if (revealed) return;
-        revealed = true;
-        answer.style.display = "";
-        reveal.style.display = "none";
-        grades.style.display = "";
-      }
 
       function doGrade(name) {
         const before = SRS.getRecord(ctx.state, card.id);
@@ -2037,15 +2022,11 @@
 
       // Keyboard: space/enter to reveal; 1/2/3 to grade
       cardEl.tabIndex = 0;
+      // Keyboard: 1/2/3 to grade directly (no reveal step)
       cardEl.addEventListener("keydown", (e) => {
-        if (!revealed && (e.key === " " || e.key === "Enter")) {
-          e.preventDefault();
-          doReveal();
-        } else if (revealed) {
-          if (e.key === "1") doGrade("again");
-          if (e.key === "2") doGrade("hard");
-          if (e.key === "3") doGrade("easy");
-        }
+        if (e.key === "1") doGrade("again");
+        if (e.key === "2") doGrade("hard");
+        if (e.key === "3") doGrade("easy");
       });
       setTimeout(() => cardEl.focus(), 0);
 
