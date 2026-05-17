@@ -61,6 +61,11 @@
     _uploadTimer = setTimeout(() => upload(state).catch(console.error), delay);
   }
 
+  async function clearCloud() {
+    if (!_user || !_db) return;
+    await _db.collection("users").doc(_user.uid).delete();
+  }
+
   async function download() {
     if (!_user || !_db) return null;
     const snap = await _db.collection("users").doc(_user.uid).get();
@@ -73,5 +78,5 @@
     }
   }
 
-  global.CloudSync = { init, onAuthChange, isAuthReady, getUser, signIn, signOut, upload, uploadDebounced, download };
+  global.CloudSync = { init, onAuthChange, isAuthReady, getUser, signIn, signOut, upload, uploadDebounced, download, clearCloud };
 })(window);

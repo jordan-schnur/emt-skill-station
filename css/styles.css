@@ -2232,3 +2232,18 @@ a:hover, .link:hover { text-decoration: underline; }
   flex-shrink: 0;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.btn-danger {
+  background: transparent;
+  color: var(--again);
+  border: 1px solid var(--again);
+}
+.btn-danger:hover { background: rgba(229, 83, 75, 0.12); }
+.btn-danger:active { transform: scale(0.98); }
+
+.confirm-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}

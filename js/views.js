@@ -44,6 +44,31 @@
     return btn;
   }
 
+  function showConfirmModal({ title, body, confirmLabel = "Confirm", onConfirm }) {
+    document.querySelector(".help-modal-overlay")?.remove();
+    const cancelBtn = h("button", { class: "btn", type: "button" }, ["Cancel"]);
+    const confirmBtn = h("button", { class: "btn btn-danger", type: "button" }, [confirmLabel]);
+    const modal = h("div", { class: "help-modal" }, [
+      h("div", { class: "help-modal-header" }, [
+        h("strong", {}, [title]),
+      ]),
+      h("div", { class: "help-modal-body" }, [
+        h("p", { style: "margin-top:0" }, [body]),
+        h("div", { class: "confirm-modal-actions" }, [cancelBtn, confirmBtn]),
+      ]),
+    ]);
+    const overlay = h("div", { class: "help-modal-overlay" });
+    const dismiss = () => overlay.remove();
+    cancelBtn.addEventListener("click", dismiss);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) dismiss(); });
+    document.addEventListener("keydown", function esc(e) {
+      if (e.key === "Escape") { dismiss(); document.removeEventListener("keydown", esc); }
+    });
+    confirmBtn.addEventListener("click", () => { dismiss(); onConfirm(); });
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+  }
+
   function showHelpModal(title, bodyHTML) {
     document.querySelector(".help-modal-overlay")?.remove();
     const closeBtn = h("button", { class: "help-modal-close", type: "button", "aria-label": "Close" }, ["✕"]);
@@ -2622,6 +2647,31 @@
               renderCloudSection();
             },
           }, ["Sign out"]),
+          h("button", {
+            class: "btn btn-danger",
+            onclick: () => showConfirmModal({
+              title: "Clear all data?",
+              body: "This permanently deletes all your SRS progress, notes, and drill history — both locally and from the cloud. This cannot be undone.",
+              confirmLabel: "Delete everything",
+              onConfirm: async () => {
+                try {
+                  await CloudSync.clearCloud();
+                } catch (err) {
+                  console.error("Failed to clear cloud data", err);
+                }
+                Storage.reset();
+                const fresh = {
+                  version: 1, srs: {}, notes: { step: {}, sheet: {} },
+                  stats: { totalReviews: 0, lastReviewedAt: null, dailyStreak: 0, longestStreak: 0, lastStreakDay: null },
+                  drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {} },
+                  achievements: {}, mnemonics: {},
+                };
+                Object.assign(ctx.state, fresh);
+                ctx.toast("All data deleted");
+                ctx.refresh();
+              },
+            }),
+          }, ["Clear all data"]),
         ]),
       );
     }
