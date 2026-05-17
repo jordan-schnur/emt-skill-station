@@ -650,9 +650,25 @@ def generate_spoken_scripts(sheets: list[dict], service) -> None:
 
     if uncached:
         prompt = (
-            "You are writing what an EMT candidate says aloud during each NREMT skill step.\n"
-            "For each step below, write the exact verbalization — first person, present tense, "
-            "1–2 sentences, natural exam language.\n"
+            "You are writing exactly what an EMT-Basic candidate says aloud during the NREMT psychomotor exam.\n\n"
+            "NREMT exam conventions — follow these precisely:\n"
+            "1. SCENE SIZE-UP steps (scene safety, MOI/NOI, number of patients, need for additional EMS): "
+            "the candidate asks the EXAMINER directly, as a short question. No 'I am' prefix.\n"
+            "   Examples: 'Is the scene safe?' | 'What is the mechanism of injury?' | 'How many patients do we have?'\n"
+            "2. ACTION steps (applying PPE, inserting airway, applying pressure, etc.): "
+            "brief first-person narration of the action.\n"
+            "   Examples: 'I'm putting on gloves and eye protection.' | 'I'm applying direct pressure to the wound.'\n"
+            "3. ASSESSMENT steps (checking pulse, airway, breathing, etc.): "
+            "state what you're doing and verbalize the assumed-normal finding.\n"
+            "   Examples: 'I'm checking the radial pulse — rate and quality are within normal limits.' | "
+            "'Airway is open and clear.'\n"
+            "4. PATIENT HISTORY steps (chief complaint, SAMPLE, OPQRST): "
+            "ask the patient directly.\n"
+            "   Examples: 'What brings you here today?' | 'Do you have any allergies?'\n"
+            "5. VERBALIZATION/DECISION steps (field impression, transport decision, etc.): "
+            "state your finding or decision aloud to the examiner.\n"
+            "   Examples: 'Based on my assessment, this patient is a high priority — I'm initiating rapid transport.'\n\n"
+            "Keep each verbalization to 1–2 sentences. Use natural exam room language.\n"
             "Return ONLY a valid JSON object mapping each step text to its verbalization.\n\n"
             "Steps:\n"
             + json.dumps(uncached, ensure_ascii=False)

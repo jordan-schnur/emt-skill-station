@@ -366,7 +366,7 @@
       // Only show Order Drill tab for sheets with multiple sections
       ...(sheet.sections.length > 1 ? [{ id: "order", label: orderLabel }] : []),
       { id: "steps", label: stepLabel },
-      { id: "critical", label: critLabel },
+      // { id: "critical", label: critLabel }, // hidden until redesigned
       { id: "whatnext", label: whatNextLabel },
       { id: "recall", label: recallLabel },
       { id: "script", label: scriptLabel },

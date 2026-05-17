@@ -699,44 +699,14 @@ describe("Views – DOM Rendering and UI", () => {
       expect(cramBtn).toBeTruthy();
     });
 
-    it("should show all criteria reviewed in tab label after completing all", () => {
+    it("should not show Critical Criteria tab (hidden until redesigned)", () => {
       const ctx = createMockContext();
-      const sheet = createMockSheet(); // 3 criticalCriteria
-      // Simulate having reviewed all 3
-      sheet.criticalCriteria.forEach((_, i) => {
-        ctx.state.srs[`critical::${sheet.id}::${i}`] = {
-          ease: 2.65, interval: 6, reps: 2,
-          due: Date.now() + 6 * 24 * 60 * 60 * 1000,
-          lastGrade: "easy", lapses: 0, lastReviewed: Date.now(),
-        };
-      });
-
-      ctx.route = { view: "sheet", sheetId: sheet.id, tab: "critical" };
+      const sheet = createMockSheet();
+      ctx.route = { view: "sheet", sheetId: sheet.id, tab: "study" };
       const view = window.Views.sheet(ctx);
       const tabs = Array.from(view.querySelectorAll(".tabs button"));
       const critTab = tabs.find((t) => t.textContent.includes("Critical Criteria"));
-      expect(critTab).toBeTruthy();
-      // All 3 reviewed → shows ✓
-      expect(critTab.textContent).toContain("✓");
-    });
-
-    it("should show partial progress in tab label when some reviewed", () => {
-      const ctx = createMockContext();
-      const sheet = createMockSheet(); // 3 criticalCriteria
-      // Simulate having reviewed only 1
-      ctx.state.srs[`critical::${sheet.id}::0`] = {
-        ease: 2.5, interval: 1, reps: 1,
-        due: Date.now() + 24 * 60 * 60 * 1000,
-        lastGrade: "easy", lapses: 0, lastReviewed: Date.now(),
-      };
-
-      ctx.route = { view: "sheet", sheetId: sheet.id, tab: "critical" };
-      const view = window.Views.sheet(ctx);
-      const tabs = Array.from(view.querySelectorAll(".tabs button"));
-      const critTab = tabs.find((t) => t.textContent.includes("Critical Criteria"));
-      expect(critTab).toBeTruthy();
-      // 1 of 3 reviewed → shows (1/3)
-      expect(critTab.textContent).toContain("1/3");
+      expect(critTab).toBeFalsy();
     });
   });
 

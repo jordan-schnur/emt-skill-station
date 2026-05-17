@@ -17,7 +17,7 @@
             {
               "text": "Takes or verbalizes appropriate PPE precautions",
               "points": 1,
-              "spokenScript": "I am putting on gloves and eye protection before approaching the patient."
+              "spokenScript": "I'm putting on gloves and eye protection."
             }
           ]
         },
@@ -28,27 +28,27 @@
             {
               "text": "Determines the scene/situation is safe",
               "points": 1,
-              "spokenScript": "I am looking around the scene — the scene appears safe to enter."
+              "spokenScript": "Is the scene safe?"
             },
             {
               "text": "Determines the mechanism of injury/nature of illness",
               "points": 1,
-              "spokenScript": "Based on what I see and am being told, the mechanism of injury appears to be a motor vehicle collision, or the nature of illness is a medical complaint."
+              "spokenScript": "What is the mechanism of injury?"
             },
             {
               "text": "Determines the number of patients",
               "points": 1,
-              "spokenScript": "I am looking around the scene and I can see one patient."
+              "spokenScript": "How many patients do we have?"
             },
             {
               "text": "Requests additional EMS assistance if necessary",
               "points": 1,
-              "spokenScript": "Based on the scene, I do not need additional units at this time, but I will call for backup if the patient's condition warrants it."
+              "spokenScript": "Based on what I see, I'm going to request additional EMS assistance."
             },
             {
               "text": "Considers stabilization of the spine",
               "points": 1,
-              "spokenScript": "Given the mechanism of injury, I am considering spinal stabilization and will direct my partner to maintain manual in-line stabilization."
+              "spokenScript": "Given the mechanism of injury, I'm considering spinal stabilization — I'm directing my partner to maintain manual in-line stabilization."
             }
           ]
         },
@@ -59,17 +59,17 @@
             {
               "text": "Verbalizes general impression of the patient",
               "points": 1,
-              "spokenScript": "My general impression is an adult patient who appears to be in distress — I need to determine the priority of this patient quickly."
+              "spokenScript": "My general impression is an adult patient who appears to be in distress — I'm moving into my primary assessment."
             },
             {
               "text": "Determines responsiveness/level of consciousness",
               "points": 1,
-              "spokenScript": "I am assessing the patient's level of consciousness — the patient is alert and oriented, or I will use AVPU to determine their responsiveness."
+              "spokenScript": "I'm assessing level of consciousness using AVPU — the patient is alert and oriented."
             },
             {
               "text": "Determines chief complaint/apparent life-threats",
               "points": 1,
-              "spokenScript": "I am asking the patient what is wrong today and identifying any immediate life threats."
+              "spokenScript": "What seems to be the problem today?"
             },
             {
               "text": "Airway",
@@ -84,7 +84,7 @@
                   "points": 1
                 }
               ],
-              "spokenScript": "I am assessing the patient's airway — the airway is open and clear with no obstruction."
+              "spokenScript": "I'm assessing the airway — it is open and clear."
             },
             {
               "text": "Breathing",
@@ -107,7 +107,7 @@
                   "points": 1
                 }
               ],
-              "spokenScript": "I am assessing the patient's breathing — respirations are present, rate appears adequate, and chest rise is equal and bilateral."
+              "spokenScript": "I'm assessing breathing — rate and quality are within normal limits, chest rise is equal and adequate."
             },
             {
               "text": "Circulation",
@@ -130,12 +130,12 @@
                   "points": 1
                 }
               ],
-              "spokenScript": "I am assessing circulation by checking for a radial pulse, noting rate and quality, and looking for any major bleeding."
+              "spokenScript": "I'm checking circulation — radial pulse is present, rate and quality are within normal limits, skin is warm, dry, and pink, and I see no major external bleeding."
             },
             {
               "text": "Identifies patient priority and makes treatment/transport decision (based upon calculated GCS)",
               "points": 1,
-              "spokenScript": "Based on my assessment and the calculated GCS, this patient is a high priority and I am initiating rapid transport."
+              "spokenScript": "Based on my calculated GCS and primary assessment findings, this patient is a high priority — I'm initiating rapid transport."
             }
           ]
         },
@@ -146,12 +146,12 @@
             {
               "text": "Obtains baseline vital signs [must include BP, P and R]",
               "points": 1,
-              "spokenScript": "I am obtaining baseline vital signs including blood pressure, pulse rate and quality, and respiratory rate."
+              "spokenScript": "I'm obtaining a full set of baseline vital signs — blood pressure, pulse, and respirations are all within normal limits."
             },
             {
               "text": "Attempts to obtain SAMPLE history",
               "points": 1,
-              "spokenScript": "I am attempting to obtain a SAMPLE history — asking about signs and symptoms, allergies, medications, pertinent past history, last oral intake, and events leading up to this."
+              "spokenScript": "I'm going to ask you a few questions. Do you have any allergies? Are you taking any medications? Do you have any past medical history? When did you last eat or drink? And what were you doing when this started?"
             }
           ]
         },
@@ -176,7 +176,7 @@
                   "points": 1
                 }
               ],
-              "spokenScript": "I am inspecting and palpating the head for deformities, contusions, abrasions, punctures, burns, tenderness, lacerations, and swelling."
+              "spokenScript": "I'm assessing the head — I'm inspecting and palpating for deformities, contusions, abrasions, punctures, burns, tenderness, lacerations, and swelling — findings are within normal limits."
             },
             {
               "text": "Neck",
@@ -195,7 +195,7 @@
                   "points": 1
                 }
               ],
-              "spokenScript": "I am inspecting and palpating the neck for DCAP-BTLS, jugular vein distension, and tracheal deviation."
+              "spokenScript": "I'm assessing the neck — no JVD, no tracheal deviation, no tenderness or deformity noted."
             },
             {
               "text": "Chest",
@@ -214,7 +214,7 @@
                   "points": 1
                 }
               ],
-              "spokenScript": "I am inspecting and palpating the chest for DCAP-BTLS, paradoxical motion, and auscultating breath sounds bilaterally."
+              "spokenScript": "I'm assessing the chest — equal chest rise, no deformities or crepitus, breath sounds are clear and equal bilaterally."
             },
             {
               "text": "Abdomen/pelvis",
@@ -233,7 +233,7 @@
                   "points": 1
                 }
               ],
-              "spokenScript": "I am inspecting and palpating the abdomen for DCAP-BTLS, rigidity, or distension, and assessing the pelvis for instability."
+              "spokenScript": "I'm assessing the abdomen and pelvis — abdomen is soft and non-tender, pelvis is stable with no pain on compression."
             },
             {
               "text": "Lower extremities",
@@ -244,7 +244,7 @@
                   "points": 2
                 }
               ],
-              "spokenScript": "I am inspecting and palpating both lower extremities for DCAP-BTLS and checking distal circulation, sensation, and motor function."
+              "spokenScript": "I'm assessing the lower extremities bilaterally — no deformities, distal pulses present, sensation and motor function intact."
             },
             {
               "text": "Upper extremities",
@@ -255,7 +255,7 @@
                   "points": 2
                 }
               ],
-              "spokenScript": "I am inspecting and palpating both upper extremities for DCAP-BTLS and assessing distal pulse, sensation, and movement."
+              "spokenScript": "I'm assessing the upper extremities bilaterally — no deformities, radial pulses present, sensation and motor function intact."
             },
             {
               "text": "Posterior thorax, lumbar and buttocks",
@@ -270,12 +270,12 @@
                   "points": 1
                 }
               ],
-              "spokenScript": "I am carefully inspecting and palpating the posterior thorax, lumbar region, and buttocks for DCAP-BTLS."
+              "spokenScript": "I'm assessing the posterior thorax, lumbar region, and buttocks — no tenderness, deformity, or abnormal findings noted."
             },
             {
               "text": "Manages secondary injuries and wounds appropriately",
               "points": 1,
-              "spokenScript": "I am managing all secondary injuries found during my assessment with appropriate interventions such as bandaging and splinting."
+              "spokenScript": "I'm managing all secondary injuries and wounds — applying appropriate dressings and bandages as indicated."
             }
           ]
         },
@@ -286,7 +286,7 @@
             {
               "text": "Demonstrates how and when to reassess the patient",
               "points": 1,
-              "spokenScript": "I will reassess this patient every 5 minutes given their priority status, repeating my primary assessment and vital signs to identify any changes."
+              "spokenScript": "I'll reassess this patient every five minutes given their priority status, monitoring mental status, airway, breathing, circulation, and vital signs en route."
             }
           ]
         }
@@ -763,7 +763,7 @@
             {
               "text": "Takes or verbalizes appropriate PPE precautions",
               "points": 1,
-              "spokenScript": "I am putting on gloves and eye protection before approaching the patient."
+              "spokenScript": "I'm putting on gloves and eye protection."
             }
           ]
         },
@@ -774,27 +774,27 @@
             {
               "text": "Determines the scene/situation is safe",
               "points": 1,
-              "spokenScript": "I am looking around the scene — the scene appears safe to enter."
+              "spokenScript": "Is the scene safe?"
             },
             {
               "text": "Determines the mechanism of injury/nature of illness",
               "points": 1,
-              "spokenScript": "Based on what I see and am being told, the mechanism of injury appears to be a motor vehicle collision, or the nature of illness is a medical complaint."
+              "spokenScript": "What is the mechanism of injury?"
             },
             {
               "text": "Determines the number of patients",
               "points": 1,
-              "spokenScript": "I am looking around the scene and I can see one patient."
+              "spokenScript": "How many patients do we have?"
             },
             {
               "text": "Requests additional EMS assistance if necessary",
               "points": 1,
-              "spokenScript": "Based on the scene, I do not need additional units at this time, but I will call for backup if the patient's condition warrants it."
+              "spokenScript": "Based on what I see, I'm going to request additional EMS assistance."
             },
             {
               "text": "Considers stabilization of the spine",
               "points": 1,
-              "spokenScript": "Given the mechanism of injury, I am considering spinal stabilization and will direct my partner to maintain manual in-line stabilization."
+              "spokenScript": "Given the mechanism of injury, I'm considering spinal stabilization — I'm directing my partner to maintain manual in-line stabilization."
             }
           ]
         },
@@ -805,17 +805,17 @@
             {
               "text": "Verbalizes the general impression of the patient",
               "points": 1,
-              "spokenScript": "My general impression is an adult patient who appears ill or injured — I will continue my assessment to determine priority."
+              "spokenScript": "My general impression is an adult patient who appears ill or injured — I'm moving into my primary assessment."
             },
             {
               "text": "Determines responsiveness/level of consciousness (AVPU)",
               "points": 1,
-              "spokenScript": "I am using the AVPU scale to assess responsiveness — the patient is alert and responds to verbal stimuli."
+              "spokenScript": "I'm assessing level of consciousness using AVPU — the patient is alert."
             },
             {
               "text": "Determines chief complaint/apparent life-threats",
               "points": 1,
-              "spokenScript": "I am asking the patient what is wrong today and identifying any immediate life threats."
+              "spokenScript": "What seems to be the problem today?"
             },
             {
               "text": "Assesses airway and breathing",
@@ -834,7 +834,7 @@
                   "points": 1
                 }
               ],
-              "spokenScript": "I am assessing the airway — it is open — and breathing is present with adequate rate and tidal volume."
+              "spokenScript": "I'm assessing the airway and breathing — airway is open and clear, breathing rate and quality are within normal limits."
             },
             {
               "text": "Assesses circulation",
@@ -853,12 +853,12 @@
                   "points": 1
                 }
               ],
-              "spokenScript": "I am assessing circulation by palpating the radial pulse and checking for any life-threatening bleeding."
+              "spokenScript": "I'm assessing circulation — radial pulse is present and within normal limits, skin is warm and dry, no major external bleeding identified."
             },
             {
               "text": "Identifies patient priority and makes treatment/transport decision",
               "points": 1,
-              "spokenScript": "Based on my primary assessment findings, I am identifying this as a priority patient and will initiate transport promptly."
+              "spokenScript": "Based on my primary assessment findings, this patient is a priority — I'm making the decision to transport without delay."
             }
           ]
         },
@@ -900,7 +900,7 @@
                   "points": 2
                 }
               ],
-              "spokenScript": "I am obtaining the history of the present illness using the OPQRST mnemonic — onset, provocation, quality, radiation, severity, and time."
+              "spokenScript": "Can you describe what's been going on? When did this start, and has it been getting better or worse?"
             },
             {
               "text": "Past medical history",
@@ -928,7 +928,7 @@
                   "points": 1
                 }
               ],
-              "spokenScript": "I am asking about the patient's past medical history including prior illnesses, surgeries, and current medications."
+              "spokenScript": "Do you have any significant past medical history or prior surgeries?"
             }
           ]
         },
@@ -940,7 +940,7 @@
               "text": "Assesses affected body part/system",
               "points": 5,
               "note": "Eight possible systems listed on the sheet: Cardiovascular, Neurological, Integumentary, Reproductive, Pulmonary, Musculoskeletal, GI/GU, Psychological/Social. Maximum 5 points, awarded for the systems relevant to the chief complaint.",
-              "spokenScript": "I am performing a focused assessment of the affected body part or system based on the patient's chief complaint."
+              "spokenScript": "I'm assessing the affected body part and system — inspecting and palpating for any abnormalities — findings are as expected for this chief complaint."
             }
           ]
         },
@@ -951,27 +951,27 @@
             {
               "text": "Blood pressure",
               "points": 1,
-              "spokenScript": "I am auscultating the blood pressure and the reading is within normal limits for this patient."
+              "spokenScript": "I'm obtaining a blood pressure — it is within normal limits."
             },
             {
               "text": "Pulse",
               "points": 1,
-              "spokenScript": "I am palpating the radial pulse — rate and quality are noted and recorded."
+              "spokenScript": "I'm checking the pulse — rate and quality are within normal limits."
             },
             {
               "text": "Respiratory rate and quality (1 point each)",
               "points": 2,
-              "spokenScript": "I am counting the respiratory rate and assessing the quality — rate and depth appear adequate."
+              "spokenScript": "I'm assessing respiratory rate and quality — rate is within normal limits and the quality is unlabored and regular."
             },
             {
               "text": "States field impression of patient",
               "points": 1,
-              "spokenScript": "My field impression is that this patient is experiencing a cardiac event, respiratory distress, or the condition appropriate to the scenario, and I will treat accordingly."
+              "spokenScript": "My field impression is that this patient is experiencing a medical emergency consistent with their presentation — I'm treating accordingly."
             },
             {
               "text": "Interventions [verbalizes proper interventions/treatment]",
               "points": 1,
-              "spokenScript": "Based on my assessment, I am administering high-flow oxygen, positioning the patient appropriately, and initiating any other indicated treatments."
+              "spokenScript": "I'm initiating the appropriate interventions for this patient, including oxygen therapy, positioning, and any indicated treatments based on my assessment findings."
             }
           ]
         },
@@ -982,12 +982,12 @@
             {
               "text": "Demonstrates how and when to reassess the patient to determine changes in condition",
               "points": 1,
-              "spokenScript": "I will reassess this patient every 5 minutes for a priority patient or every 15 minutes for a stable patient, repeating the primary assessment and vital signs."
+              "spokenScript": "I will reassess this patient every five minutes for a priority patient or every fifteen minutes for a stable patient, rechecking mental status, vitals, and the chief complaint."
             },
             {
               "text": "Provides accurate verbal report to arriving EMS unit",
               "points": 1,
-              "spokenScript": "I am providing a verbal report to the arriving unit including the patient's age, chief complaint, assessment findings, interventions performed, and current status."
+              "spokenScript": "Verbal report to incoming unit: we have an adult patient presenting with their chief complaint, vitals are within normal limits, interventions performed include oxygen and treatment rendered, patient is packaged and ready for transport."
             }
           ]
         }
@@ -1421,78 +1421,78 @@
             {
               "text": "Takes or verbalizes appropriate PPE precautions",
               "points": 1,
-              "spokenScript": "I am putting on gloves and eye protection before approaching the patient."
+              "spokenScript": "I'm putting on gloves and eye protection."
             },
             {
               "text": "Checks responsiveness",
               "points": 1,
-              "spokenScript": "I am tapping the patient's shoulders firmly and shouting, 'Are you okay? Are you okay?' — the patient is unresponsive."
+              "spokenScript": "I'm checking responsiveness by tapping the shoulders and shouting — the patient is unresponsive."
             },
             {
               "text": "Requests additional EMS assistance",
               "points": 1,
-              "spokenScript": "I am calling for additional EMS assistance and ALS backup now."
+              "spokenScript": "I need additional EMS assistance — calling for backup now."
             },
             {
               "text": "Checks breathing and pulse simultaneously",
               "points": 1,
               "examinerNote": "After checking responsiveness, then checking breathing and pulse for no more than 10 seconds, examiner informs candidate, “The patient is unresponsive, apneic and has a weak pulse of 60.”",
-              "spokenScript": "I am simultaneously checking for breathing and a carotid pulse for no more than 10 seconds — there is no pulse and no breathing."
+              "spokenScript": "I'm simultaneously checking for breathing and a carotid pulse for no more than ten seconds — no pulse, no breathing detected."
             },
             {
               "text": "Opens airway properly",
               "points": 1,
               "examinerNote": "The examiner must now inform the candidate, “The mouth is full of secretions and vomitus.”",
-              "spokenScript": "I am opening the airway using a head-tilt chin-lift maneuver — the airway is now open."
+              "spokenScript": "I'm opening the airway using a head-tilt chin-lift maneuver."
             },
             {
               "text": "Prepares rigid suction catheter",
               "points": 1,
-              "spokenScript": "I am preparing the rigid suction catheter for use by connecting it to the suction tubing."
+              "spokenScript": "I'm preparing and attaching the rigid suction catheter to the suction unit."
             },
             {
               "text": "Turns on power to suction device or retrieves manual suction device",
               "points": 1,
-              "spokenScript": "I am turning on the power to the suction device and confirming it is functioning properly."
+              "spokenScript": "I'm turning on the power to the suction device and confirming it is functional."
             },
             {
               "text": "Inserts rigid suction catheter without applying suction",
               "points": 1,
-              "spokenScript": "I am inserting the rigid suction catheter into the mouth without applying suction until the tip is in the oropharynx."
+              "spokenScript": "I'm inserting the rigid suction catheter into the mouth without applying suction."
             },
             {
               "text": "Suctions the mouth and oropharynx",
               "points": 1,
               "examinerNote": "The examiner must now inform the candidate, “The mouth and oropharynx are clear.”",
-              "spokenScript": "I am applying suction and sweeping the catheter to clear the mouth and oropharynx of secretions."
+              "spokenScript": "I'm applying suction and clearing the mouth and oropharynx — airway is now clear."
             },
             {
               "text": "Opens the airway manually",
               "points": 1,
-              "spokenScript": "I am opening the airway using a head-tilt chin-lift — the airway is now patent."
+              "spokenScript": "I'm opening the airway manually using a head-tilt chin-lift."
             },
             {
               "text": "Inserts oropharyngeal airway",
               "points": 1,
               "examinerNote": "The examiner must now inform the candidate, “No gag reflex is present and the patient accepts the airway adjunct.”",
-              "spokenScript": "I am measuring and inserting an appropriately sized oropharyngeal airway to maintain airway patency."
+              "spokenScript": "I'm measuring and inserting an appropriately sized oropharyngeal airway."
             },
             {
               "text": "Ventilates the patient immediately using a BVM device unattached to oxygen",
               "points": 1,
               "note": "Award this point if candidate elects to ventilate initially with BVM attached to reservoir and oxygen so long as first ventilation is delivered within 30 seconds.",
               "examinerNote": "The examiner must now inform the candidate that ventilation is being properly performed without difficulty.",
-              "spokenScript": "I am beginning ventilations immediately with the BVM device not yet attached to oxygen, delivering one breath every 5 to 6 seconds."
+              "spokenScript": "I'm ventilating the patient immediately with the BVM unattached to oxygen, delivering one breath every five to six seconds with adequate chest rise."
             },
             {
               "text": "Re-checks pulse for no more than 10 seconds",
               "points": 1,
-              "spokenScript": "I am re-checking the carotid pulse for no more than 10 seconds — there is still no pulse."
+              "spokenScript": "I'm rechecking for a carotid pulse for no more than ten seconds — no pulse detected."
             },
             {
               "text": "Attaches the BVM assembly [mask, bag, reservoir] to oxygen [15 L/minute]",
               "points": 1,
-              "spokenScript": "I am attaching the BVM mask, bag, and reservoir to oxygen and setting the flow rate to 15 liters per minute."
+              "spokenScript": "I'm attaching the BVM assembly to oxygen and setting the flow rate to fifteen liters per minute."
             },
             {
               "text": "Ventilates the patient adequately",
@@ -1508,7 +1508,7 @@
                 }
               ],
               "examinerNote": "The examiner must now ask the candidate, “How would you know if you are delivering appropriate volumes with each ventilation?”",
-              "spokenScript": "I am delivering ventilations over 1 second each, watching for visible chest rise to confirm adequate ventilation."
+              "spokenScript": "I'm continuing to ventilate the patient adequately — good chest rise with each breath."
             }
           ]
         }
@@ -1721,57 +1721,57 @@
             {
               "text": "Takes or verbalizes appropriate PPE precautions",
               "points": 1,
-              "spokenScript": "I am putting on gloves and eye protection before approaching the patient."
+              "spokenScript": "I'm putting on gloves and eye protection."
             },
             {
               "text": "Gathers appropriate equipment",
               "points": 1,
-              "spokenScript": "I am gathering all necessary equipment including the oxygen tank, regulator, non-rebreather mask, and tubing."
+              "spokenScript": "I'm gathering the appropriate equipment including the oxygen tank, regulator, and non-rebreather mask."
             },
             {
               "text": "Cracks valve on the oxygen tank",
               "points": 1,
-              "spokenScript": "I am briefly cracking the valve on the oxygen tank to clear any debris from the port before attaching the regulator."
+              "spokenScript": "I'm cracking the valve on the oxygen tank briefly to clear any debris from the port."
             },
             {
               "text": "Assembles the regulator to the oxygen tank",
               "points": 1,
-              "spokenScript": "I am aligning the regulator pins with the corresponding holes on the tank and securing the regulator firmly."
+              "spokenScript": "I'm aligning and attaching the regulator to the oxygen tank."
             },
             {
               "text": "Opens the oxygen tank valve",
               "points": 1,
-              "spokenScript": "I am opening the oxygen tank valve slowly, turning it counterclockwise to allow oxygen to flow."
+              "spokenScript": "I'm slowly opening the oxygen tank valve fully and then backing off a half turn."
             },
             {
               "text": "Checks oxygen tank pressure",
               "points": 1,
-              "spokenScript": "I am reading the pressure gauge on the regulator — the tank pressure reads adequate for use."
+              "spokenScript": "I'm checking the tank pressure gauge — pressure is adequate."
             },
             {
               "text": "Checks for leaks",
               "points": 1,
-              "spokenScript": "I am listening and feeling around all connections for any oxygen leaks and confirm there are none."
+              "spokenScript": "I'm listening and feeling for any leaks around the regulator connection — no leaks detected."
             },
             {
               "text": "Attaches non-rebreather mask to correct port of regulator",
               "points": 1,
-              "spokenScript": "I am attaching the non-rebreather mask tubing to the correct outlet port on the regulator."
+              "spokenScript": "I'm attaching the non-rebreather mask tubing to the correct port on the regulator."
             },
             {
               "text": "Turns on oxygen flow to prefill reservoir bag",
               "points": 1,
-              "spokenScript": "I am turning on the oxygen flow and covering the one-way valve to allow the reservoir bag to fully inflate before placing it on the patient."
+              "spokenScript": "I'm turning on oxygen flow to prefill the reservoir bag before placing it on the patient."
             },
             {
               "text": "Adjusts regulator to assure oxygen flow rate of at least 10 L/minute",
               "points": 1,
-              "spokenScript": "I am adjusting the flow rate to at least 10 to 15 liters per minute to maintain the reservoir bag inflated."
+              "spokenScript": "I'm adjusting the flow rate to at least ten to fifteen liters per minute."
             },
             {
               "text": "Attaches mask to patient’s face and adjusts to fit snugly",
               "points": 1,
-              "spokenScript": "I'm placing the mask over the patient's nose and mouth and adjusting it to ensure a snug, proper seal with no air leaks."
+              "spokenScript": "I'm placing the non-rebreather mask on the patient's face and adjusting it for a snug, proper fit."
             }
           ]
         }
@@ -1925,62 +1925,62 @@
             {
               "text": "Takes or verbalizes appropriate PPE precautions",
               "points": 1,
-              "spokenScript": "I am putting on gloves and eye protection before approaching the patient."
+              "spokenScript": "I'm putting on gloves and eye protection."
             },
             {
               "text": "Directs assistant to place/maintain head in the neutral, in-line position",
               "points": 1,
-              "spokenScript": "I am directing my partner to place and hold the patient's head in the neutral, in-line position."
+              "spokenScript": "I'm directing my assistant to place and maintain the patient's head in the neutral, in-line position."
             },
             {
               "text": "Directs assistant to maintain manual stabilization of the head",
               "points": 1,
-              "spokenScript": "I am directing my partner to maintain manual in-line stabilization of the head throughout this procedure."
+              "spokenScript": "I'm directing my assistant to maintain manual stabilization of the head throughout this procedure."
             },
             {
               "text": "Reassesses motor, sensory and circulatory functions in each extremity",
               "points": 1,
-              "spokenScript": "I am reassessing motor, sensory, and circulatory function in all four extremities and documenting my findings."
+              "spokenScript": "I'm reassessing motor, sensory, and circulatory function in all four extremities — findings are within normal limits."
             },
             {
               "text": "Applies appropriately sized extrication collar",
               "points": 1,
-              "spokenScript": "I am measuring the patient's neck and applying an appropriately sized rigid cervical extrication collar."
+              "spokenScript": "I'm measuring and applying an appropriately sized cervical extrication collar."
             },
             {
               "text": "Positions the immobilization device behind the patient",
               "points": 1,
-              "spokenScript": "I am positioning the short immobilization device behind the patient while maintaining spinal alignment."
+              "spokenScript": "I'm positioning the short immobilization device behind the patient."
             },
             {
               "text": "Secures the device to the patient’s torso",
               "points": 1,
-              "spokenScript": "I'm securing the device to the patient's torso, making sure the straps are tight enough to prevent movement but not restricting breathing."
+              "spokenScript": "I'm securing the device to the patient's torso, fastening the torso straps."
             },
             {
               "text": "Evaluates torso fixation and adjusts as necessary",
               "points": 1,
-              "spokenScript": "I am evaluating the torso fixation to ensure the device is secure and making any necessary adjustments."
+              "spokenScript": "I'm evaluating the torso fixation — it is secure and I'm making any necessary adjustments."
             },
             {
               "text": "Evaluates and pads behind the patient’s head as necessary",
               "points": 1,
-              "spokenScript": "I'm re-evaluating the space behind the patient's head and adding additional padding if needed to maintain neutral spinal alignment."
+              "spokenScript": "I'm evaluating the space behind the patient's head and padding as necessary to maintain neutral alignment."
             },
             {
               "text": "Secures the patient’s head to the device",
               "points": 1,
-              "spokenScript": "I'm now securing the patient's head to the device using the forehead and chin straps to prevent any movement."
+              "spokenScript": "I'm securing the patient's head to the device using the forehead and chin straps."
             },
             {
               "text": "Verbalizes moving the patient to a long backboard",
               "points": 1,
-              "spokenScript": "I am verbalizing that we will now carefully move the patient to a long backboard while maintaining spinal alignment."
+              "spokenScript": "I'm verbalizing that we'll now rotate and move the patient to a long backboard."
             },
             {
               "text": "Reassesses motor, sensory and circulatory function in each extremity",
               "points": 1,
-              "spokenScript": "I am again reassessing motor, sensory, and circulatory function in each extremity after moving the patient."
+              "spokenScript": "I'm reassessing motor, sensory, and circulatory function in each extremity — all remain intact."
             }
           ]
         }
@@ -2150,72 +2150,72 @@
             {
               "text": "Takes or verbalizes appropriate PPE precautions",
               "points": 1,
-              "spokenScript": "I am putting on gloves and eye protection before approaching the patient."
+              "spokenScript": "I'm putting on gloves and eye protection."
             },
             {
               "text": "Directs assistant to place/maintain head in the neutral, in-line position",
               "points": 1,
-              "spokenScript": "I am directing my partner to place and hold the patient's head in the neutral, in-line position."
+              "spokenScript": "I'm directing my assistant to place and maintain the patient's head in the neutral, in-line position."
             },
             {
               "text": "Directs assistant to maintain manual stabilization of the head",
               "points": 1,
-              "spokenScript": "I am directing my partner to maintain manual in-line stabilization of the head throughout this procedure."
+              "spokenScript": "I'm directing my assistant to maintain manual stabilization of the head throughout this procedure."
             },
             {
               "text": "Reassesses motor, sensory and circulatory function in each extremity",
               "points": 1,
-              "spokenScript": "I am again reassessing motor, sensory, and circulatory function in each extremity after moving the patient."
+              "spokenScript": "I'm reassessing motor, sensory, and circulatory function in each extremity — all remain intact."
             },
             {
               "text": "Applies appropriately sized extrication collar",
               "points": 1,
-              "spokenScript": "I am measuring the patient's neck and applying an appropriately sized rigid cervical extrication collar."
+              "spokenScript": "I'm measuring and applying an appropriately sized cervical extrication collar."
             },
             {
               "text": "Positions the immobilization device appropriately",
               "points": 1,
-              "spokenScript": "I am positioning the long backboard appropriately to receive the patient."
+              "spokenScript": "I'm positioning the long backboard appropriately next to the patient."
             },
             {
               "text": "Directs movement of the patient onto the device without compromising the integrity of the spine",
               "points": 1,
-              "spokenScript": "I am directing the team to move the patient as a unit onto the backboard without compromising spinal integrity."
+              "spokenScript": "I'm directing the team to move the patient onto the backboard as a unit, maintaining spinal integrity throughout."
             },
             {
               "text": "Applies padding to void between the torso and the device as necessary",
               "points": 1,
-              "spokenScript": "I am applying appropriate padding to any void between the patient's torso and the device to maintain neutral spinal alignment."
+              "spokenScript": "I'm assessing for and applying padding to any void between the patient's torso and the device."
             },
             {
               "text": "Immobilizes the patient’s torso to the device",
               "points": 1,
-              "spokenScript": "I'm immobilizing the patient's torso to the device by securing the chest and torso straps, ensuring the spine remains in neutral alignment."
+              "spokenScript": "I'm securing the patient's torso to the backboard with straps across the chest and abdomen."
             },
             {
               "text": "Evaluates and pads behind the patient’s head as necessary",
               "points": 1,
-              "spokenScript": "I'm re-evaluating the space behind the patient's head and adding additional padding if needed to maintain neutral spinal alignment."
+              "spokenScript": "I'm evaluating the space behind the patient's head and padding as necessary to maintain neutral alignment."
             },
             {
               "text": "Immobilizes the patient’s head to the device",
               "points": 1,
-              "spokenScript": "I'm immobilizing the patient's head to the device by applying and securing both the forehead strap and the chin strap."
+              "spokenScript": "I'm immobilizing the patient's head to the device using head blocks and forehead and chin straps."
             },
             {
               "text": "Secures the patient’s legs to the device",
               "points": 1,
-              "spokenScript": "I'm securing the patient's legs to the device to prevent any movement during extrication and transport."
+              "spokenScript": "I'm securing the patient's legs to the backboard."
             },
             {
               "text": "Secures the patient’s arms to the device",
               "points": 1,
-              "spokenScript": "I'm securing the patient's arms to the device to keep them out of the way and to prevent any uncontrolled movement."
+              "spokenScript": "I'm securing the patient's arms to the backboard."
             },
             {
               "text": "Reassesses motor, sensory and circulatory function in each extremity",
               "points": 1,
-              "spokenScript": "I am again reassessing motor, sensory, and circulatory function in each extremity after moving the patient."
+              "spokenScript": "I'm reassessing motor, sensory, and circulatory function in each extremity — all remain intact."
             }
           ]
         }
@@ -2406,39 +2406,39 @@
             {
               "text": "Takes or verbalizes appropriate PPE precautions",
               "points": 1,
-              "spokenScript": "I am putting on gloves and eye protection before approaching the patient."
+              "spokenScript": "I'm putting on gloves and eye protection."
             },
             {
               "text": "Applies direct pressure to the wound",
               "points": 1,
               "examinerNote": "The examiner must now inform candidate that the wound continues to bleed.",
-              "spokenScript": "I am applying firm direct pressure to the wound with a gloved hand and sterile dressing."
+              "spokenScript": "I'm applying firm direct pressure to the wound with a gloved hand and dressing."
             },
             {
               "text": "Applies tourniquet",
               "points": 1,
               "examinerNote": "The examiner must now inform candidate that the patient is exhibiting signs and symptoms of hypoperfusion.",
-              "spokenScript": "I am applying a tourniquet proximal to the wound, tightening it until the bleeding stops, and noting the time of application."
+              "spokenScript": "I'm applying a tourniquet approximately two to three inches above the wound and tightening until bleeding stops — noting the time of application."
             },
             {
               "text": "Properly positions the patient",
               "points": 1,
-              "spokenScript": "I am positioning the patient appropriately for their condition — supine with legs elevated for shock."
+              "spokenScript": "I'm positioning the patient appropriately — supine with legs elevated for shock management."
             },
             {
               "text": "Administers high concentration oxygen",
               "points": 1,
-              "spokenScript": "I am administering high-concentration oxygen via non-rebreather mask at 15 liters per minute."
+              "spokenScript": "I'm administering high-concentration oxygen via non-rebreather mask at fifteen liters per minute."
             },
             {
               "text": "Initiates steps to prevent heat loss from the patient",
               "points": 1,
-              "spokenScript": "I am covering the patient with a blanket to preserve body heat and prevent hypothermia."
+              "spokenScript": "I'm covering the patient with a blanket to prevent heat loss."
             },
             {
               "text": "Indicates the need for immediate transportation",
               "points": 1,
-              "spokenScript": "This patient requires immediate transport — I am calling for transport now and will continue treatment en route."
+              "spokenScript": "This patient requires immediate transport — I'm initiating rapid transport now."
             }
           ]
         }
@@ -2547,38 +2547,37 @@
             {
               "text": "Takes or verbalizes appropriate PPE precautions",
               "points": 1,
-              "spokenScript": "I am putting on gloves and eye protection before approaching the patient."
+              "spokenScript": "I'm putting on gloves and eye protection."
             },
             {
               "text": "Determines the scene/situation is safe",
               "points": 1,
-              "spokenScript": "I am looking around the scene — the scene appears safe to enter."
+              "spokenScript": "Is the scene safe?"
             },
             {
               "text": "Checks patient responsiveness",
-              "points": 1,
-              "spokenScript": "I'm checking patient responsiveness by asking, 'Sir, can you hear me? Can you squeeze my fingers?' and reassessing their level of consciousness."
+              "points": 1
             },
             {
               "text": "Direct assistant to retrieve AED",
               "points": 1,
-              "spokenScript": "I am directing my partner to retrieve the AED immediately."
+              "spokenScript": "I'm directing my partner to retrieve the AED immediately."
             },
             {
               "text": "Requests additional EMS assistance",
               "points": 1,
-              "spokenScript": "I am calling for additional EMS assistance and ALS backup now."
+              "spokenScript": "I need additional EMS assistance — calling for backup now."
             },
             {
               "text": "Checks breathing and pulse simultaneously",
               "points": 1,
               "examinerNote": "After checking responsiveness, then checking breathing and pulse for no more than 10 seconds, examiner informs candidate, “The patient is unresponsive, apneic and pulseless.”",
-              "spokenScript": "I am simultaneously checking for breathing and a carotid pulse for no more than 10 seconds — there is no pulse and no breathing."
+              "spokenScript": "I'm simultaneously checking for breathing and a carotid pulse for no more than ten seconds — no pulse, no breathing detected."
             },
             {
               "text": "Immediately begins chest compressions [adequate depth and rate; allows the chest to recoil completely]",
               "points": 1,
-              "spokenScript": "I am beginning chest compressions at a rate of 100 to 120 per minute, compressing at least 2 inches and allowing full chest recoil between compressions."
+              "spokenScript": "I'm beginning chest compressions at a rate of one hundred to one twenty per minute, compressing at least two inches and allowing full chest recoil."
             },
             {
               "text": "Performs 2 minutes of high-quality, 1-rescuer adult CPR",
@@ -2606,32 +2605,32 @@
                 }
               ],
               "examinerNote": "After 2 minutes (5 cycles), candidate assesses patient and second rescuer resumes compressions while candidate operates AED.",
-              "spokenScript": "I am performing 2 minutes of high-quality CPR with 30 compressions to 2 ventilations, minimizing interruptions."
+              "spokenScript": "I'm performing two minutes of high-quality single-rescuer adult CPR with a thirty-to-two compression-to-ventilation ratio."
             },
             {
               "text": "Turns on power to AED",
               "points": 1,
-              "spokenScript": "I am turning on the power to the AED and following the device prompts."
+              "spokenScript": "I'm turning on the power to the AED."
             },
             {
               "text": "Follows prompts and correctly attaches AED to patient",
               "points": 1,
-              "spokenScript": "I am following the AED prompts and attaching the pads to the patient's bare chest in the correct positions."
+              "spokenScript": "I'm following the AED prompts and attaching the pads correctly — one below the right clavicle and one at the left lateral chest."
             },
             {
               "text": "Stops CPR and ensures all individuals are clear of the patient during rhythm analysis",
               "points": 1,
-              "spokenScript": "I am stopping CPR and ensuring everyone is clear of the patient while the AED analyzes the rhythm."
+              "spokenScript": "I'm stopping CPR and making sure everyone is clear — analyzing rhythm now."
             },
             {
               "text": "Ensures that all individuals are clear of the patient and delivers shock from AED",
               "points": 1,
-              "spokenScript": "I am making sure everyone is clear — clear! — and delivering the shock as advised by the AED."
+              "spokenScript": "I'm ensuring everyone is clear — I'm clear, you're clear, everybody's clear — delivering the shock now."
             },
             {
               "text": "Immediately directs rescuer to resume chest compressions",
               "points": 1,
-              "spokenScript": "I am immediately directing my partner to resume chest compressions right after the shock is delivered."
+              "spokenScript": "I'm immediately directing my partner to resume chest compressions right after the shock."
             }
           ]
         }
@@ -2856,49 +2855,49 @@
             {
               "text": "Takes or verbalizes appropriate PPE precautions",
               "points": 1,
-              "spokenScript": "I am putting on gloves and eye protection before approaching the patient."
+              "spokenScript": "I'm putting on gloves and eye protection."
             },
             {
               "text": "Directs application of manual stabilization of the injury",
               "points": 1,
-              "spokenScript": "I am directing my partner to apply manual stabilization to the injured extremity to prevent further movement."
+              "spokenScript": "I'm directing my partner to apply and maintain manual stabilization of the injured extremity."
             },
             {
               "text": "Assesses distal motor, sensory and circulatory functions in the injured extremity",
               "points": 1,
               "examinerNote": "The examiner acknowledges, “Motor, sensory and circulatory functions are present and normal.”",
-              "spokenScript": "I am assessing the distal pulse, capillary refill, sensation, and motor function in the injured extremity."
+              "spokenScript": "I'm assessing distal motor, sensory, and circulatory function in the injured extremity — findings are intact."
             },
             {
               "text": "Selects the proper splinting material",
               "points": 1,
-              "spokenScript": "I am selecting the appropriate splinting material based on the type and location of the injury."
+              "spokenScript": "I'm selecting the appropriate splinting material for this injury."
             },
             {
               "text": "Immobilizes the site of the injury",
               "points": 1,
-              "spokenScript": "I am immobilizing the site of the injury with adequate padding and the splinting material."
+              "spokenScript": "I'm immobilizing the site of the injury."
             },
             {
               "text": "Immobilizes the bone above the injury site",
               "points": 1,
-              "spokenScript": "I am immobilizing the bone above the injury site as part of the splinting procedure."
+              "spokenScript": "I'm immobilizing the bone above the injury site."
             },
             {
               "text": "Immobilizes the bone below the injury site",
               "points": 1,
-              "spokenScript": "I am immobilizing the bone below the injury site to ensure the fracture is fully stabilized."
+              "spokenScript": "I'm immobilizing the bone below the injury site."
             },
             {
               "text": "Secures the entire injured extremity",
               "points": 1,
-              "spokenScript": "I am securing the entire injured extremity with bandages or straps to hold the splint firmly in place."
+              "spokenScript": "I'm securing the entire injured extremity with bandages, ensuring it is snug but not restricting circulation."
             },
             {
               "text": "Reassesses distal motor, sensory and circulatory functions in the injured extremity",
               "points": 1,
               "examinerNote": "The examiner acknowledges, “Motor, sensory and circulatory functions are present and normal.”",
-              "spokenScript": "I am reassessing the distal pulse, sensation, and motor function in the injured extremity after splinting to confirm no change."
+              "spokenScript": "I'm reassessing distal motor, sensory, and circulatory function in the injured extremity — all remain intact after splinting."
             }
           ]
         }
@@ -3029,54 +3028,54 @@
             {
               "text": "Takes or verbalizes appropriate PPE precautions",
               "points": 1,
-              "spokenScript": "I am putting on gloves and eye protection before approaching the patient."
+              "spokenScript": "I'm putting on gloves and eye protection."
             },
             {
               "text": "Directs application of manual stabilization of the injury",
               "points": 1,
-              "spokenScript": "I am directing my partner to apply manual stabilization to the injured extremity to prevent further movement."
+              "spokenScript": "I'm directing my partner to apply and maintain manual stabilization of the injured extremity."
             },
             {
               "text": "Assesses distal motor, sensory and circulatory functions in the injured extremity",
               "points": 1,
               "examinerNote": "The examiner acknowledges, “Motor, sensory and circulatory functions are present and normal.”",
-              "spokenScript": "I am assessing the distal pulse, capillary refill, sensation, and motor function in the injured extremity."
+              "spokenScript": "I'm assessing distal motor, sensory, and circulatory function in the injured extremity — findings are intact."
             },
             {
               "text": "Measures the splint",
               "points": 1,
-              "spokenScript": "I am measuring the splint against the uninjured extremity to ensure proper length before application."
+              "spokenScript": "I'm measuring the splint against the uninjured extremity to ensure proper length."
             },
             {
               "text": "Applies the splint",
               "points": 1,
-              "spokenScript": "I am applying the splint to the injured extremity with appropriate padding in place."
+              "spokenScript": "I'm applying the splint to the injured extremity."
             },
             {
               "text": "Immobilizes the joint above the injury site",
               "points": 1,
-              "spokenScript": "I am immobilizing the joint above the injury site to prevent rotation and further injury."
+              "spokenScript": "I'm immobilizing the joint above the injury site."
             },
             {
               "text": "Immobilizes the joint below the injury site",
               "points": 1,
-              "spokenScript": "I am immobilizing the joint below the injury site to fully stabilize the injured area."
+              "spokenScript": "I'm immobilizing the joint below the injury site."
             },
             {
               "text": "Secures the entire injured extremity",
               "points": 1,
-              "spokenScript": "I am securing the entire injured extremity with bandages or straps to hold the splint firmly in place."
+              "spokenScript": "I'm securing the entire injured extremity with bandages, ensuring it is snug but not restricting circulation."
             },
             {
               "text": "Immobilizes the hand/foot in the position of function",
               "points": 1,
-              "spokenScript": "I am immobilizing the hand or foot in the position of function with appropriate padding to maintain comfort and alignment."
+              "spokenScript": "I'm immobilizing the hand and foot in the position of function."
             },
             {
               "text": "Reassesses distal motor, sensory and circulatory functions in the injured extremity",
               "points": 1,
               "examinerNote": "The examiner acknowledges, “Motor, sensory and circulatory functions are present and normal.”",
-              "spokenScript": "I am reassessing the distal pulse, sensation, and motor function in the injured extremity after splinting to confirm no change."
+              "spokenScript": "I'm reassessing distal motor, sensory, and circulatory function in the injured extremity — all remain intact after splinting."
             }
           ]
         }
