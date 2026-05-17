@@ -13,16 +13,14 @@
   const OPENAI_CHAT_FILTER = /^(gpt-|o\d)/;
   const OPENAI_CHAT_EXCLUDE = /realtime|audio|instruct|tts|whisper|dall-e|embed|search|preview-/;
 
-  // Anthropic's /v1/models endpoint blocks browser CORS, so we maintain a
-  // curated list. These are the current production models as of mid-2025.
-  const ANTHROPIC_MODELS = [
-    { id: "claude-opus-4-7",           label: "Claude Opus 4.7" },
-    { id: "claude-sonnet-4-6",         label: "Claude Sonnet 4.6" },
-    { id: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5" },
-    { id: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet" },
-    { id: "claude-3-5-haiku-20241022",  label: "Claude 3.5 Haiku" },
-    { id: "claude-3-opus-20240229",     label: "Claude 3 Opus" },
-  ];
+  function anthropicHeaders(apiKey) {
+    return {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    };
+  }
 
   // ---- Config (localStorage only, never synced) -----------------------
 
@@ -45,29 +43,21 @@
   }
 
   async function fetchModels(provider, apiKey) {
-    // Anthropic's models endpoint blocks browser CORS requests, so we validate
-    // the key by sending a minimal message and return the curated model list.
     if (provider === "anthropic") {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model: "claude-haiku-4-5-20251001",
-          max_tokens: 1,
-          messages: [{ role: "user", content: "hi" }],
-        }),
+      const res = await fetch("https://api.anthropic.com/v1/models", {
+        headers: anthropicHeaders(apiKey),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error?.message || `Anthropic error ${res.status}`);
       }
-      return ANTHROPIC_MODELS;
+      const data = await res.json();
+      return (data.data || []).map((m) => ({
+        id: m.id,
+        label: m.display_name || m.id,
+      }));
     }
-    // OpenAI — their API supports CORS from browsers
+    // OpenAI
     const res = await fetch("https://api.openai.com/v1/models", {
       headers: { "Authorization": `Bearer ${apiKey}` },
     });
@@ -225,11 +215,7 @@
   async function callAnthropic(chatMessages, systemPrompt, model, apiKey) {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
+      headers: anthropicHeaders(apiKey),
       body: JSON.stringify({
         model,
         max_tokens: 1024,
