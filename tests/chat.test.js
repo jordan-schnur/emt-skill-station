@@ -55,17 +55,59 @@ describe("ChatStore – config", () => {
   });
 });
 
-describe("ChatStore – getModelsForProvider", () => {
-  it("returns OpenAI models for openai", () => {
-    const models = ChatStore.getModelsForProvider("openai");
-    expect(models.length).toBeGreaterThan(0);
-    expect(models.some((m) => m.id === "gpt-4o")).toBe(true);
+describe("ChatStore – fetchModels", () => {
+  beforeEach(() => { global.fetch = jest.fn(); });
+  afterEach(() => { delete global.fetch; });
+
+  it("returns filtered OpenAI chat models", async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [
+          { id: "gpt-4o" },
+          { id: "gpt-4o-mini" },
+          { id: "whisper-1" },        // excluded: matches exclude regex
+          { id: "text-embedding-ada" }, // excluded
+          { id: "dall-e-3" },           // excluded
+          { id: "o1-preview" },
+        ],
+      }),
+    });
+    const models = await ChatStore.fetchModels("openai", "sk-test");
+    const ids = models.map((m) => m.id);
+    expect(ids).toContain("gpt-4o");
+    expect(ids).toContain("gpt-4o-mini");
+    expect(ids).not.toContain("whisper-1");
+    expect(ids).not.toContain("text-embedding-ada");
+    expect(ids).not.toContain("dall-e-3");
   });
 
-  it("returns Anthropic models for anthropic", () => {
-    const models = ChatStore.getModelsForProvider("anthropic");
-    expect(models.length).toBeGreaterThan(0);
-    expect(models.some((m) => m.id.startsWith("claude-"))).toBe(true);
+  it("returns Anthropic models with display names", async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [
+          { id: "claude-sonnet-4-6", display_name: "Claude Sonnet 4.6" },
+          { id: "claude-haiku-4-5",  display_name: "Claude Haiku 4.5" },
+        ],
+      }),
+    });
+    const models = await ChatStore.fetchModels("anthropic", "sk-ant-test");
+    expect(models).toHaveLength(2);
+    expect(models[0].label).toBe("Claude Sonnet 4.6");
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://api.anthropic.com/v1/models",
+      expect.objectContaining({ headers: expect.objectContaining({ "x-api-key": "sk-ant-test" }) })
+    );
+  });
+
+  it("throws on non-OK response", async () => {
+    global.fetch.mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ error: { message: "Invalid API key" } }),
+    });
+    await expect(ChatStore.fetchModels("openai", "bad-key")).rejects.toThrow("Invalid API key");
   });
 });
 

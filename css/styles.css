@@ -2393,6 +2393,13 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   margin-top: 10px;
 }
 .ai-config-label { font-size: 13px; color: var(--text-dim); }
+.ai-model-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.ai-model-row .ai-select { flex: 1; }
 .ai-select {
   background: var(--bg-elev-2);
   border: 1px solid var(--border);

@@ -2832,18 +2832,6 @@
         h("option", { value: "anthropic", selected: cfg.provider === "anthropic" ? "" : null }, ["Anthropic"]),
       ]);
 
-      const modelSel = h("select", { class: "ai-select" });
-      function populateModels(provider) {
-        modelSel.innerHTML = "";
-        for (const m of ChatStore.getModelsForProvider(provider)) {
-          const opt = h("option", { value: m.id }, [m.label]);
-          if (m.id === cfg.model) opt.selected = true;
-          modelSel.appendChild(opt);
-        }
-      }
-      populateModels(cfg.provider);
-      providerSel.addEventListener("change", () => populateModels(providerSel.value));
-
       const keyInput = h("input", {
         type: "password",
         class: "ai-key-input",
@@ -2852,9 +2840,60 @@
         autocomplete: "off",
       });
 
-      const saveBtn = h("button", { class: "btn btn-primary", type: "button" }, ["Save"]);
-      const testBtn = h("button", { class: "btn", type: "button" }, ["Test"]);
-      const clearBtn = h("button", { class: "btn btn-danger", type: "button" }, ["Clear key"]);
+      // Update placeholder when provider changes
+      providerSel.addEventListener("change", () => {
+        keyInput.placeholder = providerSel.value === "anthropic" ? "sk-ant-…" : "sk-…";
+        modelRow.style.display = "none";
+        modelSel.innerHTML = "";
+        saveBtn.disabled = true;
+      });
+
+      // Model row (hidden until fetched)
+      const modelSel = h("select", { class: "ai-select" });
+      const modelRow = h("div", { class: "ai-model-row", style: "display:none" }, [
+        h("label", { class: "ai-config-label" }, ["Model"]),
+        modelSel,
+      ]);
+
+      // If we already have a saved model, show it without requiring a re-fetch
+      if (cfg.apiKey && cfg.model) {
+        const opt = h("option", { value: cfg.model }, [cfg.model]);
+        opt.selected = true;
+        modelSel.appendChild(opt);
+        modelRow.style.display = "";
+      }
+
+      const fetchBtn = h("button", { class: "btn", type: "button" }, ["Fetch models"]);
+      const saveBtn  = h("button", { class: "btn btn-primary", type: "button" }, ["Save"]);
+      const clearBtn = h("button", { class: "btn btn-danger",  type: "button" }, ["Clear key"]);
+
+      // Save is only usable once a model is selected
+      saveBtn.disabled = !(cfg.apiKey && cfg.model);
+      modelSel.addEventListener("change", () => { saveBtn.disabled = !modelSel.value; });
+
+      fetchBtn.addEventListener("click", async () => {
+        const key = keyInput.value.trim();
+        if (!key) { ctx.toast("Enter an API key first"); return; }
+        fetchBtn.disabled = true;
+        fetchBtn.textContent = "Fetching…";
+        try {
+          const models = await ChatStore.fetchModels(providerSel.value, key);
+          modelSel.innerHTML = "";
+          if (!models.length) throw new Error("No models returned");
+          for (const m of models) {
+            const opt = h("option", { value: m.id }, [m.label]);
+            if (m.id === cfg.model) opt.selected = true;
+            modelSel.appendChild(opt);
+          }
+          modelRow.style.display = "";
+          saveBtn.disabled = false;
+          ctx.toast(`${models.length} models loaded`);
+        } catch (err) {
+          ctx.toast("Failed: " + err.message);
+        }
+        fetchBtn.disabled = false;
+        fetchBtn.textContent = "Fetch models";
+      });
 
       saveBtn.addEventListener("click", () => {
         ChatStore.saveConfig({
@@ -2863,25 +2902,7 @@
           apiKey: keyInput.value.trim(),
         });
         ctx.toast("AI Chat settings saved");
-      });
-
-      testBtn.addEventListener("click", async () => {
-        const testCfg = { provider: providerSel.value, model: modelSel.value, apiKey: keyInput.value.trim() };
-        if (!testCfg.apiKey) { ctx.toast("Enter an API key first"); return; }
-        testBtn.disabled = true;
-        testBtn.textContent = "Testing…";
-        try {
-          await ChatStore.sendMessage(
-            [{ role: "user", content: "Reply with only the word: OK" }],
-            "You are a helpful assistant.",
-            testCfg
-          );
-          ctx.toast("API key works!");
-        } catch (err) {
-          ctx.toast("Error: " + err.message);
-        }
-        testBtn.disabled = false;
-        testBtn.textContent = "Test";
+        renderAISection();
       });
 
       clearBtn.addEventListener("click", () => {
@@ -2896,12 +2917,12 @@
         h("div", { class: "ai-config-grid" }, [
           h("label", { class: "ai-config-label" }, ["Provider"]),
           providerSel,
-          h("label", { class: "ai-config-label" }, ["Model"]),
-          modelSel,
           h("label", { class: "ai-config-label" }, ["API key"]),
           keyInput,
         ]),
-        h("div", { class: "settings-row", style: "margin-top:10px" }, [saveBtn, testBtn, clearBtn]),
+        h("div", { class: "settings-row", style: "margin-top:10px" }, [fetchBtn]),
+        modelRow,
+        h("div", { class: "settings-row", style: "margin-top:10px" }, [saveBtn, clearBtn]),
       );
     }
     renderAISection();

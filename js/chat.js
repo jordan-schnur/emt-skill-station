@@ -9,18 +9,9 @@
 (function (global) {
   const AI_CONFIG_KEY = "nremt.aiconfig";
 
-  const OPENAI_MODELS = [
-    { id: "gpt-4o",       label: "GPT-4o" },
-    { id: "gpt-4o-mini",  label: "GPT-4o mini" },
-    { id: "gpt-4-turbo",  label: "GPT-4 Turbo" },
-    { id: "gpt-3.5-turbo", label: "GPT-3.5 Turbo" },
-  ];
-
-  const ANTHROPIC_MODELS = [
-    { id: "claude-sonnet-4-6",        label: "Claude Sonnet 4.6" },
-    { id: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5" },
-    { id: "claude-opus-4-7",           label: "Claude Opus 4.7" },
-  ];
+  // Regexes for filtering OpenAI model list to chat-capable models only
+  const OPENAI_CHAT_FILTER = /^(gpt-|o\d)/;
+  const OPENAI_CHAT_EXCLUDE = /realtime|audio|instruct|tts|whisper|dall-e|embed|search|preview-/;
 
   // ---- Config (localStorage only, never synced) -----------------------
 
@@ -42,8 +33,37 @@
     localStorage.removeItem(AI_CONFIG_KEY);
   }
 
-  function getModelsForProvider(provider) {
-    return provider === "anthropic" ? ANTHROPIC_MODELS : OPENAI_MODELS;
+  async function fetchModels(provider, apiKey) {
+    if (provider === "anthropic") {
+      const res = await fetch("https://api.anthropic.com/v1/models", {
+        headers: {
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message || `Anthropic error ${res.status}`);
+      }
+      const data = await res.json();
+      return (data.data || []).map((m) => ({
+        id: m.id,
+        label: m.display_name || m.id,
+      }));
+    }
+    // OpenAI
+    const res = await fetch("https://api.openai.com/v1/models", {
+      headers: { "Authorization": `Bearer ${apiKey}` },
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `OpenAI error ${res.status}`);
+    }
+    const data = await res.json();
+    return (data.data || [])
+      .filter((m) => OPENAI_CHAT_FILTER.test(m.id) && !OPENAI_CHAT_EXCLUDE.test(m.id))
+      .sort((a, b) => b.id.localeCompare(a.id))
+      .map((m) => ({ id: m.id, label: m.id }));
   }
 
   // ---- Chat CRUD (stored in state.chats, synced via Firestore) --------
@@ -223,9 +243,7 @@
     getConfig,
     saveConfig,
     clearConfig,
-    getModelsForProvider,
-    OPENAI_MODELS,
-    ANTHROPIC_MODELS,
+    fetchModels,
     // Chat CRUD
     createChat,
     getChat,
