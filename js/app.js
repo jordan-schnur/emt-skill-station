@@ -89,6 +89,7 @@
       case "stats":    view = Views.stats(ctx); break;
       case "settings": view = Views.settings(ctx); break;
       case "guide":    view = Views.guide(ctx); break;
+      case "chat":     view = Views.chat(ctx); break;
       default:         view = Views.notFound();
     }
     root.appendChild(view);
@@ -112,6 +113,9 @@
     if (parts[0] === "sheet" && parts[1]) {
       return { view: "sheet", sheetId: parts[1], tab: parts[2] || "study" };
     }
+    if (parts[0] === "chat") {
+      return { view: "chat", chatId: parts[1] || null };
+    }
     if (["home", "stats", "settings", "guide"].includes(parts[0])) {
       return { view: parts[0] };
     }
@@ -120,6 +124,7 @@
   function writeHash(r) {
     let h = "";
     if (r.view === "sheet") h = `sheet/${r.sheetId}/${r.tab || "study"}`;
+    else if (r.view === "chat") h = r.chatId ? `chat/${r.chatId}` : "chat";
     else if (r.view !== "home") h = r.view;
     window.history.replaceState(null, "", h ? `#${h}` : "#");
   }

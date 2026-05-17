@@ -374,6 +374,7 @@
       : tab === "recall"  ? Views.blankRecall(ctx, sheet)
       : tab === "script"  ? Views.spokenScript(ctx, sheet)
       : tab === "mnemonics" ? Views.mnemonics(ctx, sheet)
+      : tab === "chat"      ? Views.chat(ctx, sheet)
       : Views.notFound()
     );
     return wrap;
@@ -445,6 +446,7 @@
       { id: "mnemonics", label: "Mnemonics" },
       { id: "sheet", label: "Full sheet" },
       { id: "notes", label: "Notes" },
+      { id: "chat", label: "Chat" },
     ];
     return h(
       "div",
@@ -2819,6 +2821,92 @@
       ]),
     ]));
 
+    // ---- AI Chat config ----
+    const aiSection = h("div", { class: "settings-section" });
+    function renderAISection() {
+      aiSection.innerHTML = "";
+      const cfg = ChatStore.getConfig();
+
+      const providerSel = h("select", { class: "ai-select" }, [
+        h("option", { value: "openai",    selected: cfg.provider === "openai"    ? "" : null }, ["OpenAI"]),
+        h("option", { value: "anthropic", selected: cfg.provider === "anthropic" ? "" : null }, ["Anthropic"]),
+      ]);
+
+      const modelSel = h("select", { class: "ai-select" });
+      function populateModels(provider) {
+        modelSel.innerHTML = "";
+        for (const m of ChatStore.getModelsForProvider(provider)) {
+          const opt = h("option", { value: m.id }, [m.label]);
+          if (m.id === cfg.model) opt.selected = true;
+          modelSel.appendChild(opt);
+        }
+      }
+      populateModels(cfg.provider);
+      providerSel.addEventListener("change", () => populateModels(providerSel.value));
+
+      const keyInput = h("input", {
+        type: "password",
+        class: "ai-key-input",
+        placeholder: cfg.provider === "anthropic" ? "sk-ant-…" : "sk-…",
+        value: cfg.apiKey || "",
+        autocomplete: "off",
+      });
+
+      const saveBtn = h("button", { class: "btn btn-primary", type: "button" }, ["Save"]);
+      const testBtn = h("button", { class: "btn", type: "button" }, ["Test"]);
+      const clearBtn = h("button", { class: "btn btn-danger", type: "button" }, ["Clear key"]);
+
+      saveBtn.addEventListener("click", () => {
+        ChatStore.saveConfig({
+          provider: providerSel.value,
+          model: modelSel.value,
+          apiKey: keyInput.value.trim(),
+        });
+        ctx.toast("AI Chat settings saved");
+      });
+
+      testBtn.addEventListener("click", async () => {
+        const testCfg = { provider: providerSel.value, model: modelSel.value, apiKey: keyInput.value.trim() };
+        if (!testCfg.apiKey) { ctx.toast("Enter an API key first"); return; }
+        testBtn.disabled = true;
+        testBtn.textContent = "Testing…";
+        try {
+          await ChatStore.sendMessage(
+            [{ role: "user", content: "Reply with only the word: OK" }],
+            "You are a helpful assistant.",
+            testCfg
+          );
+          ctx.toast("API key works!");
+        } catch (err) {
+          ctx.toast("Error: " + err.message);
+        }
+        testBtn.disabled = false;
+        testBtn.textContent = "Test";
+      });
+
+      clearBtn.addEventListener("click", () => {
+        ChatStore.clearConfig();
+        ctx.toast("API key cleared");
+        renderAISection();
+      });
+
+      aiSection.append(
+        h("h3", {}, ["AI Chat"]),
+        h("p", { class: "muted" }, ["Configure the chatbot for context-aware study help and examiner simulation. Your API key is stored locally only and is never synced to the cloud."]),
+        h("div", { class: "ai-config-grid" }, [
+          h("label", { class: "ai-config-label" }, ["Provider"]),
+          providerSel,
+          h("label", { class: "ai-config-label" }, ["Model"]),
+          modelSel,
+          h("label", { class: "ai-config-label" }, ["API key"]),
+          keyInput,
+        ]),
+        h("div", { class: "settings-row", style: "margin-top:10px" }, [saveBtn, testBtn, clearBtn]),
+      );
+    }
+    renderAISection();
+    wrap.appendChild(aiSection);
+
     return wrap;
   };
 
@@ -3302,6 +3390,335 @@
 
     return pane;
   };
+
+  // ---------- AI CHAT ------------------------------------------------
+
+  function relativeTimeChat(isoStr) {
+    if (!isoStr) return "";
+    const diff = Math.round((Date.now() - new Date(isoStr)) / 1000);
+    if (diff < 60)    return "just now";
+    if (diff < 3600)  return `${Math.round(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.round(diff / 3600)}h ago`;
+    return new Date(isoStr).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
+
+  function sheetNameById(sheetId) {
+    if (!sheetId) return null;
+    const s = (typeof NREMT_DATA !== "undefined") && NREMT_DATA.sheets.find((x) => x.id === sheetId);
+    return s ? s.title : sheetId;
+  }
+
+  Views.chat = (ctx, sheetCtx) => {
+    const wrap = h("div", { class: "chat-view" });
+
+    // If a specific chatId is in the route, render the detail view
+    if (ctx.route.chatId) {
+      const sheet = sheetCtx || (ctx.route.sheetId
+        ? NREMT_DATA.sheets.find((s) => s.id === ctx.route.sheetId)
+        : null);
+      wrap.appendChild(renderChatDetail(ctx, ctx.route.chatId, sheet, sheetCtx));
+      return wrap;
+    }
+
+    // --- Chat list view ---
+    const cfg = ChatStore.getConfig();
+    const hasKey = !!(cfg && cfg.apiKey);
+
+    if (!hasKey) {
+      wrap.appendChild(h("div", { class: "chat-no-key" }, [
+        h("div", { class: "big" }, ["🔑"]),
+        h("p", {}, ["No API key configured."]),
+        h("p", { class: "muted" }, ["Add an OpenAI or Anthropic API key in Backup & Settings → AI Chat to get started."]),
+        h("button", { class: "btn btn-primary", onclick: () => ctx.navigate({ view: "settings" }) }, ["Go to Settings"]),
+      ]));
+      return wrap;
+    }
+
+    const allChats = ChatStore.listChats(ctx.state);
+    // Filter to sheet-specific chats when called from a sheet tab
+    const sheetId = sheetCtx ? sheetCtx.id : null;
+    const displayChats = sheetId
+      ? allChats.filter((c) => c.sheetId === sheetId)
+      : allChats;
+
+    wrap.appendChild(h("div", { class: "chat-list-header" }, [
+      h("h2", {}, [sheetCtx ? `Chat — ${sheetCtx.title}` : "AI Chat"]),
+      buildNewChatBtn(ctx, sheetCtx),
+    ]));
+
+    if (displayChats.length === 0) {
+      wrap.appendChild(h("div", { class: "empty-state" }, [
+        h("p", {}, ["No conversations yet."]),
+        h("p", { class: "muted" }, [
+          sheetCtx
+            ? "Start a new chat to ask questions or run an examiner simulation for this sheet."
+            : "Start a new chat to ask questions about any skill sheet.",
+        ]),
+      ]));
+    } else {
+      const list = h("div", { class: "chat-list" });
+      for (const chat of displayChats) {
+        const modeBadge = h("span", { class: `chat-mode-badge chat-mode-${chat.mode}` }, [
+          chat.mode === "examiner" ? "Examiner" : "Chat",
+        ]);
+        const sheetBadge = chat.sheetId
+          ? h("span", { class: "chat-sheet-badge" }, [sheetNameById(chat.sheetId)])
+          : null;
+        const deleteBtn = h("button", {
+          class: "chat-delete-btn",
+          type: "button",
+          title: "Delete conversation",
+          onclick: (e) => {
+            e.stopPropagation();
+            showConfirmModal({
+              title: "Delete conversation?",
+              body: "This removes the chat history permanently.",
+              confirmLabel: "Delete",
+              onConfirm: () => {
+                ChatStore.deleteChat(ctx.state, chat.id);
+                ctx.save();
+                ctx.refresh();
+              },
+            });
+          },
+        }, ["✕"]);
+        const row = h("div", { class: "chat-list-row" }, [
+          h("div", { class: "chat-list-meta" }, [modeBadge, sheetBadge].filter(Boolean)),
+          h("div", { class: "chat-list-title" }, [
+            chat.title || h("em", { class: "muted" }, ["(no messages yet)"]),
+          ]),
+          h("div", { class: "chat-list-time muted" }, [relativeTimeChat(chat.updatedAt)]),
+          deleteBtn,
+        ]);
+        row.addEventListener("click", () => {
+          if (sheetCtx) {
+            ctx.navigate({ view: "sheet", sheetId: sheetCtx.id, tab: "chat", chatId: chat.id });
+          } else {
+            ctx.navigate({ view: "chat", chatId: chat.id });
+          }
+        });
+        list.appendChild(row);
+      }
+      wrap.appendChild(list);
+    }
+    return wrap;
+  };
+
+  function buildNewChatBtn(ctx, sheetCtx) {
+    const btn = h("button", { class: "btn btn-primary chat-new-btn", type: "button" }, ["+ New chat"]);
+    btn.addEventListener("click", () => showNewChatModal(ctx, sheetCtx));
+    return btn;
+  }
+
+  function showNewChatModal(ctx, sheetCtx) {
+    document.querySelector(".help-modal-overlay")?.remove();
+
+    const modeOptions = [
+      { id: "chat",     label: "Chat", desc: "Ask questions and get study help." },
+      { id: "examiner", label: "Examiner", desc: "Role-play as a candidate; the AI acts as your psychomotor examiner." },
+    ];
+
+    let selectedMode = "chat";
+    let selectedSheet = sheetCtx ? sheetCtx.id : null;
+
+    const modeWrap = h("div", { class: "new-chat-mode-grid" });
+    function renderModeButtons() {
+      modeWrap.innerHTML = "";
+      for (const mo of modeOptions) {
+        const btn = h("button", {
+          class: `new-chat-mode-btn${selectedMode === mo.id ? " active" : ""}`,
+          type: "button",
+        }, [
+          h("strong", {}, [mo.label]),
+          h("span", { class: "muted", style: "font-size:12px;display:block" }, [mo.desc]),
+        ]);
+        btn.addEventListener("click", () => { selectedMode = mo.id; renderModeButtons(); });
+        modeWrap.appendChild(btn);
+      }
+    }
+    renderModeButtons();
+
+    // Sheet picker (only shown in global chat, not when opened from a sheet tab)
+    const sheetPickerWrap = h("div");
+    if (!sheetCtx) {
+      const sheetSel = h("select", { class: "ai-select", style: "width:100%;margin-top:4px" }, [
+        h("option", { value: "" }, ["— No sheet context —"]),
+        ...NREMT_DATA.sheets.map((s) =>
+          h("option", { value: s.id }, [s.title])
+        ),
+      ]);
+      sheetSel.value = selectedSheet || "";
+      sheetSel.addEventListener("change", () => { selectedSheet = sheetSel.value || null; });
+      sheetPickerWrap.append(
+        h("label", { class: "ai-config-label", style: "margin-top:12px;display:block" }, ["Sheet context (optional)"]),
+        sheetSel,
+      );
+    }
+
+    const startBtn = h("button", { class: "btn btn-primary", type: "button" }, ["Start chat"]);
+    const cancelBtn = h("button", { class: "btn", type: "button" }, ["Cancel"]);
+
+    const modal = h("div", { class: "help-modal" }, [
+      h("div", { class: "help-modal-header" }, [h("strong", {}, ["New conversation"])]),
+      h("div", { class: "help-modal-body" }, [
+        h("p", { style: "margin-top:0;margin-bottom:8px" }, ["Choose a mode:"]),
+        modeWrap,
+        sheetPickerWrap,
+        h("div", { class: "confirm-modal-actions", style: "margin-top:16px" }, [cancelBtn, startBtn]),
+      ]),
+    ]);
+    const overlay = h("div", { class: "help-modal-overlay" });
+    const dismiss = () => overlay.remove();
+    cancelBtn.addEventListener("click", dismiss);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) dismiss(); });
+    document.addEventListener("keydown", function esc(e) {
+      if (e.key === "Escape") { dismiss(); document.removeEventListener("keydown", esc); }
+    });
+    startBtn.addEventListener("click", () => {
+      dismiss();
+      const sheet = selectedSheet
+        ? NREMT_DATA.sheets.find((s) => s.id === selectedSheet)
+        : sheetCtx || null;
+      const chatId = ChatStore.createChat(ctx.state, {
+        mode: selectedMode,
+        sheetId: sheet ? sheet.id : null,
+      });
+      ctx.save();
+      if (sheetCtx) {
+        ctx.navigate({ view: "sheet", sheetId: sheetCtx.id, tab: "chat", chatId });
+      } else {
+        ctx.navigate({ view: "chat", chatId });
+      }
+    });
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+  }
+
+  function renderChatDetail(ctx, chatId, sheet, sheetCtx) {
+    const chat = ChatStore.getChat(ctx.state, chatId);
+    if (!chat) {
+      return h("div", { class: "empty-state" }, [h("p", {}, ["Conversation not found."])]);
+    }
+
+    const resolvedSheet = sheet ||
+      (chat.sheetId ? NREMT_DATA.sheets.find((s) => s.id === chat.sheetId) : null);
+
+    const wrap = h("div", { class: "chat-detail" });
+
+    // Header
+    const backBtn = h("button", {
+      class: "btn-link chat-back-btn",
+      type: "button",
+      onclick: () => {
+        if (sheetCtx) {
+          ctx.navigate({ view: "sheet", sheetId: sheetCtx.id, tab: "chat" });
+        } else {
+          ctx.navigate({ view: "chat" });
+        }
+      },
+    }, ["← Back"]);
+
+    const modeBadge = h("span", { class: `chat-mode-badge chat-mode-${chat.mode}` }, [
+      chat.mode === "examiner" ? "Examiner" : "Chat",
+    ]);
+    const sheetBadge = resolvedSheet
+      ? h("span", { class: "chat-sheet-badge" }, [resolvedSheet.title])
+      : null;
+
+    wrap.appendChild(h("div", { class: "chat-detail-header" }, [
+      backBtn,
+      h("div", { class: "chat-detail-badges" }, [modeBadge, sheetBadge].filter(Boolean)),
+    ]));
+
+    // Message thread
+    const thread = h("div", { class: "chat-thread" });
+    function renderMessages() {
+      thread.innerHTML = "";
+      if (chat.messages.length === 0) {
+        thread.appendChild(h("div", { class: "chat-empty-thread muted" }, [
+          chat.mode === "examiner"
+            ? `Type "ready" or describe your first action to begin the ${resolvedSheet ? resolvedSheet.title : "skill"} station.`
+            : "Ask anything about this skill sheet, or request a practice question.",
+        ]));
+      }
+      for (const msg of chat.messages) {
+        const bubble = h("div", { class: `chat-bubble chat-bubble-${msg.role}` });
+        if (typeof marked !== "undefined") {
+          bubble.innerHTML = marked.parse(msg.content);
+        } else {
+          bubble.textContent = msg.content;
+        }
+        thread.appendChild(bubble);
+      }
+      // Scroll to bottom
+      thread.scrollTop = thread.scrollHeight;
+    }
+    renderMessages();
+    wrap.appendChild(thread);
+
+    // Input area
+    let sending = false;
+    const textarea = h("textarea", {
+      class: "chat-input",
+      placeholder: "Type a message…",
+      rows: "2",
+      autocomplete: "off",
+      autocorrect: "on",
+      autocapitalize: "sentences",
+    });
+    const sendBtn = h("button", { class: "btn btn-primary chat-send-btn", type: "button" }, ["Send"]);
+
+    async function doSend() {
+      const text = textarea.value.trim();
+      if (!text || sending) return;
+      sending = true;
+      textarea.value = "";
+      sendBtn.disabled = true;
+      sendBtn.textContent = "…";
+
+      ChatStore.addMessage(ctx.state, chatId, { role: "user", content: text });
+      renderMessages();
+
+      try {
+        const cfg = ChatStore.getConfig();
+        const notes = resolvedSheet
+          ? (ctx.state.notes && ctx.state.notes.sheet && ctx.state.notes.sheet[resolvedSheet.id]) || ""
+          : "";
+        const systemPrompt = ChatStore.buildSystemPrompt(chat.mode, resolvedSheet, notes);
+        const reply = await ChatStore.sendMessage(chat.messages, systemPrompt, cfg);
+        ChatStore.addMessage(ctx.state, chatId, { role: "assistant", content: reply });
+        ctx.save();
+        renderMessages();
+      } catch (err) {
+        ChatStore.addMessage(ctx.state, chatId, {
+          role: "assistant",
+          content: `_Error: ${err.message}_`,
+        });
+        ctx.save();
+        renderMessages();
+      }
+      sending = false;
+      sendBtn.disabled = false;
+      sendBtn.textContent = "Send";
+      textarea.focus();
+    }
+
+    sendBtn.addEventListener("click", doSend);
+    textarea.addEventListener("keydown", (e) => {
+      // Ctrl/Cmd+Enter sends on desktop; plain Enter is a newline (mobile-friendly)
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        doSend();
+      }
+    });
+
+    wrap.appendChild(h("div", { class: "chat-input-row" }, [textarea, sendBtn]));
+
+    // Hint for keyboard shortcut
+    wrap.appendChild(h("div", { class: "chat-input-hint muted" }, ["Ctrl+Enter to send"]));
+
+    return wrap;
+  }
 
   // ---------- NOT FOUND ----------------------------------------------
   Views.notFound = () =>

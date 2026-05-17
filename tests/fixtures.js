@@ -76,6 +76,7 @@ export function createEmptyState() {
     drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {} },
     achievements: {},
     mnemonics: {},
+    chats: {},
   };
 }
 

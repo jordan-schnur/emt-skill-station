@@ -29,6 +29,7 @@
     drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {} },
     achievements: {},
     mnemonics: {},
+    chats: {},
   });
 
   function load() {
@@ -46,6 +47,7 @@
         srs: parsed.srs || {},
         achievements: { ...(parsed.achievements || {}) },
         mnemonics: { ...(parsed.mnemonics || {}) },
+        chats: { ...(parsed.chats || {}) },
         drills: {
           ...fresh.drills,
           ...(parsed.drills || {}),
@@ -102,6 +104,7 @@
       srs: parsed.srs || {},
       achievements: { ...(parsed.achievements || {}) },
       mnemonics: { ...(parsed.mnemonics || {}) },
+      chats: { ...(parsed.chats || {}) },
       drills: {
         ...fresh.drills,
         ...(parsed.drills || {}),
