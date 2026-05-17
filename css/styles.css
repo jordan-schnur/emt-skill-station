@@ -2246,4 +2246,35 @@ a:hover, .link:hover { text-decoration: underline; }
   gap: 10px;
   justify-content: flex-end;
   margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.conflict-versions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0;
+}
+.conflict-card {
+  flex: 1;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+}
+.conflict-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-mute);
+  margin-bottom: 4px;
+}
+.conflict-time {
+  font-size: 14px;
+  font-weight: 500;
+}
+.conflict-vs {
+  color: var(--text-mute);
+  font-size: 12px;
+  flex-shrink: 0;
 }

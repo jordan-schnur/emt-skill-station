@@ -80,16 +80,23 @@
   }
 
   async function download() {
+    const result = await downloadWithMeta();
+    return result ? result.state : null;
+  }
+
+  async function downloadWithMeta() {
     if (!_user || !_db) return null;
     const snap = await _db.collection("users").doc(_user.uid).get();
     if (!snap.exists) return null;
     const data = snap.data();
     try {
-      return data.stateJson ? JSON.parse(data.stateJson) : null;
+      const state = data.stateJson ? JSON.parse(data.stateJson) : null;
+      const cloudUpdatedAt = data.updatedAt ? data.updatedAt.toDate().toISOString() : null;
+      return { state, cloudUpdatedAt };
     } catch {
       return null;
     }
   }
 
-  global.CloudSync = { init, onAuthChange, isAuthReady, getUser, signIn, signOut, upload, uploadDebounced, flush, download, clearCloud };
+  global.CloudSync = { init, onAuthChange, isAuthReady, getUser, signIn, signOut, upload, uploadDebounced, flush, download, downloadWithMeta, clearCloud };
 })(window);

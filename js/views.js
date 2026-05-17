@@ -69,6 +69,52 @@
     document.body.appendChild(overlay);
   }
 
+  function relativeTime(isoStr) {
+    if (!isoStr) return "unknown";
+    const diff = Math.round((Date.now() - new Date(isoStr)) / 1000);
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.round(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.round(diff / 3600)}h ago`;
+    return new Date(isoStr).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+
+  function showConflictModal({ localUpdatedAt, cloudUpdatedAt, onKeepLocal, onUseCloud }) {
+    document.querySelector(".help-modal-overlay")?.remove();
+    const cancelBtn  = h("button", { class: "btn",         type: "button" }, ["Cancel"]);
+    const localBtn   = h("button", { class: "btn btn-primary", type: "button" }, ["Keep my local version"]);
+    const cloudBtn   = h("button", { class: "btn",         type: "button" }, ["Use cloud version"]);
+    const modal = h("div", { class: "help-modal" }, [
+      h("div", { class: "help-modal-header" }, [h("strong", {}, ["Sync conflict"])]),
+      h("div", { class: "help-modal-body" }, [
+        h("p", { style: "margin-top:0" }, ["Both your local data and the cloud have been updated independently. Which version do you want to keep?"]),
+        h("div", { class: "conflict-versions" }, [
+          h("div", { class: "conflict-card" }, [
+            h("div", { class: "conflict-label" }, ["This device"]),
+            h("div", { class: "conflict-time" }, [localUpdatedAt ? relativeTime(localUpdatedAt) : "No local data"]),
+          ]),
+          h("div", { class: "conflict-vs" }, ["vs"]),
+          h("div", { class: "conflict-card" }, [
+            h("div", { class: "conflict-label" }, ["Cloud"]),
+            h("div", { class: "conflict-time" }, [cloudUpdatedAt ? relativeTime(cloudUpdatedAt) : "No cloud data"]),
+          ]),
+        ]),
+        h("p", { class: "muted", style: "font-size:12px;margin-bottom:0" }, ["The losing version will be permanently overwritten."]),
+        h("div", { class: "confirm-modal-actions" }, [cancelBtn, cloudBtn, localBtn]),
+      ]),
+    ]);
+    const overlay = h("div", { class: "help-modal-overlay" });
+    const dismiss = () => overlay.remove();
+    cancelBtn.addEventListener("click", dismiss);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) dismiss(); });
+    document.addEventListener("keydown", function esc(e) {
+      if (e.key === "Escape") { dismiss(); document.removeEventListener("keydown", esc); }
+    });
+    localBtn.addEventListener("click", () => { dismiss(); onKeepLocal(); });
+    cloudBtn.addEventListener("click", () => { dismiss(); onUseCloud(); });
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+  }
+
   function showHelpModal(title, bodyHTML) {
     document.querySelector(".help-modal-overlay")?.remove();
     const closeBtn = h("button", { class: "help-modal-close", type: "button", "aria-label": "Close" }, ["✕"]);
@@ -2625,13 +2671,40 @@
             onclick: async (e) => {
               const btn = e.currentTarget;
               btn.disabled = true;
-              btn.textContent = "Syncing…";
+              btn.textContent = "Checking…";
               try {
-                ctx.state.updatedAt = new Date().toISOString();
-                Storage.save(ctx.state);
-                await CloudSync.upload(ctx.state);
-                ctx.toast("Synced to cloud");
-                renderCloudSection();
+                const meta = await CloudSync.downloadWithMeta();
+                const localTime = ctx.state.updatedAt ? new Date(ctx.state.updatedAt) : new Date(0);
+                const cloudTime = meta?.cloudUpdatedAt ? new Date(meta.cloudUpdatedAt) : new Date(0);
+                const hasConflict = meta?.state && cloudTime > localTime;
+
+                if (hasConflict) {
+                  btn.disabled = false;
+                  btn.textContent = "Sync now";
+                  showConflictModal({
+                    localUpdatedAt: ctx.state.updatedAt,
+                    cloudUpdatedAt: meta.cloudUpdatedAt,
+                    onKeepLocal: async () => {
+                      ctx.state.updatedAt = new Date().toISOString();
+                      Storage.save(ctx.state);
+                      await CloudSync.upload(ctx.state);
+                      ctx.toast("Local version pushed to cloud");
+                      renderCloudSection();
+                    },
+                    onUseCloud: () => {
+                      Object.assign(ctx.state, meta.state);
+                      Storage.save(ctx.state);
+                      ctx.toast("Cloud version restored locally");
+                      ctx.refresh();
+                    },
+                  });
+                } else {
+                  ctx.state.updatedAt = new Date().toISOString();
+                  Storage.save(ctx.state);
+                  await CloudSync.upload(ctx.state);
+                  ctx.toast("Synced to cloud");
+                  renderCloudSection();
+                }
               } catch (err) {
                 ctx.toast("Sync failed");
                 btn.disabled = false;
