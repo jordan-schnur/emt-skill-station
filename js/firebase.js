@@ -1,11 +1,11 @@
 (function (global) {
   const CONFIG = {
-    apiKey: "AIzaSyBjyEu2VLCUPftlJ1wfcvy2FQfdfFA9ORk",
+    apiKey: "AIzaSyBjyEu2vLCUPftIj1wfcvy2FQfdffA9ORk",
     authDomain: "emt-skill-station.firebaseapp.com",
     projectId: "emt-skill-station",
     storageBucket: "emt-skill-station.firebasestorage.app",
-    messagingSenderId: "50647220353",
-    appId: "1:50647220353:web:12c8a927130fd7308b5d48",
+    messagingSenderId: "506472203353",
+    appId: "1:506472203353:web:12c8a927130fd7308b5d48",
   };
 
   let _db = null;
