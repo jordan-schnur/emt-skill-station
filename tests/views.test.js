@@ -15,6 +15,7 @@ import {
   createStateWithDrills,
   createStateWithWhatnext,
   createStateWithBlankrecall,
+  createStateWithSpokenScript,
   createMockContext,
   setupMockNREMTData,
 } from "./fixtures.js";
@@ -1175,6 +1176,204 @@ describe("Views – DOM Rendering and UI", () => {
 
       // Should be back at results
       expect(view.querySelector(".recall-results")).toBeTruthy();
+    });
+  });
+
+  // ---------- Views.spokenScript --------------------------------------
+  describe("Views.spokenScript", () => {
+    it("should render without crashing", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      expect(() => window.Views.spokenScript(ctx, sheet)).not.toThrow();
+    });
+
+    it("should show fallback when no steps have spokenScript", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet({
+        sections: [
+          { name: "PPE", header: false, steps: [{ text: "Takes PPE", points: 1 }] },
+        ],
+      });
+      const view = window.Views.spokenScript(ctx, sheet);
+      expect(view.textContent).toMatch(/no spoken scripts/i);
+    });
+
+    it("should show step cue on initial render", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.spokenScript(ctx, sheet);
+      expect(view.querySelector(".cue-text")).toBeTruthy();
+      expect(view.querySelector(".script-input")).toBeTruthy();
+    });
+
+    it("should show section name chip on initial render", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.spokenScript(ctx, sheet);
+      const chip = view.querySelector(".section-chip");
+      expect(chip).toBeTruthy();
+    });
+
+    it("should show Check and Skip buttons", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.spokenScript(ctx, sheet);
+      const btns = Array.from(view.querySelectorAll("button")).map((b) => b.textContent);
+      expect(btns.some((t) => t.includes("Check"))).toBe(true);
+      expect(btns.some((t) => t.includes("Skip"))).toBe(true);
+    });
+
+    it("should show correct feedback after a good answer", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.spokenScript(ctx, sheet);
+      const input = view.querySelector(".script-input");
+      input.value = "I'm taking BSI precautions";
+      const checkBtn = Array.from(view.querySelectorAll("button")).find((b) => b.textContent.includes("Check"));
+      checkBtn.click();
+      expect(view.querySelector(".script-feedback.correct")).toBeTruthy();
+      expect(view.querySelector(".script-feedback.wrong")).toBeFalsy();
+    });
+
+    it("should show wrong feedback for a completely wrong answer", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.spokenScript(ctx, sheet);
+      const input = view.querySelector(".script-input");
+      input.value = "xyz abc nonsense";
+      const checkBtn = Array.from(view.querySelectorAll("button")).find((b) => b.textContent.includes("Check"));
+      checkBtn.click();
+      expect(view.querySelector(".script-feedback.wrong")).toBeTruthy();
+    });
+
+    it("should reveal Next button after Check", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.spokenScript(ctx, sheet);
+      const input = view.querySelector(".script-input");
+      input.value = "I'm taking BSI precautions";
+      const checkBtn = Array.from(view.querySelectorAll("button")).find((b) => b.textContent.includes("Check"));
+      checkBtn.click();
+      const nextBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("Next") && b.style.display !== "none"
+      );
+      expect(nextBtn).toBeTruthy();
+    });
+
+    it("should reach results after completing all steps via Skip", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.spokenScript(ctx, sheet);
+      // buildScriptSequence only picks steps with spokenScript — our mock has 4
+      const stepsWithScript = sheet.sections
+        .flatMap((s) => s.steps)
+        .filter((s) => s.spokenScript);
+      for (let i = 0; i < stepsWithScript.length; i++) {
+        const skipBtn = Array.from(view.querySelectorAll("button")).find((b) => b.textContent.includes("Skip"));
+        if (skipBtn) skipBtn.click();
+      }
+      expect(view.querySelector(".recall-results")).toBeTruthy();
+    });
+
+    it("should call ctx.save after completing a run", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.spokenScript(ctx, sheet);
+      const stepsWithScript = sheet.sections.flatMap((s) => s.steps).filter((s) => s.spokenScript);
+      for (let i = 0; i < stepsWithScript.length; i++) {
+        const skipBtn = Array.from(view.querySelectorAll("button")).find((b) => b.textContent.includes("Skip"));
+        if (skipBtn) skipBtn.click();
+      }
+      expect(ctx.save).toHaveBeenCalled();
+    });
+
+    it("should increment streak after a fully correct run", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.spokenScript(ctx, sheet);
+      // Answer all with the known correct scripts
+      const scripts = ["I'm taking BSI precautions.", "The scene is safe.", "The mechanism of injury appears to be blunt trauma.", "My general impression is an adult male in moderate distress."];
+      for (const script of scripts) {
+        const input = view.querySelector(".script-input");
+        if (!input) break;
+        input.value = script;
+        const checkBtn = Array.from(view.querySelectorAll("button")).find((b) => b.textContent.includes("Check"));
+        if (checkBtn) checkBtn.click();
+        const nextBtn = Array.from(view.querySelectorAll("button")).find(
+          (b) => b.textContent.includes("Next") && b.style.display !== "none"
+        );
+        if (nextBtn) nextBtn.click();
+      }
+      const rec = ctx.state.drills.spokenscript["e201"];
+      expect(rec).toBeDefined();
+      expect(rec.streak).toBeGreaterThan(0);
+    });
+
+    it("should mark mastered after 3 fully correct runs", () => {
+      // Pre-seed streak = 2, then do one perfect run
+      const state = createStateWithSpokenScript();
+      state.drills.spokenscript["e201"].streak = 2;
+      const ctx = createMockContext(state);
+      const sheet = createMockSheet();
+
+      function doRun(v) {
+        const scripts = ["I'm taking BSI precautions.", "The scene is safe.", "The mechanism of injury appears to be blunt trauma.", "My general impression is an adult male in moderate distress."];
+        for (const script of scripts) {
+          const input = v.querySelector(".script-input");
+          if (!input) break;
+          input.value = script;
+          const checkBtn = Array.from(v.querySelectorAll("button")).find((b) => b.textContent.includes("Check"));
+          if (checkBtn) checkBtn.click();
+          const nextBtn = Array.from(v.querySelectorAll("button")).find(
+            (b) => b.textContent.includes("Next") && b.style.display !== "none"
+          );
+          if (nextBtn) nextBtn.click();
+        }
+      }
+
+      const view = window.Views.spokenScript(ctx, sheet);
+      doRun(view);
+      const rec = ctx.state.drills.spokenscript["e201"];
+      expect(rec.mastered).toBe(true);
+    });
+
+    it("should show Try again button in results phase", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.spokenScript(ctx, sheet);
+      const stepsWithScript = sheet.sections.flatMap((s) => s.steps).filter((s) => s.spokenScript);
+      for (let i = 0; i < stepsWithScript.length; i++) {
+        const skipBtn = Array.from(view.querySelectorAll("button")).find((b) => b.textContent.includes("Skip"));
+        if (skipBtn) skipBtn.click();
+      }
+      const tryAgain = Array.from(view.querySelectorAll("button")).find((b) => b.textContent.includes("Try again"));
+      expect(tryAgain).toBeTruthy();
+    });
+
+    it("should return to practice phase after clicking Try again", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+      const view = window.Views.spokenScript(ctx, sheet);
+      const stepsWithScript = sheet.sections.flatMap((s) => s.steps).filter((s) => s.spokenScript);
+      for (let i = 0; i < stepsWithScript.length; i++) {
+        const skipBtn = Array.from(view.querySelectorAll("button")).find((b) => b.textContent.includes("Skip"));
+        if (skipBtn) skipBtn.click();
+      }
+      const tryAgain = Array.from(view.querySelectorAll("button")).find((b) => b.textContent.includes("Try again"));
+      tryAgain.click();
+      expect(view.querySelector(".script-input")).toBeTruthy();
+      expect(view.querySelector(".recall-results")).toBeFalsy();
+    });
+
+    it("tab label shows streak progress via renderTabs", () => {
+      const state = createStateWithSpokenScript(); // streak = 1
+      const ctx = createMockContext(state);
+      ctx.route = { view: "sheet", sheetId: "e201", tab: "script" };
+      const tabsEl = window.Views.sheet(ctx);
+      const tabs = Array.from(tabsEl.querySelectorAll(".tabs button"));
+      const scriptTab = tabs.find((b) => b.textContent.includes("Spoken Script"));
+      expect(scriptTab).toBeTruthy();
+      expect(scriptTab.textContent).toMatch(/1\/3/);
     });
   });
 });

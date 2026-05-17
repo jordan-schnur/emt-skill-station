@@ -22,22 +22,22 @@ export function createMockSheet(overrides = {}) {
         name: "PPE",
         header: false,
         steps: [
-          { text: "Takes or verbalizes appropriate PPE precautions", points: 1 },
+          { text: "Takes or verbalizes appropriate PPE precautions", points: 1, spokenScript: "I'm taking BSI precautions." },
         ],
       },
       {
         name: "SCENE SIZE-UP",
         header: true,
         steps: [
-          { text: "Determines the scene/situation is safe", points: 1 },
-          { text: "Determines the mechanism of injury", points: 1 },
+          { text: "Determines the scene/situation is safe", points: 1, spokenScript: "The scene is safe." },
+          { text: "Determines the mechanism of injury", points: 1, spokenScript: "The mechanism of injury appears to be blunt trauma." },
         ],
       },
       {
         name: "PRIMARY SURVEY/RESUSCITATION",
         header: true,
         steps: [
-          { text: "Verbalizes general impression of the patient", points: 1 },
+          { text: "Verbalizes general impression of the patient", points: 1, spokenScript: "My general impression is an adult male in moderate distress." },
           {
             text: "Airway",
             points: 2,
@@ -67,7 +67,7 @@ export function createEmptyState() {
     srs: {},
     notes: { step: {}, sheet: {} },
     stats: { totalReviews: 0, lastReviewedAt: null },
-    drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {} },
+    drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {} },
   };
 }
 
@@ -218,6 +218,17 @@ export function createStateWithBlankrecall() {
       lastScore: { matched: 4, missed: 1, total: 5, pct: 80 },
       bestPct: 80,
     },
+  };
+  return state;
+}
+
+/**
+ * State with Spoken Script drill progress
+ */
+export function createStateWithSpokenScript() {
+  const state = createEmptyState();
+  state.drills.spokenscript = {
+    "e201": { streak: 1, mastered: false, attempts: 2, lastScore: { correct: 2, total: 3, pct: 67 } },
   };
   return state;
 }

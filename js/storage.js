@@ -20,7 +20,7 @@
     srs: {},
     notes: { step: {}, sheet: {} },
     stats: { totalReviews: 0, lastReviewedAt: null },
-    drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {} },
+    drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {} },
   });
 
   function load() {
@@ -43,6 +43,7 @@
           stepseq:     (parsed.drills && parsed.drills.stepseq)     ? { ...parsed.drills.stepseq }     : {},
           whatnext:    (parsed.drills && parsed.drills.whatnext)    ? { ...parsed.drills.whatnext }    : {},
           blankrecall: (parsed.drills && parsed.drills.blankrecall) ? { ...parsed.drills.blankrecall } : {},
+          spokenscript: (parsed.drills && parsed.drills.spokenscript) ? { ...parsed.drills.spokenscript } : {},
         },
       };
     } catch (err) {
@@ -96,6 +97,7 @@
         stepseq:     (parsed.drills && parsed.drills.stepseq)     ? { ...parsed.drills.stepseq }     : {},
         whatnext:    (parsed.drills && parsed.drills.whatnext)    ? { ...parsed.drills.whatnext }    : {},
         blankrecall: (parsed.drills && parsed.drills.blankrecall) ? { ...parsed.drills.blankrecall } : {},
+        spokenscript: (parsed.drills && parsed.drills.spokenscript) ? { ...parsed.drills.spokenscript } : {},
       },
     };
   }

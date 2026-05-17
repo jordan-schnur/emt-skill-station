@@ -28,9 +28,12 @@
   };
 
   const Views = {};
-  const SECORDER_MASTERY_RUNS  = 3;
-  const STEPSEQ_MASTERY_RUNS   = 3;
-  const WHATNEXT_MASTERY_RUNS  = 3;
+  const SECORDER_MASTERY_RUNS      = 3;
+  const STEPSEQ_MASTERY_RUNS       = 3;
+  const WHATNEXT_MASTERY_RUNS      = 3;
+  const SPOKENSCRIPT_MASTERY_RUNS  = 3;
+  const SPOKENSCRIPT_PASS_RATE     = 0.8;
+  const SPOKENSCRIPT_THRESHOLD     = 0.45;
 
   // ---------- MARKDOWN HELPERS ----------------------------------------
 
@@ -254,6 +257,7 @@
       : tab === "critical" ? Views.criticalDrill(ctx, sheet)
       : tab === "whatnext" ? Views.whatNextDrill(ctx, sheet)
       : tab === "recall"  ? Views.blankRecall(ctx, sheet)
+      : tab === "script"  ? Views.spokenScript(ctx, sheet)
       : Views.notFound()
     );
     return wrap;
@@ -306,6 +310,13 @@
       ? `Blank Recall (${brRec.bestPct}%)`
       : "Blank Recall";
 
+    const ssRec = ctx.state.drills && ctx.state.drills.spokenscript && ctx.state.drills.spokenscript[sheet.id];
+    const scriptLabel = ssRec && ssRec.mastered
+      ? "Spoken Script ✓"
+      : ssRec && ssRec.streak > 0
+        ? `Spoken Script (${ssRec.streak}/${SPOKENSCRIPT_MASTERY_RUNS})`
+        : "Spoken Script";
+
     const tabs = [
       { id: "study", label: "Flashcards (SRS)" },
       // Only show Order Drill tab for sheets with multiple sections
@@ -314,6 +325,7 @@
       { id: "critical", label: critLabel },
       { id: "whatnext", label: whatNextLabel },
       { id: "recall", label: recallLabel },
+      { id: "script", label: scriptLabel },
       { id: "sheet", label: "Full sheet" },
       { id: "notes", label: "Notes" },
     ];
@@ -622,6 +634,27 @@
         }
       }
     }
+    return seq;
+  }
+
+  function enableDragAutoScroll() {
+    const ZONE = 80;
+    const SPEED = 10;
+    function onDragOver(e) {
+      const y = e.clientY;
+      if (y < ZONE) window.scrollBy(0, -SPEED);
+      else if (y > window.innerHeight - ZONE) window.scrollBy(0, SPEED);
+    }
+    document.addEventListener("dragover", onDragOver);
+    return () => document.removeEventListener("dragover", onDragOver);
+  }
+
+  function buildScriptSequence(sheet) {
+    const seq = [];
+    for (const section of sheet.sections)
+      for (const step of section.steps)
+        if (step.spokenScript)
+          seq.push({ text: step.text, spokenScript: step.spokenScript, sectionName: section.name });
     return seq;
   }
 
@@ -934,6 +967,7 @@
       // ---- draggable list ----
       const list = h("div", { class: "order-list" });
       let dragSrcIdx = null;
+      let stopAutoScroll = null;
 
       items.forEach((name, idx) => {
         const isCorrect = submitted ? name === correctOrder[idx] : null;
@@ -982,6 +1016,7 @@
             dragSrcIdx = idx;
             e.dataTransfer.effectAllowed = "move";
             e.dataTransfer.setData("text/plain", String(idx));
+            stopAutoScroll = enableDragAutoScroll();
             // Delay class add so browser captures pre-drag snapshot
             setTimeout(() => item.classList.add("dragging"), 0);
           });
@@ -989,6 +1024,7 @@
           item.addEventListener("dragend", () => {
             item.classList.remove("dragging");
             dragSrcIdx = null;
+            if (stopAutoScroll) { stopAutoScroll(); stopAutoScroll = null; }
           });
 
           item.addEventListener("dragover", (e) => {
@@ -1277,6 +1313,7 @@
 
       const list = h("div", { class: "order-list" });
       let dragSrcIdx = null;
+      let stopAutoScroll = null;
 
       items.forEach((text, idx) => {
         const isCorrect = submitted ? text === correctOrder[idx] : null;
@@ -1318,11 +1355,13 @@
             dragSrcIdx = idx;
             e.dataTransfer.effectAllowed = "move";
             e.dataTransfer.setData("text/plain", String(idx));
+            stopAutoScroll = enableDragAutoScroll();
             setTimeout(() => item.classList.add("dragging"), 0);
           });
           item.addEventListener("dragend", () => {
             item.classList.remove("dragging");
             dragSrcIdx = null;
+            if (stopAutoScroll) { stopAutoScroll(); stopAutoScroll = null; }
           });
           item.addEventListener("dragover", (e) => {
             e.preventDefault();
@@ -2268,6 +2307,215 @@
     return wrap;
   };
 
+  // ---------- SPOKEN SCRIPT DRILL ------------------------------------
+  Views.spokenScript = (ctx, sheet) => {
+    if (!ctx.state.drills.spokenscript) ctx.state.drills.spokenscript = {};
+
+    const steps = buildScriptSequence(sheet);
+    const pane = h("div", { class: "drill-pane" });
+    let phase = "practicing";
+    let stepIdx = 0;
+    let results = [];       // { step, typed, matched, score }
+    let checkedCurrent = false;
+
+    function getRec() {
+      if (!ctx.state.drills.spokenscript[sheet.id]) {
+        ctx.state.drills.spokenscript[sheet.id] = { streak: 0, mastered: false, attempts: 0, lastScore: null };
+      }
+      return ctx.state.drills.spokenscript[sheet.id];
+    }
+
+    function render() {
+      pane.innerHTML = "";
+      if (steps.length === 0) {
+        renderFallback();
+      } else if (phase === "practicing") {
+        renderPractice();
+      } else {
+        renderResults();
+      }
+    }
+
+    function renderFallback() {
+      pane.appendChild(h("div", { class: "drill-header" }, [h("h2", {}, ["Spoken Script"])]));
+      pane.appendChild(h("div", { class: "empty-state" }, [
+        h("p", {}, ["No spoken scripts available for this sheet."]),
+        h("p", { class: "muted" }, ["Run: python3 preprocess.py --generate-scripts"]),
+      ]));
+    }
+
+    function renderPractice() {
+      const step = steps[stepIdx];
+      const rec = getRec();
+      const headerRow = h("div", { class: "drill-header" }, [
+        h("h2", {}, ["Spoken Script"]),
+        rec.mastered
+          ? h("span", { class: "mastered-badge" }, ["✓ Mastered"])
+          : rec.streak > 0
+            ? h("span", { class: "muted small" }, [`Streak: ${rec.streak}/${SPOKENSCRIPT_MASTERY_RUNS}`])
+            : null,
+      ]);
+      pane.appendChild(headerRow);
+
+      const progress = h("p", { class: "muted small" }, [
+        `Step ${stepIdx + 1} of ${steps.length}`,
+      ]);
+      pane.appendChild(progress);
+
+      const cueEl = h("div", { class: "script-cue" }, [
+        h("span", { class: "section-chip" }, [step.sectionName]),
+        h("p", { class: "cue-text" }, [step.text]),
+      ]);
+      pane.appendChild(cueEl);
+
+      const prompt = h("p", { class: "script-prompt" }, ["What would you say aloud?"]);
+      pane.appendChild(prompt);
+
+      const input = h("input", {
+        type: "text",
+        class: "script-input",
+        placeholder: "Type your verbalization…",
+        autocomplete: "off",
+        autocorrect: "off",
+        spellcheck: "false",
+      }, []);
+
+      let feedbackEl = null;
+
+      function showFeedback(matched, typed, expected) {
+        if (feedbackEl) feedbackEl.remove();
+        feedbackEl = h("div", { class: matched ? "script-feedback correct" : "script-feedback wrong" }, [
+          h("span", {}, [matched ? "✓ Good" : "✗ Not quite"]),
+          matched ? null : h("p", { class: "expected-script" }, [`Expected: "${expected}"`]),
+        ]);
+        actionsEl.before(feedbackEl);
+        checkBtn.disabled = true;
+        skipBtn.disabled = true;
+        nextBtn.style.display = "";
+      }
+
+      function onCheck() {
+        if (checkedCurrent) return;
+        checkedCurrent = true;
+        const typed = input.value.trim();
+        const score = jaccardSimilarity(typed, step.spokenScript);
+        const matched = score >= SPOKENSCRIPT_THRESHOLD && typed.length > 0;
+        results.push({ step, typed, matched, score });
+        showFeedback(matched, typed, step.spokenScript);
+      }
+
+      function onSkip() {
+        if (checkedCurrent) return;
+        checkedCurrent = true;
+        results.push({ step, typed: "", matched: false, score: 0, skipped: true });
+        if (stepIdx + 1 < steps.length) {
+          stepIdx++;
+          checkedCurrent = false;
+          render();
+        } else {
+          finishRun();
+        }
+      }
+
+      function onNext() {
+        if (stepIdx + 1 < steps.length) {
+          stepIdx++;
+          checkedCurrent = false;
+          render();
+        } else {
+          finishRun();
+        }
+      }
+
+      input.onkeydown = (e) => { if (e.key === "Enter" && !checkedCurrent) onCheck(); };
+
+      const checkBtn = h("button", { class: "btn btn-primary", onclick: onCheck }, ["Check"]);
+      const skipBtn = h("button", { class: "btn btn-ghost", onclick: onSkip }, ["Skip"]);
+      const nextBtn = h("button", { class: "btn btn-primary", onclick: onNext, style: "display:none" }, ["Next →"]);
+
+      const actionsEl = h("div", { class: "drill-actions" }, [checkBtn, skipBtn, nextBtn]);
+      pane.appendChild(input);
+      pane.appendChild(actionsEl);
+
+      requestAnimationFrame(() => input.focus());
+    }
+
+    function finishRun() {
+      const correctCount = results.filter((r) => r.matched).length;
+      const pct = steps.length > 0 ? correctCount / steps.length : 0;
+      const rec = getRec();
+      rec.attempts++;
+      rec.lastScore = { correct: correctCount, total: steps.length, pct: Math.round(pct * 100) };
+      if (!rec.mastered) {
+        rec.streak = pct >= SPOKENSCRIPT_PASS_RATE ? rec.streak + 1 : 0;
+        rec.mastered = rec.streak >= SPOKENSCRIPT_MASTERY_RUNS;
+      }
+      ctx.save();
+      phase = "results";
+      render();
+    }
+
+    function renderResults() {
+      const rec = getRec();
+      const correctCount = results.filter((r) => r.matched).length;
+
+      pane.appendChild(h("div", { class: "drill-header" }, [
+        h("h2", {}, ["Spoken Script — Results"]),
+        rec.mastered
+          ? h("span", { class: "mastered-badge" }, ["✓ Mastered"])
+          : null,
+      ]));
+
+      pane.appendChild(h("p", { class: "recall-score" }, [
+        `${correctCount} / ${steps.length} correct`,
+        ` (${Math.round((correctCount / steps.length) * 100)}%)`,
+      ]));
+
+      const pips = [];
+      for (let i = 0; i < SPOKENSCRIPT_MASTERY_RUNS; i++) {
+        pips.push(h("span", { class: "streak-pip" + (i < rec.streak ? " filled" : "") }));
+      }
+      pane.appendChild(h("div", { class: "streak-pips" }, pips));
+
+      const grid = h("div", { class: "recall-results" });
+      for (const r of results) {
+        const icon = r.skipped ? "—" : r.matched ? "✓" : "✗";
+        const cls = r.skipped ? "recall-row skipped" : r.matched ? "recall-row matched" : "recall-row missed";
+        const detail = r.matched
+          ? h("span", { class: "muted small" }, [r.typed])
+          : h("div", {}, [
+              r.typed ? h("div", { class: "muted small" }, [`You: "${r.typed}"`]) : null,
+              h("div", { class: "expected-script small" }, [`Expected: "${r.step.spokenScript}"`]),
+            ]);
+        grid.appendChild(
+          h("div", { class: cls }, [
+            h("span", { class: "recall-icon" }, [icon]),
+            h("div", { class: "recall-text" }, [
+              h("strong", {}, [r.step.sectionName + ": " + r.step.text]),
+              detail,
+            ]),
+          ])
+        );
+      }
+      pane.appendChild(grid);
+
+      pane.appendChild(
+        h("div", { class: "drill-actions" }, [
+          h("button", { class: "btn btn-primary", onclick: () => {
+            phase = "practicing";
+            stepIdx = 0;
+            results = [];
+            checkedCurrent = false;
+            render();
+          }}, ["Try again"]),
+        ])
+      );
+    }
+
+    render();
+    return pane;
+  };
+
   // ---------- NOT FOUND ----------------------------------------------
   Views.notFound = () =>
     h("div", { class: "empty-state" }, [
@@ -2281,6 +2529,7 @@
   global.Views = Views;
   global.h = h;
   global.buildFlatSequence = buildFlatSequence;
+  global.buildScriptSequence = buildScriptSequence;
   global.jaccardSimilarity = jaccardSimilarity;
   global.matchLines = matchLines;
   global.renderMarkdownEl = renderMarkdownEl;

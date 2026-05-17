@@ -25,6 +25,7 @@ Run:
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 import sys
@@ -38,6 +39,7 @@ except ImportError:
 
 
 HERE = Path(__file__).parent.resolve()
+SCRIPTS_CACHE_FILE = HERE / "spoken_scripts_cache.json"
 
 
 # ---------------------------------------------------------------------------
@@ -617,7 +619,75 @@ def build_cards(sheet: dict) -> list[dict]:
 # Main
 # ---------------------------------------------------------------------------
 
+def _normalize(text: str) -> str:
+    """Normalize curly/smart quotes to ASCII so cache lookups are robust."""
+    return text.replace("’", "'").replace("‘", "'").replace("“", '"').replace("”", '"')
+
+
+def _load_scripts_cache() -> dict[str, str]:
+    try:
+        raw = json.loads(SCRIPTS_CACHE_FILE.read_text())
+        # Re-key with normalized text so lookups always work
+        return {_normalize(k): v for k, v in raw.items()}
+    except FileNotFoundError:
+        return {}
+
+
+def _collect_step_texts(sheets: list[dict]) -> list[str]:
+    texts: list[str] = []
+    for sheet in sheets:
+        for section in sheet["sections"]:
+            for step in section["steps"]:
+                texts.append(step["text"])
+    return texts
+
+
+def generate_spoken_scripts(sheets: list[dict], service) -> None:
+    """Generate spokenScript fields on all steps via LLM; updates sheets in-place."""
+    cache = _load_scripts_cache()
+    all_texts = _collect_step_texts(sheets)
+    uncached = [t for t in all_texts if _normalize(t) not in cache]
+
+    if uncached:
+        prompt = (
+            "You are writing what an EMT candidate says aloud during each NREMT skill step.\n"
+            "For each step below, write the exact verbalization — first person, present tense, "
+            "1–2 sentences, natural exam language.\n"
+            "Return ONLY a valid JSON object mapping each step text to its verbalization.\n\n"
+            "Steps:\n"
+            + json.dumps(uncached, ensure_ascii=False)
+        )
+        print(f"  Calling LLM for {len(uncached)} uncached steps…")
+        raw = service.generate(prompt)
+        # Strip markdown code fences if the model wrapped the JSON
+        cleaned = re.sub(r"```(?:json)?\s*|\s*```", "", raw).strip()
+        try:
+            new_scripts: dict[str, str] = json.loads(cleaned)
+        except json.JSONDecodeError as exc:
+            sys.stderr.write(f"LLM returned invalid JSON: {exc}\nRaw:\n{raw[:500]}\n")
+            sys.exit(1)
+        # Store normalized keys in cache
+        cache.update({_normalize(k): v for k, v in new_scripts.items()})
+        SCRIPTS_CACHE_FILE.write_text(json.dumps(cache, indent=2, ensure_ascii=False))
+        print(f"  Cached {len(new_scripts)} new scripts → {SCRIPTS_CACHE_FILE.name}")
+
+    for sheet in sheets:
+        for section in sheet["sections"]:
+            for step in section["steps"]:
+                key = _normalize(step["text"])
+                if key in cache:
+                    step["spokenScript"] = cache[key]
+
+
 def main() -> int:
+    parser = argparse.ArgumentParser(description="NREMT skill-sheet preprocessor")
+    parser.add_argument(
+        "--generate-scripts",
+        action="store_true",
+        help="Call LLM API to generate spokenScript fields for every step",
+    )
+    args = parser.parse_args()
+
     out_sheets = []
     total_cards = 0
     problems = []
@@ -652,6 +722,21 @@ def main() -> int:
         print("\n--- WARNINGS ---")
         for p in problems:
             print(p)
+
+    # Apply spoken scripts: generate new ones if requested, otherwise load cache
+    if args.generate_scripts:
+        from llm_service import get_llm_service
+        service = get_llm_service()
+        generate_spoken_scripts(out_sheets, service)
+    else:
+        cache = _load_scripts_cache()
+        if cache:
+            for sheet in out_sheets:
+                for section in sheet["sections"]:
+                    for step in section["steps"]:
+                        key = _normalize(step["text"])
+                        if key in cache:
+                            step["spokenScript"] = cache[key]
 
     data = {
         "version": 1,
