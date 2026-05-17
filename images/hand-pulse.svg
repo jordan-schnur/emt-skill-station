@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="1024" height="1024" role="img" aria-label="Hand and Pulse">
+  <rect width="64" height="64" rx="14" fill="oklch(0.62 0.18 28)"/>
+  <!-- Hand: filled, four-finger silhouette with thumb. Designed compact. -->
+  <path fill="#ffffff" d="
+    M 14 30
+    C 14 26 18 26 18 30
+    L 18 36
+    L 19.5 36
+    L 19.5 22
+    C 19.5 18 24 18 24 22
+    L 24 36
+    L 25.5 36
+    L 25.5 20
+    C 25.5 16 30 16 30 20
+    L 30 36
+    L 31.5 36
+    L 31.5 24
+    C 31.5 20 36 20 36 24
+    L 36 40
+    C 36 47 31 52 25 52
+    C 19 52 14 47 14 41
+    Z" />
+  <!-- Pulse line, top-right -->
+  <path fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+        d="M 40 26 L 43 26 L 46 18 L 49 32 L 52 22 L 54 26" />
+</svg>
