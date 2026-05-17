@@ -2117,6 +2117,70 @@ a:hover, .link:hover { text-decoration: underline; }
   gap: 8px;
 }
 
+.mnemonic-sentence {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text);
+  padding: 6px 0 2px;
+}
+
+.mnemonic-acronym {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  padding-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.mnemonic-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border-left: 2px solid var(--border);
+  padding-left: 12px;
+  margin-bottom: 4px;
+}
+
+.mnemonic-row {
+  display: grid;
+  grid-template-columns: 120px 20px 1fr;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+@media (max-width: 480px) {
+  .mnemonic-row {
+    grid-template-columns: 90px 16px 1fr;
+    font-size: 12px;
+  }
+}
+
+.mnemonic-word {
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mnemonic-letter {
+  color: var(--accent);
+  font-size: 15px;
+}
+
+.mnemonic-arrow {
+  color: var(--text-mute);
+  text-align: center;
+}
+
+.mnemonic-step-label {
+  color: var(--text-dim);
+}
+
 .mnemonic-display {
   font-size: 16px;
   font-weight: 500;

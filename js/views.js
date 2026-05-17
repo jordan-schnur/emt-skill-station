@@ -3179,13 +3179,48 @@
 
       function showDisplay() {
         displayWrap.innerHTML = "";
-        const text = getVal(key, sectionName);
-        const display = h("div", { class: "mnemonic-display" + (text ? "" : " mnemonic-empty") },
-          [text || "No mnemonic yet."]
-        );
         editBtn = h("button", { class: "btn btn-sm btn-secondary", type: "button" }, ["Edit"]);
         editBtn.addEventListener("click", () => showEditor());
-        displayWrap.append(display, editBtn);
+
+        const text = getVal(key, sectionName);
+        if (!text) {
+          displayWrap.append(
+            h("div", { class: "mnemonic-display mnemonic-empty" }, ["No mnemonic yet."]),
+            editBtn,
+          );
+          return;
+        }
+
+        // Split sentence into words (strip punctuation, keep order)
+        const words = text.trim().split(/\s+/).map((w) => w.replace(/[^a-zA-Z]/g, "")).filter(Boolean);
+        const canBreakdown = stepList && stepList.length > 0 && words.length === stepList.length;
+
+        // Full sentence
+        displayWrap.appendChild(h("div", { class: "mnemonic-sentence" }, [text]));
+
+        if (canBreakdown) {
+          // Acronym strip: S · P · H · S · R
+          const acronym = words.map((w) => w[0].toUpperCase()).join(" · ");
+          displayWrap.appendChild(h("div", { class: "mnemonic-acronym" }, [acronym]));
+
+          // Word-by-word breakdown
+          const table = h("div", { class: "mnemonic-breakdown" });
+          for (let i = 0; i < words.length; i++) {
+            const word = words[i];
+            const step = stepList[i].length > 72 ? stepList[i].slice(0, 70) + "…" : stepList[i];
+            table.appendChild(h("div", { class: "mnemonic-row" }, [
+              h("span", { class: "mnemonic-word" }, [
+                h("strong", { class: "mnemonic-letter" }, [word[0].toUpperCase()]),
+                word.slice(1).toLowerCase(),
+              ]),
+              h("span", { class: "mnemonic-arrow" }, ["→"]),
+              h("span", { class: "mnemonic-step-label" }, [step]),
+            ]));
+          }
+          displayWrap.appendChild(table);
+        }
+
+        displayWrap.appendChild(editBtn);
       }
 
       function showEditor() {
