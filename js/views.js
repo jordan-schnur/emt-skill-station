@@ -3726,8 +3726,7 @@
 
     sendBtn.addEventListener("click", doSend);
     textarea.addEventListener("keydown", (e) => {
-      // Ctrl/Cmd+Enter sends on desktop; plain Enter is a newline (mobile-friendly)
-      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         doSend();
       }
@@ -3735,8 +3734,7 @@
 
     wrap.appendChild(h("div", { class: "chat-input-row" }, [textarea, sendBtn]));
 
-    // Hint for keyboard shortcut
-    wrap.appendChild(h("div", { class: "chat-input-hint muted" }, ["Ctrl+Enter to send"]));
+    wrap.appendChild(h("div", { class: "chat-input-hint muted" }, ["Enter to send · Shift+Enter for new line"]));
 
     return wrap;
   }
