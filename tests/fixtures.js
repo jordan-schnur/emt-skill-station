@@ -66,8 +66,15 @@ export function createEmptyState() {
     version: 1,
     srs: {},
     notes: { step: {}, sheet: {} },
-    stats: { totalReviews: 0, lastReviewedAt: null },
+    stats: {
+      totalReviews: 0,
+      lastReviewedAt: null,
+      dailyStreak: 0,
+      longestStreak: 0,
+      lastStreakDay: null,
+    },
     drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {} },
+    achievements: {},
   };
 }
 
@@ -111,6 +118,9 @@ export function createStateWithSRS() {
   state.stats = {
     totalReviews: 10,
     lastReviewedAt: now,
+    dailyStreak: 1,
+    longestStreak: 1,
+    lastStreakDay: new Date().toISOString().slice(0, 10),
   };
 
   return state;

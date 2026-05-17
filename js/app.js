@@ -16,8 +16,45 @@
   const root = document.getElementById("root");
   const footerStatus = document.getElementById("footer-status");
 
+  function updateStreak() {
+    const today = new Date().toISOString().slice(0, 10);
+    if (state.stats.lastStreakDay === today) return;
+    const yesterday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+    state.stats.dailyStreak = (state.stats.lastStreakDay === yesterday)
+      ? (state.stats.dailyStreak || 0) + 1
+      : 1;
+    state.stats.longestStreak = Math.max(state.stats.longestStreak || 0, state.stats.dailyStreak);
+    state.stats.lastStreakDay = today;
+  }
+
+  function achievementToast(def) {
+    const el = document.createElement("div");
+    el.className = "toast toast-achievement";
+    const icon = document.createElement("span");
+    icon.className = "ach-toast-icon";
+    icon.textContent = def.icon;
+    const text = document.createElement("span");
+    const strong = document.createElement("strong");
+    strong.textContent = def.name;
+    const small = document.createElement("div");
+    small.className = "ach-toast-desc";
+    small.textContent = def.desc;
+    text.append(strong, small);
+    el.append(icon, text);
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  }
+
   function save() {
+    updateStreak();
     Storage.save(state);
+    if (typeof Achievements !== "undefined") {
+      const newOnes = Achievements.check(state);
+      if (newOnes.length) {
+        Storage.save(state);
+        newOnes.forEach((ach, i) => setTimeout(() => achievementToast(ach), i * 600));
+      }
+    }
   }
 
   function navigate(next) {
