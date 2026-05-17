@@ -28,6 +28,43 @@
   };
 
   const Views = {};
+
+  // ---------- HELP SYSTEM --------------------------------------------
+  function helpIcon(title, bodyHTML) {
+    const btn = h("button", {
+      class: "help-icon",
+      type: "button",
+      "aria-label": "Help: " + title,
+      title: "Help",
+    }, ["?"]);
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      showHelpModal(title, bodyHTML);
+    });
+    return btn;
+  }
+
+  function showHelpModal(title, bodyHTML) {
+    document.querySelector(".help-modal-overlay")?.remove();
+    const closeBtn = h("button", { class: "help-modal-close", type: "button", "aria-label": "Close" }, ["✕"]);
+    const modal = h("div", { class: "help-modal" }, [
+      h("div", { class: "help-modal-header" }, [
+        h("strong", {}, [title]),
+        closeBtn,
+      ]),
+      h("div", { class: "help-modal-body", html: bodyHTML }),
+    ]);
+    const overlay = h("div", { class: "help-modal-overlay" });
+    const dismiss = () => overlay.remove();
+    closeBtn.addEventListener("click", dismiss);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) dismiss(); });
+    document.addEventListener("keydown", function esc(e) {
+      if (e.key === "Escape") { dismiss(); document.removeEventListener("keydown", esc); }
+    });
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+  }
+
   const SECORDER_MASTERY_RUNS      = 3;
   const STEPSEQ_MASTERY_RUNS       = 3;
   const WHATNEXT_MASTERY_RUNS      = 3;
@@ -143,7 +180,14 @@
     wrap.append(
       h("h1", {}, ["NREMT Skill Sheet Trainer"]),
       h("p", { class: "subtitle" }, [
-        "Pick a skill sheet to study. Cards you struggle with come back sooner; cards you nail go on a longer interval.",
+        "Pick a skill sheet to study. Cards you struggle with come back sooner; cards you nail go on a longer interval. ",
+        helpIcon("How the home screen works",
+          `<p><strong>Due pill</strong> — the colored bubble on each sheet shows how many flashcards are due for review right now.</p>
+          <p><strong>Mastery bar</strong> — shows what percentage of cards you've rated Good or Easy at least once.</p>
+          <p><strong>"all good"</strong> means no cards are currently due. Come back later, or open the sheet and use "Cram all cards" to force a session.</p>
+          <p>Click any sheet to open it. Each sheet has multiple study modes available via the tab row at the top.</p>
+          <p>See the <strong>Guide</strong> page (top nav) for a full explanation of every study mode.</p>`
+        ),
       ])
     );
 
@@ -419,11 +463,21 @@
   function buildFlashcard(ctx, sheet, card, idx, total, cram, advance, queue) {
     let revealed = false;
 
+    const FLASHCARD_HELP = `<p>Flashcards use <strong>Spaced Repetition (SM-2)</strong> — cards come back based on how well you know them.</p>
+      <ul>
+      <li><strong>Again</strong> — didn't know it; resurfaces in ~1 min</li>
+      <li><strong>Hard</strong> — knew it but with effort; returns in a few days</li>
+      <li><strong>Good</strong> — knew it comfortably; returns in about a week</li>
+      <li><strong>Easy</strong> — knew it instantly; pushed out much further</li>
+      </ul>
+      <p>Keyboard: <span class="kbd-help">Space</span> or <span class="kbd-help">Enter</span> to reveal · <span class="kbd-help">1</span>–<span class="kbd-help">4</span> to grade</p>
+      <p>"Again" cards are re-queued later in the same session so you see them again before finishing.</p>`;
     const meta = h("div", { class: "study-meta" }, [
       h("span", {}, [`Card ${idx + 1} of ${total}`]),
-      h("span", {}, [
+      h("span", { class: "study-meta-right" }, [
         SRS.describeDue(ctx.state.srs[card.id]),
         " · ease ", (ctx.state.srs[card.id]?.ease ?? 2.5).toFixed(2),
+        helpIcon("Flashcards (Spaced Repetition)", FLASHCARD_HELP),
       ]),
     ]);
 
@@ -944,6 +998,11 @@
             mastery.mastered
               ? h("span", { class: "mastered-badge" }, ["✓ Mastered"])
               : null,
+            helpIcon("Section Order Drill",
+              `<p>The major sections of this sheet are shuffled. Drag them (or tap ↑↓ on mobile) into the correct exam order.</p>
+              <p>Hit <strong>Check my order</strong> to submit. If you're wrong, the correct order is revealed.</p>
+              <p><strong>Mastery</strong> = 3 correct runs in a row. Any wrong answer resets your streak to 0.</p>`
+            ),
           ]),
           h("p", { class: "drill-sub muted" }, [
             mastery.mastered
@@ -1221,6 +1280,11 @@
             masteredCount === drillableSections.length && drillableSections.length > 0
               ? h("span", { class: "mastered-badge" }, ["✓ All Mastered"])
               : null,
+            helpIcon("Step Sequence Drill",
+              `<p>Pick a section, then drag its steps into the correct exam order.</p>
+              <p>Each section is tracked independently — <strong>3 correct in a row per section</strong> = mastered. Sections with fewer than 2 steps are skipped.</p>
+              <p>Filled circles below each section name show your current streak toward mastery.</p>`
+            ),
           ]),
           h("p", { class: "drill-sub muted" }, [
             `Pick a section. Drag its steps into the correct exam order. ${STEPSEQ_MASTERY_RUNS} correct in a row = section mastered.`,
@@ -1702,6 +1766,11 @@
           h("div", { class: "drill-title-row" }, [
             h("h2", { class: "drill-title" }, ["What's Next?"]),
             rec.mastered ? h("span", { class: "mastered-badge" }, ["✓ Mastered"]) : null,
+            helpIcon("What's Next? Drill",
+              `<p>You're shown a step and must pick what comes immediately after it — choose from 4 options.</p>
+              <p><strong>Mastery</strong> = 3 correct answers in a row. Any wrong answer resets your streak.</p>
+              <p>Good for reinforcing step sequence under pressure without having to type or drag.</p>`
+            ),
           ]),
           h("div", { class: "streak-row" }, [
             h("span", { class: "streak-label" }, ["Streak "]),
@@ -1812,10 +1881,18 @@
       const rec = ctx.state.drills.blankrecall[sheet.id];
       pane.appendChild(
         h("div", { class: "drill-header" }, [
-          h("h2", {}, ["Blank Sheet Recall"]),
-          rec && rec.bestPct > 0
-            ? h("span", { class: "mastered-badge" }, [`Best: ${rec.bestPct}%`])
-            : null,
+          h("div", { class: "drill-title-row" }, [
+            h("h2", {}, ["Blank Sheet Recall"]),
+            rec && rec.bestPct > 0
+              ? h("span", { class: "mastered-badge" }, [`Best: ${rec.bestPct}%`])
+              : null,
+            helpIcon("Blank Sheet Recall",
+              `<p>Type every step you remember from memory, one per line. Order doesn't need to be perfect.</p>
+              <p><strong>Fuzzy matching</strong> — you don't need word-for-word accuracy, just close enough in meaning.</p>
+              <p>After submitting, you can drill any missed steps one by one with reveal cards.</p>
+              <p>Your best score is tracked. Hit <em>View full sheet</em> first if you want to preview what's being tested.</p>`
+            ),
+          ]),
         ])
       );
       pane.appendChild(
@@ -2107,9 +2184,20 @@
     function buildCritCard(i) {
       const { card } = queue[i];
 
+      const CRIT_HELP = `<p><strong>Critical criteria</strong> are the auto-fail behaviors — doing or failing to do any one of these immediately fails you on the NREMT exam, regardless of everything else.</p>
+        <p>Each criterion is shown immediately (no reveal needed). Rate yourself:</p>
+        <ul>
+        <li><strong>✗ Would fail</strong> — you'd have missed this; resurfaces in ~30 seconds</li>
+        <li><strong>~ Close call</strong> — you'd probably catch it, but not automatically; returns sooner</li>
+        <li><strong>✓ Know it cold</strong> — automatic; scheduled further out</li>
+        </ul>
+        <p>Don't advance to a real exam until every criterion is a reflex, not a memory.</p>`;
       const meta = h("div", { class: "study-meta" }, [
         h("span", {}, [`Criterion ${i + 1} of ${queue.length}`]),
-        h("span", {}, [SRS.describeDue(ctx.state.srs[card.id])]),
+        h("span", { class: "study-meta-right" }, [
+          SRS.describeDue(ctx.state.srs[card.id]),
+          helpIcon("Critical Criteria Drill", CRIT_HELP),
+        ]),
       ]);
 
       const sheetLabel = h("div", { class: "card-section" }, [
@@ -2348,12 +2436,20 @@
       const step = steps[stepIdx];
       const rec = getRec();
       const headerRow = h("div", { class: "drill-header" }, [
-        h("h2", {}, ["Spoken Script"]),
-        rec.mastered
-          ? h("span", { class: "mastered-badge" }, ["✓ Mastered"])
-          : rec.streak > 0
-            ? h("span", { class: "muted small" }, [`Streak: ${rec.streak}/${SPOKENSCRIPT_MASTERY_RUNS}`])
-            : null,
+        h("div", { class: "drill-title-row" }, [
+          h("h2", {}, ["Spoken Script"]),
+          rec.mastered
+            ? h("span", { class: "mastered-badge" }, ["✓ Mastered"])
+            : rec.streak > 0
+              ? h("span", { class: "muted small" }, [`Streak: ${rec.streak}/${SPOKENSCRIPT_MASTERY_RUNS}`])
+              : null,
+          helpIcon("Spoken Script",
+            `<p>Each step shows the action. Type what you'd say aloud to the examiner during that step — not just the action, but the verbalization.</p>
+            <p>Scored by similarity to the expected script — close phrasing counts, word-for-word isn't required.</p>
+            <p><strong>Mastery</strong> = 3 rounds where you score ≥ 80% across all steps in this sheet.</p>
+            <p>Practice this last — it bridges memorization and actual exam performance.</p>`
+          ),
+        ]),
       ]);
       pane.appendChild(headerRow);
 
@@ -2514,6 +2610,85 @@
 
     render();
     return pane;
+  };
+
+  // ---------- GUIDE --------------------------------------------------
+  Views.guide = () => {
+    const wrap = h("div");
+    wrap.appendChild(h("h1", {}, ["Study Guide"]));
+    wrap.appendChild(h("p", { class: "guide-intro" }, [
+      "This app uses spaced repetition and active recall to help you memorize NREMT psychomotor skill sheets. Each sheet has multiple study modes — here's how each one works and when to use it.",
+    ]));
+
+    wrap.appendChild(h("h2", {}, ["Study modes"]));
+
+    const modes = [
+      {
+        name: "Flashcards (SRS)",
+        desc: `The core study mode. Cards are shown one at a time; you reveal the answer and rate yourself. <strong>Again</strong> = didn't know it (resurfaces in ~1 min). <strong>Hard / Good / Easy</strong> = schedule for days, a week, or longer. The mastery bar on the home screen tracks your flashcard history. Keyboard: <span class="kbd-help">Space</span> to reveal · <span class="kbd-help">1</span>–<span class="kbd-help">4</span> to grade.`,
+      },
+      {
+        name: "Order Drill",
+        desc: `The major sections of the sheet are shuffled. Drag them (or use ↑↓ on mobile) into the correct exam order and submit. A hint reveals the correct order if you're wrong. <strong>3 correct runs in a row</strong> = mastered. Only available for sheets with multiple named sections.`,
+      },
+      {
+        name: "Step Drill",
+        desc: `Pick a section, then drag its steps into the correct order. Each section is tracked independently — <strong>3 correct in a row per section</strong> = that section is mastered. Filled dots under each section name show your streak.`,
+      },
+      {
+        name: "Critical Criteria",
+        desc: `Drills only the <strong>auto-fail behaviors</strong> — things that immediately fail you on the NREMT exam regardless of everything else. Each criterion is shown directly (no reveal step). Rate yourself: <strong>✗ Would fail</strong> (resurfaces in ~30 s), <strong>~ Close call</strong>, or <strong>✓ Know it cold</strong>. Don't move on until these are reflexes.`,
+      },
+      {
+        name: "What's Next?",
+        desc: `Multiple-choice drill. You're shown a step and asked to pick what comes immediately after it from 4 options. <strong>3 correct answers in a row</strong> = mastered. Good for reinforcing sequence under pressure without typing or dragging.`,
+      },
+      {
+        name: "Blank Recall",
+        desc: `Type every step you can remember from a blank page, one per line. Order doesn't need to be perfect — fuzzy matching scores you on meaning, not exact wording. After submitting, missed steps are available to drill one by one. Your best score is tracked.`,
+      },
+      {
+        name: "Spoken Script",
+        desc: `Shows each step and asks what you'd say aloud to the examiner. Type your verbalization and it's scored by similarity to the expected phrasing. <strong>3 rounds ≥ 80%</strong> = mastered. Practice this last — it bridges memorization and real exam performance.`,
+      },
+      {
+        name: "Full Sheet",
+        desc: `The complete reference sheet in one scrollable view — all sections, steps, points, and critical criteria. Click <strong>+ note</strong> next to any step to attach a private study note. Notes also appear in flashcards when you review that card.`,
+      },
+      {
+        name: "Notes",
+        desc: `Write free-form notes about the sheet as a whole, or review and edit all your per-step notes in one place. Notes support Markdown: <strong>**bold**</strong>, _italic_, bullet lists. All notes are private and stored in your browser.`,
+      },
+    ];
+
+    const modeList = h("div", { class: "guide-modes" });
+    for (const m of modes) {
+      modeList.appendChild(h("div", { class: "guide-mode" }, [
+        h("div", { class: "guide-mode-name" }, [m.name]),
+        h("div", { class: "guide-mode-desc", html: m.desc }),
+      ]));
+    }
+    wrap.appendChild(modeList);
+
+    wrap.appendChild(h("h2", {}, ["Recommended study sequence"]));
+    wrap.appendChild(h("ol", { class: "guide-seq" }, [
+      h("li", {}, [h("strong", {}, ["Flashcards"]), " — build familiarity with every step."]),
+      h("li", {}, [h("strong", {}, ["Order Drill"]), " — lock in the section sequence."]),
+      h("li", {}, [h("strong", {}, ["Step Drill"]), " — master step order within each section."]),
+      h("li", {}, [h("strong", {}, ["Critical Criteria"]), " — drill auto-fail behaviors until they're automatic."]),
+      h("li", {}, [h("strong", {}, ["What's Next?"]), " — stress-test your sequence knowledge under pressure."]),
+      h("li", {}, [h("strong", {}, ["Blank Recall"]), " — find remaining gaps; go back to flashcards on weak areas."]),
+      h("li", {}, [h("strong", {}, ["Spoken Script"]), " — practice verbalizing exactly what you'll say in the exam room."]),
+    ]));
+
+    wrap.appendChild(h("div", { class: "guide-tip" }, [
+      h("strong", {}, ["Progress & backup: "]),
+      "All data is saved in your browser's local storage — it's private and never leaves your device. Use ",
+      h("strong", {}, ["Backup → Download JSON"]),
+      " before clearing your browser or switching devices, then import that file on the new device to continue where you left off.",
+    ]));
+
+    return wrap;
   };
 
   // ---------- NOT FOUND ----------------------------------------------

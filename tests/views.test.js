@@ -185,7 +185,8 @@ describe("Views – DOM Rendering and UI", () => {
       const sheet = createMockSheet();
 
       const view = window.Views.study(ctx, sheet);
-      const revealBtn = view.querySelector("button:not(.grade)");
+      const buttons = Array.from(view.querySelectorAll("button"));
+      const revealBtn = buttons.find((b) => b.textContent.includes("Show answer"));
       revealBtn.click();
 
       const answer = view.querySelector(".card-answer");
@@ -197,7 +198,8 @@ describe("Views – DOM Rendering and UI", () => {
       const sheet = createMockSheet();
 
       const view = window.Views.study(ctx, sheet);
-      const revealBtn = view.querySelector("button:not(.grade)");
+      const buttons = Array.from(view.querySelectorAll("button"));
+      const revealBtn = buttons.find((b) => b.textContent.includes("Show answer"));
       revealBtn.click();
 
       const gradeRow = view.querySelector(".grade-row");
@@ -213,7 +215,7 @@ describe("Views – DOM Rendering and UI", () => {
       const cardId = sheet.cards[0].id;
 
       const view = window.Views.study(ctx, sheet);
-      const revealBtn = view.querySelector("button:not(.grade)");
+      const revealBtn = Array.from(view.querySelectorAll("button")).find((b) => b.textContent.includes("Show answer"));
       revealBtn.click();
 
       const goodBtn = view.querySelector(".grade.good");
@@ -229,7 +231,7 @@ describe("Views – DOM Rendering and UI", () => {
       const initialCount = ctx.state.stats.totalReviews;
 
       const view = window.Views.study(ctx, sheet);
-      const revealBtn = view.querySelector("button:not(.grade)");
+      const revealBtn = Array.from(view.querySelectorAll("button")).find((b) => b.textContent.includes("Show answer"));
       revealBtn.click();
       const goodBtn = view.querySelector(".grade.good");
       goodBtn.click();

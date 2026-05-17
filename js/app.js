@@ -48,6 +48,7 @@
       case "sheet":    view = Views.sheet(ctx); break;
       case "stats":    view = Views.stats(ctx); break;
       case "settings": view = Views.settings(ctx); break;
+      case "guide":    view = Views.guide(ctx); break;
       default:         view = Views.notFound();
     }
     root.appendChild(view);
@@ -71,7 +72,7 @@
     if (parts[0] === "sheet" && parts[1]) {
       return { view: "sheet", sheetId: parts[1], tab: parts[2] || "study" };
     }
-    if (["home", "stats", "settings"].includes(parts[0])) {
+    if (["home", "stats", "settings", "guide"].includes(parts[0])) {
       return { view: parts[0] };
     }
     return null;
