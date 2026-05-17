@@ -11,7 +11,13 @@
       "Bash(curl -s http://localhost:8001/js/views.js)",
       "Bash(node *)",
       "WebFetch(domain:cdn.jsdelivr.net)",
-      "Bash(curl -sL https://cdn.jsdelivr.net/npm/marked@15/marked.min.js -o /Users/jschnur/dev/nremt/js/marked.min.js)"
+      "Bash(curl -sL https://cdn.jsdelivr.net/npm/marked@15/marked.min.js -o /Users/jschnur/dev/nremt/js/marked.min.js)",
+      "Bash(python3 *)",
+      "Bash(pip install *)",
+      "Bash(pip3 install *)",
+      "Bash(echo \"Started on 8001 \\(PID $!\\)\")",
+      "Bash(curl -s http://localhost:8001/)",
+      "Bash(npm run *)"
     ]
   }
 }

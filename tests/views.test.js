@@ -5,6 +5,7 @@
 require("../js/srs.js");
 require("../js/storage.js");
 require("../js/notes.js");
+require("../js/achievements.js");
 require("../js/views.js");
 
 import {
@@ -1376,6 +1377,108 @@ describe("Views – DOM Rendering and UI", () => {
       const scriptTab = tabs.find((b) => b.textContent.includes("Spoken Script"));
       expect(scriptTab).toBeTruthy();
       expect(scriptTab.textContent).toMatch(/1\/3/);
+    });
+  });
+
+  describe("Views.stats – Stats dashboard", () => {
+    beforeEach(() => {
+      global.SRS = window.SRS;
+    });
+
+    it("renders without throwing", () => {
+      const ctx = createMockContext();
+      expect(() => window.Views.stats(ctx)).not.toThrow();
+    });
+
+    it("shows hero section with streak, mastery, achievements", () => {
+      const ctx = createMockContext();
+      const view = window.Views.stats(ctx);
+      expect(view.querySelector(".stats-hero")).toBeTruthy();
+      expect(view.querySelector(".hero-num")).toBeTruthy();
+    });
+
+    it("shows stat grid with 4 cards", () => {
+      const ctx = createMockContext();
+      const view = window.Views.stats(ctx);
+      const cards = view.querySelectorAll(".stat-card");
+      expect(cards.length).toBe(4);
+    });
+
+    it("shows achievement grid when Achievements is defined", () => {
+      const ctx = createMockContext();
+      const view = window.Views.stats(ctx);
+      expect(view.querySelector(".ach-grid")).toBeTruthy();
+    });
+
+    it("shows sheet progress list", () => {
+      const ctx = createMockContext();
+      const view = window.Views.stats(ctx);
+      expect(view.querySelector(".sheet-progress-list")).toBeTruthy();
+      const cards = view.querySelectorAll(".sheet-progress-card");
+      expect(cards.length).toBe(global.NREMT_DATA.sheets.length);
+    });
+
+    it("shows due count in sheet progress card when cards are due", () => {
+      const state = createEmptyState();
+      const ctx = createMockContext(state);
+      const view = window.Views.stats(ctx);
+      // Empty state means all cards are due (no srs records)
+      const dueEl = view.querySelector(".spc-due");
+      expect(dueEl).toBeTruthy();
+    });
+
+    it("navigate called when clicking sheet title in progress card", () => {
+      const ctx = createMockContext();
+      const view = window.Views.stats(ctx);
+      const titleBtn = view.querySelector(".spc-title");
+      expect(titleBtn).toBeTruthy();
+      titleBtn.click();
+      expect(ctx.navigate).toHaveBeenCalled();
+    });
+
+    it("shows review count in stat grid", () => {
+      const state = createEmptyState();
+      state.stats.totalReviews = 42;
+      const ctx = createMockContext(state);
+      const view = window.Views.stats(ctx);
+      const nums = Array.from(view.querySelectorAll(".stat-card .num"));
+      expect(nums.some((n) => n.textContent === "42")).toBe(true);
+    });
+
+    it("shows longestStreak in stat grid", () => {
+      const state = createEmptyState();
+      state.stats.longestStreak = 5;
+      const ctx = createMockContext(state);
+      const view = window.Views.stats(ctx);
+      const nums = Array.from(view.querySelectorAll(".stat-card .num"));
+      expect(nums.some((n) => n.textContent.includes("5"))).toBe(true);
+    });
+
+    it("unlocked achievements show checkmark", () => {
+      const state = createEmptyState();
+      state.stats.totalReviews = 1;
+      state.achievements.first_review = Date.now();
+      const ctx = createMockContext(state);
+      const view = window.Views.stats(ctx);
+      const checks = view.querySelectorAll(".ach-check");
+      expect(checks.length).toBeGreaterThan(0);
+    });
+
+    it("locked achievements have ach-locked class", () => {
+      const state = createEmptyState();
+      const ctx = createMockContext(state);
+      const view = window.Views.stats(ctx);
+      const locked = view.querySelectorAll(".ach-locked");
+      expect(locked.length).toBeGreaterThan(0);
+    });
+
+    it("drill badges show for sheets with drill progress", () => {
+      const state = createEmptyState();
+      state.drills.secorder["e201"] = { streak: 3, mastered: true, attempts: 3 };
+      const ctx = createMockContext(state);
+      const view = window.Views.stats(ctx);
+      const goodBadges = view.querySelectorAll(".drill-good");
+      expect(goodBadges.length).toBeGreaterThan(0);
     });
   });
 });

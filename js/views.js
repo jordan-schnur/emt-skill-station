@@ -2270,63 +2270,162 @@
 
   // ---------- STATS ---------------------------------------------------
   Views.stats = (ctx) => {
-    const total = NREMT_DATA.totalCards;
-    let reviewed = 0;
-    let dueNow = 0;
+    const state = ctx.state;
     const now = Date.now();
-    for (const sheet of NREMT_DATA.sheets) {
+    const data = NREMT_DATA;
+
+    // Aggregates
+    let reviewed = 0, dueNow = 0, totalMastery = 0;
+    for (const sheet of data.sheets) {
+      totalMastery += SRS.masteryFor(state, sheet);
       for (const card of sheet.cards) {
-        const rec = ctx.state.srs[card.id];
-        if (rec && rec.reps) reviewed += 1;
-        if (!rec || rec.due <= now) dueNow += 1;
+        const rec = state.srs[card.id];
+        if (rec && rec.reps) reviewed++;
+        if (!rec || rec.due <= now) dueNow++;
       }
     }
+    const overallPct = data.sheets.length
+      ? Math.round((totalMastery / data.sheets.length) * 100)
+      : 0;
+    const total = data.totalCards;
+
+    const streak = state.stats.dailyStreak || 0;
+    const longestStreak = state.stats.longestStreak || 0;
+
+    const hasAchievements = typeof Achievements !== "undefined";
+    const allAchs = hasAchievements ? Achievements.getAll(state) : [];
+    const unlockedCount = allAchs.filter((a) => a.unlockedAt).length;
 
     const wrap = h("div");
-    wrap.append(
-      h("h1", {}, ["Stats"]),
-      h("p", { class: "muted" }, ["Local progress across all sheets."]),
-      h("div", { class: "stat-grid" }, [
-        statCard(ctx.state.stats.totalReviews, "Total reviews"),
-        statCard(reviewed + " / " + total, "Cards studied"),
-        statCard(dueNow, "Due now"),
-        statCard(NREMT_DATA.sheets.length, "Skill sheets"),
-      ]),
-    );
 
-    const table = h("table", { class: "stat-table" }, [
-      h("thead", {}, [h("tr", {}, [
-        h("th", {}, ["Sheet"]),
-        h("th", {}, ["Mastery"]),
-        h("th", {}, ["Due"]),
-        h("th", {}, ["Cards"]),
-        h("th", {}, ["Notes"]),
-      ])]),
-    ]);
-    const tbody = h("tbody");
-    for (const sheet of NREMT_DATA.sheets) {
-      tbody.appendChild(
-        h("tr", {}, [
-          h("td", {}, [
-            h("button", {
-              class: "btn-link",
-              onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "study" }),
-            }, [sheet.title]),
+    // ---- Hero banner ----
+    const heroIcon = streak >= 7 ? "🔥" : streak >= 3 ? "🔥" : streak >= 1 ? "📅" : "📅";
+    wrap.appendChild(h("div", { class: "stats-hero" }, [
+      h("div", { class: "hero-block" }, [
+        h("div", { class: "hero-icon-big" }, [heroIcon]),
+        h("div", { class: "hero-num" }, [String(streak)]),
+        h("div", { class: "hero-label" }, ["day streak"]),
+      ]),
+      h("div", { class: "hero-block hero-center" }, [
+        h("div", { class: "hero-num hero-num-big" }, [overallPct + "%"]),
+        h("div", { class: "hero-label" }, ["overall mastery"]),
+        h("div", { class: "hero-bar-wrap" }, [
+          h("div", { class: "hero-bar" }, [
+            h("div", { class: "hero-bar-fill", style: `width:${overallPct}%` }),
           ]),
-          h("td", {}, [Math.round(SRS.masteryFor(ctx.state, sheet) * 100) + "%"]),
-          h("td", { class: "due" }, [String(SRS.dueCount(ctx.state, sheet))]),
-          h("td", {}, [String(sheet.cards.length)]),
-          h("td", {}, [String(Notes.countSheetNotes(ctx.state, sheet))]),
-        ])
-      );
+        ]),
+      ]),
+      hasAchievements ? h("div", { class: "hero-block" }, [
+        h("div", { class: "hero-icon-big" }, ["🏅"]),
+        h("div", { class: "hero-num" }, [unlockedCount + "/" + allAchs.length]),
+        h("div", { class: "hero-label" }, ["achievements"]),
+      ]) : null,
+    ]));
+
+    // ---- Key numbers ----
+    wrap.appendChild(h("div", { class: "stat-grid" }, [
+      statCard("📝", state.stats.totalReviews, "Total Reviews"),
+      statCard("📖", reviewed + " / " + total, "Cards Studied"),
+      statCard(dueNow > 0 ? "⚠️" : "✅", dueNow > 0 ? dueNow : "None", "Due Now", dueNow > 0 ? "stat-card-warn" : ""),
+      statCard("🗓️", longestStreak + (longestStreak === 1 ? " day" : " days"), "Best Streak"),
+    ]));
+
+    // ---- Achievements ----
+    if (hasAchievements) {
+      wrap.appendChild(h("h2", {}, [
+        "Achievements ",
+        h("span", { class: "ach-count-badge" }, [`${unlockedCount}/${allAchs.length}`]),
+      ]));
+
+      const achGrid = h("div", { class: "ach-grid" });
+      for (const ach of allAchs) {
+        const unlocked = !!ach.unlockedAt;
+        achGrid.appendChild(h("div", { class: "ach-card" + (unlocked ? " ach-unlocked" : " ach-locked") }, [
+          h("div", { class: "ach-icon" }, [ach.icon]),
+          h("div", { class: "ach-body" }, [
+            h("div", { class: "ach-name" }, [ach.name]),
+            h("div", { class: "ach-desc" }, [unlocked ? ach.desc : "???"]),
+            unlocked ? h("div", { class: "ach-date" }, [
+              "Unlocked " + new Date(ach.unlockedAt).toLocaleDateString(),
+            ]) : null,
+          ]),
+          unlocked ? h("div", { class: "ach-check" }, ["✓"]) : null,
+        ]));
+      }
+      wrap.appendChild(achGrid);
     }
-    table.appendChild(tbody);
-    wrap.appendChild(table);
+
+    // ---- Sheet progress ----
+    wrap.appendChild(h("h2", {}, ["Progress by Sheet"]));
+    const drillDefs = [
+      { key: "secorder",    label: "Order" },
+      { key: "stepseq",     label: "Steps" },
+      { key: "whatnext",    label: "Next?" },
+      { key: "blankrecall", label: "Recall", isPct: true },
+      { key: "spokenscript", label: "Spoken" },
+    ];
+
+    const sheetList = h("div", { class: "sheet-progress-list" });
+    for (const sheet of data.sheets) {
+      const mastery = SRS.masteryFor(state, sheet);
+      const pct = Math.round(mastery * 100);
+      const due = SRS.dueCount(state, sheet);
+      const notesCount = Notes.countSheetNotes(state, sheet);
+
+      const drillBadges = drillDefs.map((d) => {
+        const rec = (state.drills[d.key] || {})[sheet.id];
+        let cls = "drill-badge drill-none";
+        let label = d.label;
+        if (d.isPct) {
+          if (rec && rec.attempts > 0) {
+            const bp = Math.round(rec.bestPct || 0);
+            cls = bp >= 80 ? "drill-badge drill-good" : bp >= 40 ? "drill-badge drill-mid" : "drill-badge drill-low";
+            label = d.label + " " + bp + "%";
+          }
+        } else {
+          if (rec && rec.mastered) {
+            cls = "drill-badge drill-good";
+            label = d.label + " ✓";
+          } else if (rec && rec.streak > 0) {
+            cls = "drill-badge drill-mid";
+            label = d.label + " " + rec.streak + "/3";
+          }
+        }
+        return h("span", { class: cls }, [label]);
+      });
+
+      sheetList.appendChild(h("div", { class: "sheet-progress-card" }, [
+        h("div", { class: "spc-header" }, [
+          h("button", {
+            class: "btn-link spc-title",
+            onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "study" }),
+          }, [sheet.title]),
+          h("div", { class: "spc-meta" }, [
+            due > 0
+              ? h("span", { class: "spc-due" }, [due + " due"])
+              : h("span", { class: "spc-ok" }, ["all good"]),
+            notesCount > 0
+              ? h("span", { class: "spc-notes" }, [notesCount + " note" + (notesCount !== 1 ? "s" : "")])
+              : null,
+          ]),
+        ]),
+        h("div", { class: "spc-bar-row" }, [
+          h("div", { class: "spc-bar" }, [
+            h("div", { class: "spc-fill", style: `width:${pct}%` }),
+          ]),
+          h("span", { class: "spc-pct" }, [pct + "%"]),
+        ]),
+        h("div", { class: "spc-drills" }, drillBadges),
+      ]));
+    }
+    wrap.appendChild(sheetList);
+
     return wrap;
   };
 
-  function statCard(num, label) {
-    return h("div", { class: "stat-card" }, [
+  function statCard(icon, num, label, extraClass) {
+    return h("div", { class: "stat-card" + (extraClass ? " " + extraClass : "") }, [
+      h("div", { class: "stat-card-icon" }, [icon]),
       h("div", { class: "num" }, [String(num)]),
       h("div", { class: "label" }, [label]),
     ]);
