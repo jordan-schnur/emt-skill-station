@@ -15,6 +15,7 @@
   let _authListeners = [];
   let _initialized = false;
   let _authReady = false;
+  let _pendingState = null;
 
   function init() {
     if (_initialized || typeof firebase === "undefined") return;
@@ -55,10 +56,22 @@
     });
   }
 
-  function uploadDebounced(state, delay = 3000) {
+  function uploadDebounced(state, delay = 60000) {
     if (!_user) return;
+    _pendingState = state;
     clearTimeout(_uploadTimer);
-    _uploadTimer = setTimeout(() => upload(state).catch(console.error), delay);
+    _uploadTimer = setTimeout(() => {
+      _pendingState = null;
+      upload(state).catch(console.error);
+    }, delay);
+  }
+
+  function flush() {
+    if (!_pendingState) return;
+    const state = _pendingState;
+    _pendingState = null;
+    clearTimeout(_uploadTimer);
+    upload(state).catch(console.error);
   }
 
   async function clearCloud() {
@@ -78,5 +91,5 @@
     }
   }
 
-  global.CloudSync = { init, onAuthChange, isAuthReady, getUser, signIn, signOut, upload, uploadDebounced, download, clearCloud };
+  global.CloudSync = { init, onAuthChange, isAuthReady, getUser, signIn, signOut, upload, uploadDebounced, flush, download, clearCloud };
 })(window);

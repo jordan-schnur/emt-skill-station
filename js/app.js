@@ -60,6 +60,7 @@
   }
 
   function navigate(next) {
+    if (typeof CloudSync !== "undefined") CloudSync.flush();
     route = next;
     writeHash(route);
     render();
@@ -136,6 +137,16 @@
   }
 
   render();
+
+  // ---- flush on tab hide / page close ---------------------------------
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden" && typeof CloudSync !== "undefined") {
+      CloudSync.flush();
+    }
+  });
+  window.addEventListener("pagehide", () => {
+    if (typeof CloudSync !== "undefined") CloudSync.flush();
+  });
 
   // ---- cloud sync -----------------------------------------------------
   if (typeof CloudSync !== "undefined") {
