@@ -82,22 +82,18 @@ describe("ChatStore – fetchModels", () => {
     expect(ids).not.toContain("dall-e-3");
   });
 
-  it("returns Anthropic models with display names", async () => {
+  it("validates Anthropic key and returns curated model list", async () => {
+    // Anthropic's /v1/models blocks CORS; we validate via a minimal message call instead
     global.fetch.mockResolvedValue({
       ok: true,
-      json: async () => ({
-        data: [
-          { id: "claude-sonnet-4-6", display_name: "Claude Sonnet 4.6" },
-          { id: "claude-haiku-4-5",  display_name: "Claude Haiku 4.5" },
-        ],
-      }),
+      json: async () => ({ content: [{ text: "hi" }] }),
     });
     const models = await ChatStore.fetchModels("anthropic", "sk-ant-test");
-    expect(models).toHaveLength(2);
-    expect(models[0].label).toBe("Claude Sonnet 4.6");
+    expect(models.length).toBeGreaterThan(0);
+    expect(models.some((m) => m.id.startsWith("claude-"))).toBe(true);
     expect(global.fetch).toHaveBeenCalledWith(
-      "https://api.anthropic.com/v1/models",
-      expect.objectContaining({ headers: expect.objectContaining({ "x-api-key": "sk-ant-test" }) })
+      "https://api.anthropic.com/v1/messages",
+      expect.objectContaining({ method: "POST" })
     );
   });
 

@@ -13,6 +13,17 @@
   const OPENAI_CHAT_FILTER = /^(gpt-|o\d)/;
   const OPENAI_CHAT_EXCLUDE = /realtime|audio|instruct|tts|whisper|dall-e|embed|search|preview-/;
 
+  // Anthropic's /v1/models endpoint blocks browser CORS, so we maintain a
+  // curated list. These are the current production models as of mid-2025.
+  const ANTHROPIC_MODELS = [
+    { id: "claude-opus-4-7",           label: "Claude Opus 4.7" },
+    { id: "claude-sonnet-4-6",         label: "Claude Sonnet 4.6" },
+    { id: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5" },
+    { id: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet" },
+    { id: "claude-3-5-haiku-20241022",  label: "Claude 3.5 Haiku" },
+    { id: "claude-3-opus-20240229",     label: "Claude 3 Opus" },
+  ];
+
   // ---- Config (localStorage only, never synced) -----------------------
 
   function getConfig() {
@@ -34,24 +45,29 @@
   }
 
   async function fetchModels(provider, apiKey) {
+    // Anthropic's models endpoint blocks browser CORS requests, so we validate
+    // the key by sending a minimal message and return the curated model list.
     if (provider === "anthropic") {
-      const res = await fetch("https://api.anthropic.com/v1/models", {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
         headers: {
+          "Content-Type": "application/json",
           "x-api-key": apiKey,
           "anthropic-version": "2023-06-01",
         },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 1,
+          messages: [{ role: "user", content: "hi" }],
+        }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error?.message || `Anthropic error ${res.status}`);
       }
-      const data = await res.json();
-      return (data.data || []).map((m) => ({
-        id: m.id,
-        label: m.display_name || m.id,
-      }));
+      return ANTHROPIC_MODELS;
     }
-    // OpenAI
+    // OpenAI — their API supports CORS from browsers
     const res = await fetch("https://api.openai.com/v1/models", {
       headers: { "Authorization": `Bearer ${apiKey}` },
     });
