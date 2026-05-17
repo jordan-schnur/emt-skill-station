@@ -99,10 +99,11 @@ critical fails, under time?** (Not just: "Do I recognize this step?")
 ### Already shipped
 - ✅ Structured JSON data for all 10 sheets (`preprocess.py` → `data.json` + `js/data.js`)
 - ✅ Flashcards + SM-2 spaced repetition (`js/srs.js`)
-- ✅ Per-step + per-sheet notes, stored in `localStorage`
+- ✅ Per-step + per-sheet notes, stored in `localStorage` with full Markdown support (editor toolbar + live rendering)
 - ✅ Full-sheet reference view with Critical Criteria
 - ✅ JSON export / import for backup
 - ✅ Visible roadmap panel on the home screen
+- ✅ Favicon and branded logo
 - ✅ **Mnemonic prompts on flashcard fronts** — OPQRST / SAMPLE substep cards ask "What does the **P** stand for?" with the acronym rendered and the missing letter highlighted (see `mnemonicMatch` in `js/views.js`).
 - ✅ **Section Order Drill** — drag-to-order the major sections of each sheet; streak pips track progress to mastery (3 correct in a row); mastery badge persists on sheet cards and the Order Drill tab. Single-section sheets (BVM, CPR, etc.) show a graceful fallback. State stored under `state.drills.secorder[sheetId]`.
 - ✅ **Step Sequence Drill** — section picker lists all drillable sections with per-section streak tracking; drag or ↑↓ to reorder steps within a section; same mastery gate (3-streak); tab label shows live progress `Step Drill (2/4)`. Single-section sheets skip the picker and go straight to the steps. State stored under `state.drills.stepseq[sheetId][sectionName]`.
@@ -113,7 +114,7 @@ critical fails, under time?** (Not just: "Do I recognize this step?")
 
 ---
 
-### Phase 1 — Core learning loop
+### Phase 1 — Core learning loop ✅ *shipped*
 
 #### ✅ 1. Section Order Drill *(shipped)*
 **Goal:** Memorize the major chunks of each skill sheet in the correct order
@@ -151,7 +152,7 @@ Example for Primary Assessment: General impression → Level of consciousness �
 
 ---
 
-### Phase 2 — Full performance recall
+### Phase 2 — Full performance recall ✅ *shipped*
 
 #### ✅ 4. Blank Sheet Recall *(shipped)*
 **Goal:** User reconstructs an entire skill sheet from memory — the main mastery mode.
@@ -314,17 +315,17 @@ User verbalizes the station; speech-to-text checks against expected steps and hi
 
 ### Build order (implementation slices)
 
-**Slice 1 — From flashcard app to psychomotor trainer**
-1. Section Order Drill
-2. Step Sequence Drill
-3. Critical Fail Mode
+**Slice 1 — From flashcard app to psychomotor trainer** ✅ *complete*
+1. ✅ Section Order Drill
+2. ✅ Step Sequence Drill
+3. ✅ Critical Fail Mode
 
-**Slice 2 — Procedural memory**
+**Slice 2 — Procedural memory** ✅ *complete*
 4. ✅ What Comes Next? Drill
 5. ✅ Missed Item Loop (in Blank Recall)
 6. ✅ Blank Sheet Recall
 
-**Slice 3 — Exam readiness**
+**Slice 3 — Exam readiness** *(next)*
 7. Timed Simulation
 8. Examiner Prompt Mode
 9. Cram Mode
