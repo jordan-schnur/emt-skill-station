@@ -19,8 +19,15 @@
     version: 1,
     srs: {},
     notes: { step: {}, sheet: {} },
-    stats: { totalReviews: 0, lastReviewedAt: null },
+    stats: {
+      totalReviews: 0,
+      lastReviewedAt: null,
+      dailyStreak: 0,
+      longestStreak: 0,
+      lastStreakDay: null,
+    },
     drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {} },
+    achievements: {},
   });
 
   function load() {
@@ -36,6 +43,7 @@
         notes: { ...fresh.notes, ...(parsed.notes || {}) },
         stats: { ...fresh.stats, ...(parsed.stats || {}) },
         srs: parsed.srs || {},
+        achievements: { ...(parsed.achievements || {}) },
         drills: {
           ...fresh.drills,
           ...(parsed.drills || {}),
@@ -90,6 +98,7 @@
       notes: { ...fresh.notes, ...(parsed.notes || {}) },
       stats: { ...fresh.stats, ...(parsed.stats || {}) },
       srs: parsed.srs || {},
+      achievements: { ...(parsed.achievements || {}) },
       drills: {
         ...fresh.drills,
         ...(parsed.drills || {}),

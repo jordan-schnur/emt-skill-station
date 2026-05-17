@@ -16,11 +16,16 @@
       "Bash(pip install *)",
       "Bash(pip3 install *)",
       "Bash(echo \"Started on 8001 \\(PID $!\\)\")",
+<<<<<<< HEAD
       "Bash(git stash *)",
       "Bash(curl -s http://localhost:8001/index.html)",
       "Bash(git -C .claude/worktrees/gamification status)",
       "Bash(git -C .claude/worktrees/gamification log --oneline -5)",
       "Bash(git *)"
+=======
+      "Bash(curl -s http://localhost:8001/)",
+      "Bash(npm run *)"
+>>>>>>> origin/main
     ]
   }
 }
