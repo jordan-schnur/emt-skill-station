@@ -32,3 +32,4 @@ __pycache__/
 *$py.class
 .venv/
 .claude/settings.local.json
+.claude/worktrees/
