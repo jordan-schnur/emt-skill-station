@@ -1,12 +1,12 @@
 (function (global) {
-  const CONFIG = {
-    apiKey: "AIzaSyBjyEu2vLCUPftIj1wfcvy2FQfdffA9ORk",
-    authDomain: "emt-skill-station.firebaseapp.com",
-    projectId: "emt-skill-station",
-    storageBucket: "emt-skill-station.firebasestorage.app",
-    messagingSenderId: "506472203353",
-    appId: "1:506472203353:web:12c8a927130fd7308b5d48",
-  };
+  const firebaseConfig = {
+  apiKey: "AIzaSyBjyEu2vLCUPftIj1wfcvy2FQfdffA9ORk",
+  authDomain: "emt-skill-station.firebaseapp.com",
+  projectId: "emt-skill-station",
+  storageBucket: "emt-skill-station.firebasestorage.app",
+  messagingSenderId: "506472203353",
+  appId: "1:506472203353:web:12c8a927130fd7308b5d48"
+};
 
   let _db = null;
   let _auth = null;
@@ -14,18 +14,22 @@
   let _uploadTimer = null;
   let _authListeners = [];
   let _initialized = false;
+  let _authReady = false;
 
   function init() {
     if (_initialized || typeof firebase === "undefined") return;
     _initialized = true;
-    firebase.initializeApp(CONFIG);
+    firebase.initializeApp(firebaseConfig);
     _db = firebase.firestore();
     _auth = firebase.auth();
     _auth.onAuthStateChanged((user) => {
       _user = user;
+      _authReady = true;
       _authListeners.forEach((fn) => fn(user));
     });
   }
+
+  function isAuthReady() { return _authReady; }
 
   function onAuthChange(fn) {
     _authListeners.push(fn);
@@ -69,5 +73,5 @@
     }
   }
 
-  global.CloudSync = { init, onAuthChange, getUser, signIn, signOut, upload, uploadDebounced, download };
+  global.CloudSync = { init, onAuthChange, isAuthReady, getUser, signIn, signOut, upload, uploadDebounced, download };
 })(window);

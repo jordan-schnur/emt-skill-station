@@ -2536,7 +2536,21 @@
     const cloudSection = h("div", { class: "settings-section" });
     function renderCloudSection() {
       cloudSection.innerHTML = "";
-      const user = (typeof CloudSync !== "undefined") ? CloudSync.getUser() : null;
+      const synced = typeof CloudSync !== "undefined";
+      const ready = synced && CloudSync.isAuthReady();
+      const user = synced ? CloudSync.getUser() : null;
+
+      if (!ready) {
+        cloudSection.append(
+          h("h3", {}, ["Cloud sync"]),
+          h("div", { class: "sync-loading" }, [
+            h("div", { class: "sync-spinner" }),
+            h("span", { class: "muted" }, ["Checking sign-in…"]),
+          ]),
+        );
+        return;
+      }
+
       if (!user) {
         cloudSection.append(
           h("h3", {}, ["Cloud sync"]),
@@ -2557,54 +2571,59 @@
             ]),
           ]),
         );
-      } else {
-        let syncLabel = "Not yet synced";
-        if (ctx.state.updatedAt) {
-          const diff = Math.round((Date.now() - new Date(ctx.state.updatedAt)) / 1000);
-          if (diff < 60) syncLabel = "Synced just now";
-          else if (diff < 3600) syncLabel = `Synced ${Math.round(diff / 60)}m ago`;
-          else syncLabel = `Synced ${Math.round(diff / 3600)}h ago`;
-        }
-        cloudSection.append(
-          h("h3", {}, ["Cloud sync"]),
-          h("div", { class: "sync-user" }, [
-            user.photoURL
-              ? h("img", { src: user.photoURL, alt: "", width: "28", height: "28", class: "sync-avatar", referrerpolicy: "no-referrer" })
-              : h("div", { class: "sync-avatar-placeholder" }, [user.displayName ? user.displayName[0] : "?"]),
-            h("div", { class: "sync-user-info" }, [
-              h("div", {}, [user.displayName || "Signed in"]),
-              h("div", { class: "muted", style: "font-size:12px" }, [user.email]),
-            ]),
-          ]),
-          h("p", { class: "muted", style: "margin-top:8px;margin-bottom:10px" }, [syncLabel]),
-          h("div", { class: "settings-row" }, [
-            h("button", {
-              class: "btn btn-primary",
-              onclick: async (e) => {
-                e.target.disabled = true;
-                e.target.textContent = "Syncing…";
-                try {
-                  await CloudSync.upload(ctx.state);
-                  ctx.toast("Synced to cloud");
-                  renderCloudSection();
-                } catch (err) {
-                  ctx.toast("Sync failed");
-                } finally {
-                  e.target.disabled = false;
-                }
-              },
-            }, ["Sync now"]),
-            h("button", {
-              class: "btn",
-              onclick: async () => {
-                await CloudSync.signOut();
-                ctx.toast("Signed out");
-                renderCloudSection();
-              },
-            }, ["Sign out"]),
-          ]),
-        );
+        return;
       }
+
+      let syncLabel = "Not yet synced";
+      if (ctx.state.updatedAt) {
+        const diff = Math.round((Date.now() - new Date(ctx.state.updatedAt)) / 1000);
+        if (diff < 60) syncLabel = "Synced just now";
+        else if (diff < 3600) syncLabel = `Synced ${Math.round(diff / 60)}m ago`;
+        else syncLabel = `Synced ${Math.round(diff / 3600)}h ago`;
+      }
+
+      cloudSection.append(
+        h("h3", {}, ["Cloud sync"]),
+        h("div", { class: "sync-user" }, [
+          user.photoURL
+            ? h("img", { src: user.photoURL, alt: "", width: "28", height: "28", class: "sync-avatar", referrerpolicy: "no-referrer" })
+            : h("div", { class: "sync-avatar-placeholder" }, [user.displayName ? user.displayName[0] : "?"]),
+          h("div", { class: "sync-user-info" }, [
+            h("div", {}, [user.displayName || "Signed in"]),
+            h("div", { class: "muted", style: "font-size:12px" }, [user.email]),
+          ]),
+        ]),
+        h("p", { class: "muted", style: "margin-top:8px;margin-bottom:10px" }, [syncLabel]),
+        h("div", { class: "settings-row" }, [
+          h("button", {
+            class: "btn btn-primary",
+            onclick: async (e) => {
+              const btn = e.currentTarget;
+              btn.disabled = true;
+              btn.textContent = "Syncing…";
+              try {
+                ctx.state.updatedAt = new Date().toISOString();
+                Storage.save(ctx.state);
+                await CloudSync.upload(ctx.state);
+                ctx.toast("Synced to cloud");
+                renderCloudSection();
+              } catch (err) {
+                ctx.toast("Sync failed");
+                btn.disabled = false;
+                btn.textContent = "Sync now";
+              }
+            },
+          }, ["Sync now"]),
+          h("button", {
+            class: "btn",
+            onclick: async () => {
+              await CloudSync.signOut();
+              ctx.toast("Signed out");
+              renderCloudSection();
+            },
+          }, ["Sign out"]),
+        ]),
+      );
     }
     renderCloudSection();
     wrap.appendChild(cloudSection);

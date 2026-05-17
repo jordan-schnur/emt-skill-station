@@ -2215,3 +2215,20 @@ a:hover, .link:hover { text-decoration: underline; }
   flex-shrink: 0;
 }
 .sync-user-info { line-height: 1.4; }
+
+.sync-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+.sync-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
