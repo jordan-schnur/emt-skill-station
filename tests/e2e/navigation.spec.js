@@ -56,7 +56,7 @@ test.describe("Navigation & Home View", () => {
     const roadmap = page.locator(".roadmap");
     await expect(roadmap).toBeVisible();
     await expect(roadmap).toContainText("Coming next");
-    await expect(roadmap).toContainText("Critical Fail Mode");
+    await expect(roadmap).toContainText("Critical Criteria Drill");
   });
 
   test("should navigate back from sheet to home", async ({ page }) => {
