@@ -925,46 +925,63 @@
 
     for (const section of sheet.sections) {
       const sectEl = h("div", { class: "ref-section" });
-      if (section.header) sectEl.appendChild(h("h3", {}, [section.name]));
 
-      section.steps.forEach((step, stepIdx) => {
-        const substeps = step.substeps || [];
-        const cardId = substeps.length
-          ? null
-          : `${sheet.id}::${section.name}::${stepIdx}`;
+      if (section.header) {
+        const stepCount = section.steps.length;
+        const details = h("details", { open: true });
+        details.appendChild(h("summary", { class: "ref-section-summary" }, [
+          h("span", { class: "ref-section-name" }, [section.name]),
+          h("span", { class: "ref-section-count" }, [`${stepCount} step${stepCount !== 1 ? "s" : ""}`]),
+        ]));
 
-        sectEl.appendChild(renderRefRow(ctx, sheet, cardId, step.text, step.points, false));
+        section.steps.forEach((step, stepIdx) => {
+          const substeps = step.substeps || [];
+          const cardId = substeps.length ? null : `${sheet.id}::${section.name}::${stepIdx}`;
+          details.appendChild(renderRefRow(ctx, sheet, cardId, step.text, step.points, false));
+          if (step.examinerNote) details.appendChild(h("div", { class: "examiner-line" }, ["Examiner: " + step.examinerNote]));
+          if (step.note)         details.appendChild(h("div", { class: "examiner-line" }, [step.note]));
+          if (step.mnemonic)     details.appendChild(h("div", { class: "examiner-line" }, ["Mnemonic: " + step.mnemonic]));
+          if (substeps.length) {
+            const subWrap = h("div", { class: "ref-sub" });
+            substeps.forEach((sub, subIdx) => {
+              subWrap.appendChild(renderRefRow(ctx, sheet, `${sheet.id}::${section.name}::${stepIdx}::${subIdx}`, sub.text, sub.points, true));
+            });
+            details.appendChild(subWrap);
+          }
+        });
 
-        if (step.examinerNote) {
-          sectEl.appendChild(h("div", { class: "examiner-line" }, ["Examiner: " + step.examinerNote]));
-        }
-        if (step.note) {
-          sectEl.appendChild(h("div", { class: "examiner-line" }, [step.note]));
-        }
-        if (step.mnemonic) {
-          sectEl.appendChild(h("div", { class: "examiner-line" }, ["Mnemonic: " + step.mnemonic]));
-        }
-
-        if (substeps.length) {
-          const subWrap = h("div", { class: "ref-sub" });
-          substeps.forEach((sub, subIdx) => {
-            const subId = `${sheet.id}::${section.name}::${stepIdx}::${subIdx}`;
-            subWrap.appendChild(renderRefRow(ctx, sheet, subId, sub.text, sub.points, true));
-          });
-          sectEl.appendChild(subWrap);
-        }
-      });
+        sectEl.appendChild(details);
+      } else {
+        section.steps.forEach((step, stepIdx) => {
+          const substeps = step.substeps || [];
+          const cardId = substeps.length ? null : `${sheet.id}::${section.name}::${stepIdx}`;
+          sectEl.appendChild(renderRefRow(ctx, sheet, cardId, step.text, step.points, false));
+          if (step.examinerNote) sectEl.appendChild(h("div", { class: "examiner-line" }, ["Examiner: " + step.examinerNote]));
+          if (step.note)         sectEl.appendChild(h("div", { class: "examiner-line" }, [step.note]));
+          if (step.mnemonic)     sectEl.appendChild(h("div", { class: "examiner-line" }, ["Mnemonic: " + step.mnemonic]));
+          if (substeps.length) {
+            const subWrap = h("div", { class: "ref-sub" });
+            substeps.forEach((sub, subIdx) => {
+              subWrap.appendChild(renderRefRow(ctx, sheet, `${sheet.id}::${section.name}::${stepIdx}::${subIdx}`, sub.text, sub.points, true));
+            });
+            sectEl.appendChild(subWrap);
+          }
+        });
+      }
 
       pane.appendChild(sectEl);
     }
 
-    // Critical criteria
-    pane.appendChild(h("h3", {}, ["Critical Criteria (auto-fail)"]));
+    // Critical criteria — also collapsible
+    const ccDetails = h("details", { open: true, class: "ref-section" });
+    ccDetails.appendChild(h("summary", { class: "ref-section-summary ref-section-summary--critical" }, [
+      h("span", { class: "ref-section-name" }, ["Critical Criteria"]),
+      h("span", { class: "ref-section-count" }, ["auto-fail"]),
+    ]));
     const ul = h("ul", { class: "critical-list" });
-    for (const cc of sheet.criticalCriteria) {
-      ul.appendChild(h("li", {}, [cc]));
-    }
-    pane.appendChild(ul);
+    for (const cc of sheet.criticalCriteria) ul.appendChild(h("li", {}, [cc]));
+    ccDetails.appendChild(ul);
+    pane.appendChild(ccDetails);
 
     return pane;
   };
