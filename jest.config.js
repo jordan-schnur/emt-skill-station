@@ -3,8 +3,9 @@ module.exports = {
   setupFilesAfterEnv: ["<rootDir>/tests/setup.js"],
   collectCoverageFrom: [
     "js/**/*.js",
-    "!js/data.js", // generated file
-    "!js/app.js", // main app file - coverage in progress
+    "!js/data.js",        // generated file
+    "!js/app.js",         // main app file - coverage in progress
+    "!js/marked.min.js",  // vendor library
   ],
   testMatch: [
     "**/__tests__/**/*.test.js",

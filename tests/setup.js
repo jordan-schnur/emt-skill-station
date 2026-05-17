@@ -58,6 +58,11 @@ window.location = {
   href: "http://localhost/",
 };
 
+// Minimal marked mock for jsdom — real rendering tested in browser
+global.marked = {
+  parse: (text) => `<p>${text}</p>`,
+};
+
 // Clear mocks before each test
 beforeEach(() => {
   localStorageMock.getItem.mockClear();

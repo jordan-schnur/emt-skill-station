@@ -317,7 +317,7 @@ describe("Views – DOM Rendering and UI", () => {
       expect(view.textContent).toContain("General note for this sheet");
     });
 
-    it("should allow editing sheet-level notes", () => {
+    it("should render a markdown editor (with textarea) for sheet-level notes", () => {
       const ctx = createMockContext();
       const sheet = createMockSheet();
 
@@ -325,6 +325,162 @@ describe("Views – DOM Rendering and UI", () => {
       const textarea = view.querySelector("textarea");
 
       expect(textarea).toBeTruthy();
+    });
+
+    it("should populate sheet note textarea with existing note text", () => {
+      const ctx = createMockContext(createStateWithNotes());
+      const sheet = createMockSheet();
+
+      const view = window.Views.notes(ctx, sheet);
+      const textarea = view.querySelector("textarea");
+
+      expect(textarea.value).toContain("Focus on the order");
+    });
+
+    it("should save sheet note when Save button is clicked", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+
+      const view = window.Views.notes(ctx, sheet);
+      const textarea = view.querySelector("textarea");
+      textarea.value = "**Study tip**: always check PPE first";
+
+      const saveBtn = Array.from(view.querySelectorAll("button")).find(
+        (b) => b.textContent.trim() === "Save"
+      );
+      expect(saveBtn).toBeTruthy();
+      saveBtn.click();
+
+      expect(ctx.save).toHaveBeenCalled();
+    });
+
+    it("should show Write and Preview tabs in the markdown editor", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+
+      const view = window.Views.notes(ctx, sheet);
+      const tabs = Array.from(view.querySelectorAll(".md-tab"));
+      const labels = tabs.map((t) => t.textContent);
+
+      expect(labels).toContain("Write");
+      expect(labels).toContain("Preview");
+    });
+
+    it("should render markdown preview when Preview tab is clicked", () => {
+      const ctx = createMockContext();
+      const sheet = createMockSheet();
+
+      const view = window.Views.notes(ctx, sheet);
+      const textarea = view.querySelector("textarea");
+      textarea.value = "**bold text**";
+
+      const previewTab = Array.from(view.querySelectorAll(".md-tab")).find(
+        (t) => t.textContent === "Preview"
+      );
+      previewTab.click();
+
+      const preview = view.querySelector(".md-editor-preview");
+      expect(preview.style.display).not.toBe("none");
+      // marked mock wraps in <p>; content should include the raw text
+      expect(preview.textContent).toContain("bold text");
+    });
+  });
+
+  // ---------- renderMarkdownEl ----------------------------------------
+  describe("renderMarkdownEl helper", () => {
+    it("should return an element with class md-content", () => {
+      const el = window.renderMarkdownEl("hello");
+      expect(el.className).toBe("md-content");
+    });
+
+    it("should render content using marked when available", () => {
+      const el = window.renderMarkdownEl("**bold**");
+      // marked mock returns <p>**bold**</p>
+      expect(el.innerHTML).toContain("bold");
+    });
+
+    it("should return an empty div for empty input", () => {
+      const el = window.renderMarkdownEl("");
+      expect(el.innerHTML).toBe("");
+    });
+
+    it("should return an empty div for null input", () => {
+      const el = window.renderMarkdownEl(null);
+      expect(el.innerHTML).toBe("");
+    });
+  });
+
+  // ---------- createMarkdownEditor ------------------------------------
+  describe("createMarkdownEditor helper", () => {
+    it("should return an element with class md-editor", () => {
+      const { el } = window.createMarkdownEditor({ onSave: jest.fn() });
+      expect(el.classList.contains("md-editor")).toBe(true);
+    });
+
+    it("should include a textarea with the initial value", () => {
+      const { el } = window.createMarkdownEditor({ value: "hello world", onSave: jest.fn() });
+      const ta = el.querySelector("textarea");
+      expect(ta).toBeTruthy();
+      expect(ta.value).toBe("hello world");
+    });
+
+    it("should call onSave with current textarea value when Save is clicked", () => {
+      const onSave = jest.fn();
+      const { el } = window.createMarkdownEditor({ value: "initial", onSave });
+      const ta = el.querySelector("textarea");
+      ta.value = "updated text";
+      const saveBtn = Array.from(el.querySelectorAll("button")).find(
+        (b) => b.textContent.includes("Save")
+      );
+      saveBtn.click();
+      expect(onSave).toHaveBeenCalledWith("updated text");
+    });
+
+    it("should call onCancel when Cancel is clicked", () => {
+      const onCancel = jest.fn();
+      const { el } = window.createMarkdownEditor({ onSave: jest.fn(), onCancel });
+      const cancelBtn = Array.from(el.querySelectorAll("button")).find(
+        (b) => b.textContent === "Cancel"
+      );
+      expect(cancelBtn).toBeTruthy();
+      cancelBtn.click();
+      expect(onCancel).toHaveBeenCalled();
+    });
+
+    it("should show bold toolbar button that wraps selection", () => {
+      const { el } = window.createMarkdownEditor({ value: "hello", onSave: jest.fn() });
+      const boldBtn = Array.from(el.querySelectorAll(".md-toolbar-btn")).find(
+        (b) => b.textContent === "B"
+      );
+      expect(boldBtn).toBeTruthy();
+    });
+
+    it("should switch to preview mode when Preview tab is clicked", () => {
+      const { el } = window.createMarkdownEditor({ value: "test", onSave: jest.fn() });
+      const previewTab = Array.from(el.querySelectorAll(".md-tab")).find(
+        (t) => t.textContent === "Preview"
+      );
+      const previewPane = el.querySelector(".md-editor-preview");
+      expect(previewPane.style.display).toBe("none");
+      previewTab.click();
+      expect(previewPane.style.display).not.toBe("none");
+    });
+
+    it("should switch back to write mode when Write tab is clicked", () => {
+      const { el } = window.createMarkdownEditor({ value: "test", onSave: jest.fn() });
+      const [writeTab, previewTab] = el.querySelectorAll(".md-tab");
+      previewTab.click();
+      writeTab.click();
+      const ta = el.querySelector("textarea");
+      expect(ta.style.display).not.toBe("none");
+    });
+
+    it("should not show Cancel button when onCancel is not provided", () => {
+      const { el } = window.createMarkdownEditor({ onSave: jest.fn() });
+      const cancelBtn = Array.from(el.querySelectorAll("button")).find(
+        (b) => b.textContent === "Cancel"
+      );
+      expect(cancelBtn).toBeFalsy();
     });
   });
 

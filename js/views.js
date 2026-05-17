@@ -32,6 +32,108 @@
   const STEPSEQ_MASTERY_RUNS   = 3;
   const WHATNEXT_MASTERY_RUNS  = 3;
 
+  // ---------- MARKDOWN HELPERS ----------------------------------------
+
+  function renderMarkdownEl(text) {
+    const el = document.createElement("div");
+    el.className = "md-content";
+    if (!text || !text.trim()) return el;
+    if (typeof marked !== "undefined") {
+      el.innerHTML = marked.parse(text, { breaks: true, gfm: true });
+      el.querySelectorAll("script,iframe,object,embed,form").forEach((n) => n.remove());
+    } else {
+      el.textContent = text;
+    }
+    return el;
+  }
+
+  function createMarkdownEditor({ value = "", placeholder = "", onSave, onCancel, saveLabel = "Save" }) {
+    const wrap = h("div", { class: "md-editor" });
+
+    const ta = h("textarea", {
+      class: "md-editor-textarea",
+      rows: "8",
+      placeholder: placeholder || "Write in Markdown…",
+    }, []);
+    ta.value = value;
+
+    function wrapSel(before, after) {
+      if (after === undefined) after = before;
+      const s = ta.selectionStart, e = ta.selectionEnd;
+      const sel = ta.value.slice(s, e);
+      ta.value = ta.value.slice(0, s) + before + sel + after + ta.value.slice(e);
+      ta.selectionStart = s + before.length;
+      ta.selectionEnd = s + before.length + sel.length;
+      ta.focus();
+    }
+
+    function linePfx(pfx) {
+      const pos = ta.selectionStart;
+      const lines = ta.value.split("\n");
+      let chars = 0, li = 0;
+      for (let i = 0; i < lines.length; i++) {
+        if (chars + lines[i].length >= pos) { li = i; break; }
+        chars += lines[i].length + 1;
+      }
+      lines[li] = pfx + lines[li];
+      ta.value = lines.join("\n");
+      ta.focus();
+    }
+
+    ta.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "b") { e.preventDefault(); wrapSel("**"); }
+      if ((e.ctrlKey || e.metaKey) && e.key === "i") { e.preventDefault(); wrapSel("_"); }
+    });
+
+    const toolbar = h("div", { class: "md-editor-toolbar" });
+    const toolbarDef = [
+      { label: "B",      title: "Bold (Ctrl+B)",   action: () => wrapSel("**") },
+      { label: "I",      title: "Italic (Ctrl+I)",  action: () => wrapSel("_") },
+      { label: "• List", title: "Bullet list",      action: () => linePfx("- ") },
+    ];
+    for (const btn of toolbarDef) {
+      toolbar.appendChild(h("button", {
+        class: "md-toolbar-btn",
+        type: "button",
+        title: btn.title,
+        onclick: (e) => { e.preventDefault(); btn.action(); },
+      }, [btn.label]));
+    }
+
+    const tabRow = h("div", { class: "md-editor-tabs" });
+    const writeTab  = h("button", { class: "md-tab active", type: "button", onclick: () => setMode("write") },   ["Write"]);
+    const previewTab = h("button", { class: "md-tab",        type: "button", onclick: () => setMode("preview") }, ["Preview"]);
+    tabRow.append(writeTab, previewTab);
+
+    const previewPane = h("div", { class: "md-editor-preview", style: "display:none" });
+
+    function setMode(m) {
+      if (m === "preview") {
+        writeTab.classList.remove("active");
+        previewTab.classList.add("active");
+        ta.style.display = "none";
+        previewPane.style.display = "";
+        previewPane.innerHTML = "";
+        previewPane.appendChild(renderMarkdownEl(ta.value));
+      } else {
+        writeTab.classList.add("active");
+        previewTab.classList.remove("active");
+        ta.style.display = "";
+        previewPane.style.display = "none";
+        ta.focus();
+      }
+    }
+
+    const actions = h("div", { class: "md-editor-actions" });
+    actions.appendChild(h("button", { class: "btn btn-primary", type: "button", onclick: () => onSave(ta.value) }, [saveLabel]));
+    if (onCancel) {
+      actions.appendChild(h("button", { class: "btn btn-ghost", type: "button", onclick: onCancel }, ["Cancel"]));
+    }
+
+    wrap.append(toolbar, tabRow, ta, previewPane, actions);
+    return { el: wrap };
+  }
+
   // ---------- HOME ----------------------------------------------------
   Views.home = (ctx) => {
     const wrap = h("div");
@@ -371,7 +473,8 @@
     const userNoteText = Notes.getStepNote(ctx.state, card.id);
     const userNote = h("div", { class: "card-note", style: "display:none" }, []);
     if (userNoteText) {
-      userNote.append(h("span", { class: "label" }, ["Your note"]), document.createTextNode(userNoteText));
+      userNote.appendChild(h("span", { class: "label" }, ["Your note"]));
+      userNote.appendChild(renderMarkdownEl(userNoteText));
     }
 
     const reveal = h("button", { class: "btn btn-primary", onclick: () => doReveal() }, ["Show answer  ", h("span", { class: "kbd" }, ["space"])]);
@@ -553,41 +656,41 @@
   }
 
   function openInlineNote(ctx, card, noteEl, onChange) {
-    const existing = Notes.getStepNote(ctx.state, card.id);
-    const ta = h("textarea", { rows: 4, placeholder: "Your private note for this step…" }, []);
-    ta.value = existing;
-    const block = h("div", { class: "notes-block" }, [
+    let block;
+    const { el } = createMarkdownEditor({
+      value: Notes.getStepNote(ctx.state, card.id) || "",
+      placeholder: "Your private note for this step…",
+      saveLabel: "Save note",
+      onSave: (val) => {
+        Notes.setStepNote(ctx.state, card.id, val);
+        ctx.save();
+        ctx.toast(val.trim() ? "Note saved" : "Note removed");
+        if (onChange) onChange();
+        noteEl.innerHTML = "";
+        if (val.trim()) {
+          noteEl.style.display = "";
+          noteEl.appendChild(h("span", { class: "label" }, ["Your note"]));
+          noteEl.appendChild(renderMarkdownEl(val));
+        } else {
+          noteEl.style.display = "none";
+        }
+        block.replaceWith(h("div", { class: "card-actions" }, [
+          h("button", { class: "btn-link", onclick: () => openInlineNote(ctx, card, noteEl, onChange) }, [
+            val.trim() ? "Edit your note" : "+ Add a note",
+          ]),
+        ]));
+      },
+      onCancel: () => block.remove(),
+    });
+    block = h("div", { class: "notes-block" }, [
       h("div", { class: "target" }, [
         "Note on: ",
         h("strong", {}, [card.parent ? `${card.parent} → ${card.text}` : card.text]),
       ]),
-      ta,
-      h("div", { class: "row" }, [
-        h("span", {}, ["Saved to this browser. Use Backup to export."]),
-        h("button", { class: "btn", onclick: () => {
-          Notes.setStepNote(ctx.state, card.id, ta.value);
-          ctx.save();
-          ctx.toast(ta.value.trim() ? "Note saved" : "Note removed");
-          if (onChange) onChange();
-          // refresh noteEl
-          noteEl.innerHTML = "";
-          if (ta.value.trim()) {
-            noteEl.style.display = "";
-            noteEl.append(h("span", { class: "label" }, ["Your note"]), document.createTextNode(ta.value));
-          } else {
-            noteEl.style.display = "none";
-          }
-          block.replaceWith(h("div", { class: "card-actions" }, [
-            h("button", { class: "btn-link", onclick: () => openInlineNote(ctx, card, noteEl, onChange) }, [
-              ta.value.trim() ? "Edit your note" : "+ Add a note",
-            ]),
-          ]));
-        } }, ["Save note"]),
-      ]),
+      el,
     ]);
-    // Insert the editor right above the existing note display
     noteEl.parentNode.insertBefore(block, noteEl);
-    ta.focus();
+    setTimeout(() => { const t = el.querySelector("textarea"); if (t) t.focus(); }, 0);
   }
 
   // ---------- REFERENCE SHEET ----------------------------------------
@@ -649,36 +752,39 @@
       h("div", { class: "points" }, [points ? String(points) : ""]),
     );
     if (cardId) {
-      const btn = h(
-        "button",
-        {
-          class: "note-btn" + (note ? " has-note" : ""),
-          onclick: () => promptNote(ctx, sheet, cardId, text, btn),
+      const btn = h("button", {
+        class: "note-btn" + (note ? " has-note" : ""),
+        onclick: () => {
+          if (container.querySelector(".md-editor")) return;
+          let editorEl;
+          const { el } = createMarkdownEditor({
+            value: Notes.getStepNote(ctx.state, cardId) || "",
+            placeholder: "Your private note for this step…",
+            saveLabel: "Save note",
+            onSave: (val) => {
+              Notes.setStepNote(ctx.state, cardId, val);
+              ctx.save();
+              ctx.toast(val.trim() ? "Note saved" : "Note removed");
+              ctx.refresh();
+            },
+            onCancel: () => editorEl.remove(),
+          });
+          editorEl = el;
+          container.appendChild(el);
         },
-        [note ? "✎ note" : "+ note"]
-      );
+      }, [note ? "✎ note" : "+ note"]);
       row.appendChild(btn);
     }
     container.appendChild(row);
     if (note) {
       container.appendChild(
-        h("div", { class: "card-note", style: "margin: 4px 12px 12px" }, [
+        h("div", { class: "card-note ref-note-display" }, [
           h("span", { class: "label" }, ["Your note"]),
-          document.createTextNode(note),
+          renderMarkdownEl(note),
         ])
       );
     }
     return container;
-  }
-
-  function promptNote(ctx, sheet, cardId, label, btn) {
-    const current = Notes.getStepNote(ctx.state, cardId);
-    const next = prompt(`Note for: ${label}\n\n(Leave empty to remove the note.)`, current);
-    if (next === null) return; // cancelled
-    Notes.setStepNote(ctx.state, cardId, next);
-    ctx.save();
-    ctx.toast(next && next.trim() ? "Note saved" : "Note removed");
-    ctx.refresh();
   }
 
   // ---------- NOTES VIEW ---------------------------------------------
@@ -686,26 +792,25 @@
     const pane = h("div");
 
     pane.appendChild(h("p", { class: "muted" }, [
-      "Add a general note for this sheet, or click into the Full sheet tab to attach notes to specific steps. Everything is stored in your browser — use Backup to download a JSON copy.",
+      "Supports Markdown — use **bold**, _italic_, - lists. Click into the Full sheet tab to attach notes to specific steps.",
     ]));
 
     // Sheet-level note
     const sheetText = Notes.getSheetNote(ctx.state, sheet.id);
-    const sheetTa = h("textarea", { rows: 6, placeholder: "Notes about this sheet as a whole…" }, []);
-    sheetTa.value = sheetText;
-    const sheetBlock = h("div", { class: "notes-block" }, [
+    const { el: sheetEditorEl } = createMarkdownEditor({
+      value: sheetText || "",
+      placeholder: "Notes about this sheet as a whole…",
+      saveLabel: "Save",
+      onSave: (val) => {
+        Notes.setSheetNote(ctx.state, sheet.id, val);
+        ctx.save();
+        ctx.toast(val.trim() ? "Note saved" : "Note removed");
+      },
+    });
+    pane.appendChild(h("div", { class: "notes-block" }, [
       h("div", { class: "target" }, [h("strong", {}, ["General note for this sheet"])]),
-      sheetTa,
-      h("div", { class: "row" }, [
-        h("span", {}, [sheetText ? "Edit or clear below." : "Empty."]),
-        h("button", { class: "btn", onclick: () => {
-          Notes.setSheetNote(ctx.state, sheet.id, sheetTa.value);
-          ctx.save();
-          ctx.toast(sheetTa.value.trim() ? "Note saved" : "Note removed");
-        } }, ["Save"]),
-      ]),
-    ]);
-    pane.appendChild(sheetBlock);
+      sheetEditorEl,
+    ]));
 
     // List of existing per-step notes
     const stepNotes = sheet.cards
@@ -716,27 +821,26 @@
 
     if (!stepNotes.length) {
       pane.appendChild(h("p", { class: "muted" }, [
-        "None yet. Open the Full sheet tab and click the “+ note” chip next to any row to add one.",
+        'None yet. Open the Full sheet tab and click the “+ note” chip next to any row to add one.',
       ]));
     } else {
       for (const { card, note } of stepNotes) {
-        const ta = h("textarea", { rows: 3 }, []);
-        ta.value = note;
+        const { el: stepEditorEl } = createMarkdownEditor({
+          value: note,
+          saveLabel: "Save",
+          onSave: (val) => {
+            Notes.setStepNote(ctx.state, card.id, val);
+            ctx.save();
+            ctx.toast(val.trim() ? "Note saved" : "Note removed");
+            ctx.refresh();
+          },
+        });
         pane.appendChild(h("div", { class: "notes-block" }, [
           h("div", { class: "target" }, [
             card.section + ": ",
             h("strong", {}, [card.parent ? `${card.parent} → ${card.text}` : card.text]),
           ]),
-          ta,
-          h("div", { class: "row" }, [
-            h("span", {}, [""]),
-            h("button", { class: "btn", onclick: () => {
-              Notes.setStepNote(ctx.state, card.id, ta.value);
-              ctx.save();
-              ctx.toast(ta.value.trim() ? "Note saved" : "Note removed");
-              ctx.refresh();
-            } }, ["Save"]),
-          ]),
+          stepEditorEl,
         ]));
       }
     }
@@ -2179,4 +2283,6 @@
   global.buildFlatSequence = buildFlatSequence;
   global.jaccardSimilarity = jaccardSimilarity;
   global.matchLines = matchLines;
+  global.renderMarkdownEl = renderMarkdownEl;
+  global.createMarkdownEditor = createMarkdownEditor;
 })(window);
