@@ -2060,3 +2060,113 @@ a:hover, .link:hover { text-decoration: underline; }
   font-size: 11px;
   color: var(--text-dim);
 }
+
+/* ================================================================
+   MNEMONICS TAB
+   ================================================================ */
+.mnemonics-pane {
+  padding-bottom: 40px;
+}
+
+.mnemonic-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  background: var(--bg-elev-1);
+}
+
+.mnemonic-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mnemonic-card-label {
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-dim);
+}
+
+.mnemonic-steps-details {
+  margin-bottom: 10px;
+}
+
+.mnemonic-steps-toggle {
+  font-size: 12px;
+  color: var(--text-mute);
+  cursor: pointer;
+  user-select: none;
+}
+
+.mnemonic-steps-list {
+  margin: 6px 0 0 18px;
+  padding: 0;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.mnemonic-display-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mnemonic-display {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--text);
+  padding: 6px 0;
+}
+
+.mnemonic-empty {
+  color: var(--text-mute);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.mnemonic-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.mnemonic-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.mnemonic-editor-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-sm {
+  padding: 4px 12px;
+  font-size: 13px;
+}
+
+.btn-secondary {
+  background: var(--bg-elev-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-elev-3, #3a3a3a);
+}

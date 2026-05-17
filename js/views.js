@@ -302,6 +302,7 @@
       : tab === "whatnext" ? Views.whatNextDrill(ctx, sheet)
       : tab === "recall"  ? Views.blankRecall(ctx, sheet)
       : tab === "script"  ? Views.spokenScript(ctx, sheet)
+      : tab === "mnemonics" ? Views.mnemonics(ctx, sheet)
       : Views.notFound()
     );
     return wrap;
@@ -370,6 +371,7 @@
       { id: "whatnext", label: whatNextLabel },
       { id: "recall", label: recallLabel },
       { id: "script", label: scriptLabel },
+      { id: "mnemonics", label: "Mnemonics" },
       { id: "sheet", label: "Full sheet" },
       { id: "notes", label: "Notes" },
     ];
@@ -2877,6 +2879,156 @@
     ]));
 
     return wrap;
+  };
+
+  // ---------- MNEMONICS ----------------------------------------------
+  Views.mnemonics = (ctx, sheet) => {
+    const defaults = (window.NREMT_MNEMONICS || {})[sheet.id] || { sections: null, steps: {} };
+    const overrides = (ctx.state.mnemonics || {})[sheet.id] || {};
+
+    function getVal(key, sectionName) {
+      if (key === "sections") {
+        return overrides.sections !== undefined ? overrides.sections : defaults.sections;
+      }
+      const stepOverrides = overrides.steps || {};
+      const stepDefaults  = defaults.steps  || {};
+      return stepOverrides[sectionName] !== undefined
+        ? stepOverrides[sectionName]
+        : (stepDefaults[sectionName] || "");
+    }
+
+    function saveVal(key, sectionName, val) {
+      if (!ctx.state.mnemonics) ctx.state.mnemonics = {};
+      if (!ctx.state.mnemonics[sheet.id]) ctx.state.mnemonics[sheet.id] = {};
+      const entry = ctx.state.mnemonics[sheet.id];
+      if (key === "sections") {
+        entry.sections = val;
+      } else {
+        if (!entry.steps) entry.steps = {};
+        entry.steps[sectionName] = val;
+      }
+      ctx.save();
+    }
+
+    function resetVal(key, sectionName) {
+      const entry = (ctx.state.mnemonics || {})[sheet.id];
+      if (!entry) return;
+      if (key === "sections") {
+        delete entry.sections;
+      } else if (entry.steps) {
+        delete entry.steps[sectionName];
+      }
+      ctx.save();
+      ctx.refresh();
+    }
+
+    function renderMnemonicCard(label, key, sectionName, stepList) {
+      const currentVal = getVal(key, sectionName);
+      const isCustom = key === "sections"
+        ? overrides.sections !== undefined
+        : (overrides.steps || {})[sectionName] !== undefined;
+
+      const card = h("div", { class: "mnemonic-card" });
+
+      // Header row
+      const hdr = h("div", { class: "mnemonic-card-header" }, [
+        h("div", { class: "mnemonic-card-label" }, [label]),
+      ]);
+      if (isCustom) {
+        const resetBtn = h("button", { class: "btn-ghost btn btn-sm", type: "button" }, ["Reset to default"]);
+        resetBtn.addEventListener("click", () => resetVal(key, sectionName));
+        hdr.appendChild(resetBtn);
+      }
+      card.appendChild(hdr);
+
+      // Step list (collapsed by default, toggle to show)
+      if (stepList && stepList.length) {
+        const details = h("details", { class: "mnemonic-steps-details" });
+        details.appendChild(h("summary", { class: "mnemonic-steps-toggle" }, [`${stepList.length} steps`]));
+        const ol = h("ol", { class: "mnemonic-steps-list" });
+        for (const s of stepList) ol.appendChild(h("li", {}, [s]));
+        details.appendChild(ol);
+        card.appendChild(details);
+      }
+
+      // Display + edit area
+      const displayWrap = h("div", { class: "mnemonic-display-wrap" });
+
+      let editing = false;
+      let ta, saveBtn, cancelBtn, editBtn;
+
+      function showDisplay() {
+        displayWrap.innerHTML = "";
+        const text = getVal(key, sectionName);
+        const display = h("div", { class: "mnemonic-display" + (text ? "" : " mnemonic-empty") },
+          [text || "No mnemonic yet."]
+        );
+        editBtn = h("button", { class: "btn btn-sm btn-secondary", type: "button" }, ["Edit"]);
+        editBtn.addEventListener("click", () => showEditor());
+        displayWrap.append(display, editBtn);
+      }
+
+      function showEditor() {
+        displayWrap.innerHTML = "";
+        ta = h("textarea", {
+          class: "mnemonic-textarea",
+          rows: "3",
+          placeholder: "Type your mnemonic…",
+        }, []);
+        ta.value = getVal(key, sectionName);
+
+        saveBtn = h("button", { class: "btn btn-sm btn-primary", type: "button" }, ["Save"]);
+        cancelBtn = h("button", { class: "btn btn-sm btn-ghost", type: "button" }, ["Cancel"]);
+        saveBtn.addEventListener("click", () => {
+          saveVal(key, sectionName, ta.value.trim());
+          ctx.toast("Mnemonic saved");
+          showDisplay();
+        });
+        cancelBtn.addEventListener("click", () => showDisplay());
+
+        const actions = h("div", { class: "mnemonic-editor-actions" }, [saveBtn, cancelBtn]);
+        displayWrap.append(ta, actions);
+        ta.focus();
+      }
+
+      showDisplay();
+      card.appendChild(displayWrap);
+      return card;
+    }
+
+    const pane = h("div", { class: "mnemonics-pane" });
+
+    pane.appendChild(h("p", { class: "muted" }, [
+      "AI-generated memory aids for each section and its steps. Edit any mnemonic to make it your own.",
+    ]));
+
+    // Section-order mnemonic (only if sheet has multiple header sections)
+    const headerSections = sheet.sections.filter((s) => s.header);
+    if (headerSections.length > 1) {
+      pane.appendChild(h("h3", {}, ["Section order"]));
+      const sectionNames = headerSections.map((s) => s.name);
+      pane.appendChild(renderMnemonicCard(
+        "Remember the order of all sections",
+        "sections",
+        null,
+        sectionNames
+      ));
+    }
+
+    // Per-section step mnemonics
+    pane.appendChild(h("h3", {}, ["Steps within each section"]));
+    for (const sec of sheet.sections) {
+      if (sec.steps.length < 2) continue;
+      const stepTexts = sec.steps.map((s) => s.text);
+      pane.appendChild(renderMnemonicCard(
+        sec.name,
+        "steps",
+        sec.name,
+        stepTexts
+      ));
+    }
+
+    return pane;
   };
 
   // ---------- NOT FOUND ----------------------------------------------
