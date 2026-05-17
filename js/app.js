@@ -47,6 +47,7 @@
 
   function save() {
     updateStreak();
+    state.updatedAt = new Date().toISOString();
     Storage.save(state);
     if (typeof Achievements !== "undefined") {
       const newOnes = Achievements.check(state);
@@ -55,6 +56,7 @@
         newOnes.forEach((ach, i) => setTimeout(() => achievementToast(ach), i * 600));
       }
     }
+    if (typeof CloudSync !== "undefined") CloudSync.uploadDebounced(state);
   }
 
   function navigate(next) {
@@ -134,4 +136,39 @@
   }
 
   render();
+
+  // ---- cloud sync -----------------------------------------------------
+  if (typeof CloudSync !== "undefined") {
+    CloudSync.init();
+    let _firstAuth = true;
+    CloudSync.onAuthChange(async (user) => {
+      const initial = _firstAuth;
+      _firstAuth = false;
+      if (!user) {
+        if (!initial) ctx.refresh();
+        return;
+      }
+      try {
+        const cloud = await CloudSync.download();
+        if (!cloud) {
+          await CloudSync.upload(state);
+        } else {
+          const localTime = state.updatedAt ? new Date(state.updatedAt) : new Date(0);
+          const cloudTime = cloud.updatedAt ? new Date(cloud.updatedAt) : new Date(0);
+          if (cloudTime > localTime) {
+            Object.assign(state, cloud);
+            Storage.save(state);
+            ctx.toast("Synced from cloud ☁");
+            ctx.refresh();
+            return;
+          } else {
+            await CloudSync.upload(state);
+          }
+        }
+      } catch (err) {
+        console.error("Cloud sync error:", err);
+      }
+      ctx.refresh();
+    });
+  }
 })();

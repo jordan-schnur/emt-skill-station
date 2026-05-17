@@ -2528,10 +2528,88 @@
     wrap.append(
       h("h1", {}, ["Backup & Settings"]),
       h("p", { class: "muted" }, [
-        "Progress + notes live in this browser's local storage. Export a JSON file to back them up or move them to another browser.",
+        "Progress + notes live in this browser's local storage. Sign in with Google to sync across devices, or export a JSON backup.",
       ]),
     );
 
+    // ---- cloud sync section ----
+    const cloudSection = h("div", { class: "settings-section" });
+    function renderCloudSection() {
+      cloudSection.innerHTML = "";
+      const user = (typeof CloudSync !== "undefined") ? CloudSync.getUser() : null;
+      if (!user) {
+        cloudSection.append(
+          h("h3", {}, ["Cloud sync"]),
+          h("p", { class: "muted" }, ["Sign in with Google to automatically sync your progress across all your devices."]),
+          h("div", { class: "settings-row" }, [
+            h("button", {
+              class: "btn btn-google",
+              onclick: async () => {
+                try {
+                  await CloudSync.signIn();
+                } catch (err) {
+                  if (err.code !== "auth/popup-closed-by-user") ctx.toast("Sign-in failed");
+                }
+              },
+            }, [
+              h("img", { src: "https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg", alt: "", width: "18", height: "18", "aria-hidden": "true" }),
+              "Sign in with Google",
+            ]),
+          ]),
+        );
+      } else {
+        let syncLabel = "Not yet synced";
+        if (ctx.state.updatedAt) {
+          const diff = Math.round((Date.now() - new Date(ctx.state.updatedAt)) / 1000);
+          if (diff < 60) syncLabel = "Synced just now";
+          else if (diff < 3600) syncLabel = `Synced ${Math.round(diff / 60)}m ago`;
+          else syncLabel = `Synced ${Math.round(diff / 3600)}h ago`;
+        }
+        cloudSection.append(
+          h("h3", {}, ["Cloud sync"]),
+          h("div", { class: "sync-user" }, [
+            user.photoURL
+              ? h("img", { src: user.photoURL, alt: "", width: "28", height: "28", class: "sync-avatar", referrerpolicy: "no-referrer" })
+              : h("div", { class: "sync-avatar-placeholder" }, [user.displayName ? user.displayName[0] : "?"]),
+            h("div", { class: "sync-user-info" }, [
+              h("div", {}, [user.displayName || "Signed in"]),
+              h("div", { class: "muted", style: "font-size:12px" }, [user.email]),
+            ]),
+          ]),
+          h("p", { class: "muted", style: "margin-top:8px;margin-bottom:10px" }, [syncLabel]),
+          h("div", { class: "settings-row" }, [
+            h("button", {
+              class: "btn btn-primary",
+              onclick: async (e) => {
+                e.target.disabled = true;
+                e.target.textContent = "Syncing…";
+                try {
+                  await CloudSync.upload(ctx.state);
+                  ctx.toast("Synced to cloud");
+                  renderCloudSection();
+                } catch (err) {
+                  ctx.toast("Sync failed");
+                } finally {
+                  e.target.disabled = false;
+                }
+              },
+            }, ["Sync now"]),
+            h("button", {
+              class: "btn",
+              onclick: async () => {
+                await CloudSync.signOut();
+                ctx.toast("Signed out");
+                renderCloudSection();
+              },
+            }, ["Sign out"]),
+          ]),
+        );
+      }
+    }
+    renderCloudSection();
+    wrap.appendChild(cloudSection);
+
+    // ---- JSON export/import ----
     const fileInput = h("input", { type: "file", accept: "application/json", style: "display:none" });
     fileInput.addEventListener("change", async () => {
       const file = fileInput.files[0];
@@ -2549,7 +2627,7 @@
 
     wrap.appendChild(h("div", { class: "settings-section" }, [
       h("h3", {}, ["Export progress"]),
-      h("p", { class: "muted" }, ["Downloads a nremt-progress-YYYY-MM-DD.json file you can keep in this folder."]),
+      h("p", { class: "muted" }, ["Downloads a nremt-progress-YYYY-MM-DD.json file you can keep as a local backup."]),
       h("div", { class: "settings-row" }, [
         h("button", { class: "btn btn-primary", onclick: () => Storage.exportToFile(ctx.state) }, ["Download JSON"]),
       ]),
