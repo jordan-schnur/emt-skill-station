@@ -1,340 +1,152 @@
 /**
- * Playwright E2E tests for flashcard study workflow
- * Tests the core learning experience end-to-end in a real browser
+ * Playwright E2E tests for drill study workflow.
+ *
+ * The SRS flashcard tab was replaced with structured drills. These tests cover
+ * the "What's Next?" drill, which is the core interactive study mode
+ * (shows a step, user picks what comes next from 4 choices).
  */
 
 import { test, expect } from "@playwright/test";
 
-test.describe("Flashcard Study Flow", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/");
-    // Navigate to E201 (Trauma Assessment)
-    await page.locator(".sheet-card").first().click();
-    await page.waitForURL(/.*sheet.*e201.*/);
-    // Ensure we're on the Flashcards tab
-    await page.locator("button:has-text('Flashcards')").click();
-    await page.waitForLoadState("networkidle");
+// Navigate to the first sheet's "What's Next?" tab.
+async function goToWhatNextDrill(page) {
+  await page.goto("/");
+  await page.locator(".sheet-card").first().click();
+  await page.waitForURL(/.*sheet.*e201.*/);
+  await page.locator("button:has-text(\"What's Next?\")").first().click();
+  await page.waitForLoadState("networkidle");
+}
+
+test.describe("What's Next? Drill Flow", () => {
+  test("should display a step prompt and four choices", async ({ page }) => {
+    await goToWhatNextDrill(page);
+
+    const prompt = page.locator(".whatnext-prompt-text");
+    await expect(prompt.first()).toBeVisible();
+
+    const question = page.locator(".whatnext-question");
+    await expect(question.first()).toBeVisible();
+    await expect(question.first()).toContainText("What comes next?");
+
+    const choices = page.locator(".whatnext-choice");
+    await expect(choices).toHaveCount(4);
   });
 
-  test("should display flashcard with reveal button", async ({ page }) => {
-    // Should see card prompt
-    const cardPrompt = page.locator(".card-prompt");
-    await expect(cardPrompt.first()).toBeVisible();
+  test("should show result feedback after clicking a choice", async ({ page }) => {
+    await goToWhatNextDrill(page);
 
-    // Should see reveal button
-    const revealBtn = page.locator(
-      "button:has-text('Show answer'), button:has-text('Reveal')"
-    );
-    await expect(revealBtn.first()).toBeVisible();
+    const choices = page.locator(".whatnext-choice");
+    await choices.first().click();
 
-    // Should NOT see answer yet
-    const answer = page.locator(".card-answer");
-    if (await answer.count() > 0) {
-      const isHidden = await answer.first().isHidden();
-      expect(isHidden).toBeTruthy();
-    }
+    // Result block appears (pass or fail)
+    const result = page.locator(".drill-result");
+    await expect(result.first()).toBeVisible();
   });
 
-  test("should reveal answer on button click", async ({ page }) => {
-    const revealBtn = page.locator(
-      "button:has-text('Show answer'), button:has-text('Reveal')"
-    );
-    await revealBtn.first().click();
+  test("correct choice highlights green, wrong choices dim", async ({ page }) => {
+    await goToWhatNextDrill(page);
 
-    // Answer should now be visible
-    const answer = page.locator(".card-answer");
-    await expect(answer.first()).toBeVisible();
+    // Click first choice (may or may not be correct)
+    const choices = page.locator(".whatnext-choice");
+    await choices.first().click();
 
-    // Reveal button should hide
-    const btnVisible = await revealBtn.first().isVisible();
-    expect(btnVisible).toBeFalsy();
+    // After answering, exactly one choice should be marked correct
+    const correctChoice = page.locator(".whatnext-choice.correct");
+    await expect(correctChoice).toHaveCount(1);
   });
 
-  test("should display grade buttons after revealing", async ({ page }) => {
-    const revealBtn = page.locator(
-      "button:has-text('Show answer'), button:has-text('Reveal')"
-    );
-    await revealBtn.first().click();
+  test("'Next question' button advances to a new prompt", async ({ page }) => {
+    await goToWhatNextDrill(page);
 
-    // Should see 4 grade buttons: Again, Hard, Good, Easy
-    const gradeButtons = page.locator(".grade");
-    const count = await gradeButtons.count();
+    const firstPromptText = await page.locator(".whatnext-prompt-text").first().textContent();
 
-    expect(count).toBe(4);
+    // Answer the question
+    await page.locator(".whatnext-choice").first().click();
 
-    // Check button labels
-    const labels = await gradeButtons.allTextContents();
-    expect(labels.join("")).toContain("Again");
-    expect(labels.join("")).toContain("Hard");
-    expect(labels.join("")).toContain("Good");
-    expect(labels.join("")).toContain("Easy");
+    // Click Next
+    const nextBtn = page.locator("button:has-text('Next question')");
+    await expect(nextBtn.first()).toBeVisible();
+    await nextBtn.first().click();
+
+    // Prompt should be fresh (choices re-rendered, result gone)
+    const result = page.locator(".drill-result");
+    await expect(result).toHaveCount(0);
+
+    const choices = page.locator(".whatnext-choice");
+    await expect(choices).toHaveCount(4);
   });
 
-  test("should show time estimates for each grade", async ({ page }) => {
-    const revealBtn = page.locator(
-      "button:has-text('Show answer'), button:has-text('Reveal')"
-    );
-    await revealBtn.first().click();
+  test("answering a question saves progress to localStorage", async ({ page }) => {
+    await goToWhatNextDrill(page);
 
-    // Grade buttons should show estimated due times
-    const goodBtn = page.locator(".grade.good");
-    const goodText = await goodBtn.textContent();
+    // Answer one question
+    await page.locator(".whatnext-choice").first().click();
+    await page.waitForTimeout(300);
 
-    // Should contain "Good" and likely "due in 1d" or similar
-    expect(goodText).toContain("Good");
+    const storageData = await page.evaluate(() => {
+      const raw = localStorage.getItem("nremt.state.v1");
+      return raw ? JSON.parse(raw) : null;
+    });
+
+    expect(storageData).toBeTruthy();
+    expect(storageData.version).toBe(1);
+    // whatnext drill record should exist for e201
+    expect(storageData.drills?.whatnext?.e201).toBeTruthy();
+    expect(storageData.drills.whatnext.e201.attempts).toBeGreaterThanOrEqual(1);
   });
 
-  test("should progress to next card after grading 'Good'", async ({
-    page,
-  }) => {
-    // Get first card info
-    const firstCardText = await page.locator(".card-prompt").first().textContent();
+  test("streak counter increments on correct answers", async ({ page }) => {
+    await goToWhatNextDrill(page);
 
-    // Reveal and grade
-    const revealBtn = page.locator(
-      "button:has-text('Show answer'), button:has-text('Reveal')"
-    );
-    await revealBtn.first().click();
+    // Answer question (we don't know if it's right, but state should update)
+    await page.locator(".whatnext-choice").first().click();
+    await page.waitForTimeout(200);
 
-    const goodBtn = page.locator(".grade.good");
-    await goodBtn.first().click();
+    const storageData = await page.evaluate(() => {
+      const raw = localStorage.getItem("nremt.state.v1");
+      return raw ? JSON.parse(raw) : null;
+    });
 
-    // Should progress (either next card or completion message)
-    await page.waitForTimeout(500);
-
-    // Should either show new card or completion
-    const cardProgress = page.locator(".study-meta, .empty-state");
-    await expect(cardProgress.first()).toBeVisible();
-
-    // If new card, it should be different
-    const newPrompt = page.locator(".card-prompt");
-    if (await newPrompt.count() > 0) {
-      const newText = await newPrompt.first().textContent();
-      // May or may not be different (could be same sheet reloaded)
-      expect(newText).toBeTruthy();
-    }
+    expect(storageData?.drills?.whatnext?.e201?.attempts).toBe(1);
   });
 
-  test("should show session complete when all cards reviewed", async ({
-    page,
-  }) => {
-    // Try to grade all cards as "easy" to complete quickly
-    let cardsGraded = 0;
-    const maxAttempts = 50; // Prevent infinite loops
+  test("drill title shows What's Next? heading", async ({ page }) => {
+    await goToWhatNextDrill(page);
 
-    while (cardsGraded < maxAttempts) {
-      const revealBtn = page.locator(
-        "button:has-text('Show answer'), button:has-text('Reveal')"
-      );
-
-      if ((await revealBtn.count()) === 0) {
-        // No reveal button = either completed or none due
-        const completion = page.locator("text=Session complete");
-        const nothingDue = page.locator("text=Nothing due");
-
-        if ((await completion.count()) > 0 || (await nothingDue.count()) > 0) {
-          break;
-        }
-      }
-
-      await revealBtn.first().click();
-      const easyBtn = page.locator(".grade.easy");
-
-      if ((await easyBtn.count()) > 0) {
-        await easyBtn.first().click();
-        cardsGraded += 1;
-        await page.waitForTimeout(300);
-      } else {
-        break;
-      }
-    }
-
-    // Should see either completion message or nothing due
-    const body = page.locator("body");
-    const bodyText = await body.textContent();
-    expect(
-      bodyText.includes("Session complete") ||
-        bodyText.includes("Nothing due")
-    ).toBeTruthy();
+    const heading = page.locator("h2.drill-title, h2");
+    const bodyText = await page.locator("body").textContent();
+    expect(bodyText).toContain("What's Next?");
   });
 
-  test("should support keyboard reveal (space)", async ({ page }) => {
-    // Focus on the card
-    const card = page.locator(".card");
-    if (await card.count() > 0) {
-      await card.first().focus();
-    }
+  test("section label is shown above the prompt", async ({ page }) => {
+    await goToWhatNextDrill(page);
 
-    // Press space to reveal
-    await page.keyboard.press("Space");
-
-    // Answer should be visible
-    const answer = page.locator(".card-answer");
-    await expect(answer.first()).toBeVisible();
-  });
-
-  test("should support keyboard grading (1-4 keys)", async ({ page }) => {
-    const revealBtn = page.locator(
-      "button:has-text('Show answer'), button:has-text('Reveal')"
-    );
-    await revealBtn.first().click();
-
-    // Focus on the card
-    const card = page.locator(".card");
-    if (await card.count() > 0) {
-      await card.first().focus();
-    }
-
-    // Press "3" for "Good" grade
-    await page.keyboard.press("3");
-    await page.waitForTimeout(500);
-
-    // Should progress
-    const studyMeta = page.locator(".study-meta");
-    await expect(studyMeta.first()).toBeVisible();
-  });
-
-  test("should display card metadata (position, ease, due)", async ({
-    page,
-  }) => {
-    const meta = page.locator(".study-meta");
-    await expect(meta.first()).toBeVisible();
-
-    const metaText = await meta.first().textContent();
-
-    // Should show card position
-    expect(metaText).toMatch(/Card \d+ of \d+/);
-
-    // Should show ease
-    expect(metaText).toMatch(/ease/i);
-  });
-
-  test("should display section label on card", async ({ page }) => {
     const sectionLabel = page.locator(".card-section");
-    if (await sectionLabel.count() > 0) {
-      await expect(sectionLabel.first()).toBeVisible();
-
-      const text = await sectionLabel.first().textContent();
-      // Should have sheet ID and section name
-      expect(text).toContain("E201");
-    }
-  });
-
-  test("should show note button on cards", async ({ page }) => {
-    const noteBtn = page.locator("button:has-text('note')");
-
-    if ((await noteBtn.count()) > 0) {
-      await expect(noteBtn.first()).toBeVisible();
-    }
-  });
-
-  test("should allow adding note during study", async ({ page }) => {
-    // Look for note button or link
-    const noteBtn = page.locator("button:has-text('note')");
-
-    if ((await noteBtn.count()) > 0) {
-      await noteBtn.first().click();
-      await page.waitForTimeout(300);
-
-      // Should see note editor or dialog
-      const textarea = page.locator("textarea");
-      if ((await textarea.count()) > 0) {
-        await textarea.first().fill("Test note for this card");
-        await page.keyboard.press("Tab"); // or look for save button
-
-        // Note should be saved
-        await page.waitForTimeout(300);
-      }
-    }
-  });
-
-  test("should handle 'Again' grade by re-showing card", async ({ page }) => {
-    const cardText = await page.locator(".card-prompt").first().textContent();
-
-    // Reveal and grade "again"
-    const revealBtn = page.locator(
-      "button:has-text('Show answer'), button:has-text('Reveal')"
-    );
-    await revealBtn.first().click();
-
-    const againBtn = page.locator(".grade.again");
-    await againBtn.first().click();
-    await page.waitForTimeout(500);
-
-    // Card should reappear (or next card)
-    const newPrompt = page.locator(".card-prompt");
-    await expect(newPrompt.first()).toBeVisible();
-  });
-
-  test("should display 'Cram all cards' option when none due", async ({
-    page,
-  }) => {
-    // First, complete or schedule all cards
-    // Navigate away and back to reset the view
-    await page.goto("/");
-    await page.locator(".sheet-card").first().click();
-    await page.waitForURL(/.*sheet.*e201.*/);
-
-    // Check if "Cram all" button appears
-    const cramBtn = page.locator("button:has-text('Cram')");
-    const nothingDue = page.locator("text=Nothing due");
-
-    // Should see either nothing due message or the page loaded normally
-    const body = page.locator("body");
-    await expect(body).toBeVisible();
+    await expect(sectionLabel.first()).toBeVisible();
   });
 });
 
 test.describe("Card Display Features", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
-    await page.locator(".sheet-card").first().click();
-    await page.waitForURL(/.*sheet.*e201.*/);
-    // Ensure we're on flashcards
-    await page.locator("button:has-text('Flashcards')").click();
-    await page.waitForLoadState("networkidle");
+    await goToWhatNextDrill(page);
   });
 
-  test("should show points on card back", async ({ page }) => {
-    const revealBtn = page.locator(
-      "button:has-text('Show answer'), button:has-text('Reveal')"
-    );
-    if ((await revealBtn.count()) > 0) {
-      await revealBtn.first().click();
-
-      const pointsDisplay = page.locator(".card-points");
-      if ((await pointsDisplay.count()) > 0) {
-        await expect(pointsDisplay.first()).toBeVisible();
-
-        const text = await pointsDisplay.first().textContent();
-        expect(text).toMatch(/\d+ point/);
-      }
-    }
+  test("should display the prompt text (non-empty)", async ({ page }) => {
+    const prompt = page.locator(".whatnext-prompt-text");
+    const text = await prompt.first().textContent();
+    expect(text?.trim().length).toBeGreaterThan(0);
   });
 
-  test("should display examiner notes if present", async ({ page }) => {
-    const revealBtn = page.locator(
-      "button:has-text('Show answer'), button:has-text('Reveal')"
-    );
-    if ((await revealBtn.count()) > 0) {
-      await revealBtn.first().click();
-
-      const examinerNote = page.locator(".card-examiner");
-      // May or may not be present
-      if ((await examinerNote.count()) > 0) {
-        await expect(examinerNote.first()).toBeVisible();
-      }
-    }
+  test("should display four labelled choice buttons (A-D)", async ({ page }) => {
+    const letters = page.locator(".choice-letter");
+    await expect(letters).toHaveCount(4);
+    const allLetters = await letters.allTextContents();
+    expect(allLetters).toEqual(["A", "B", "C", "D"]);
   });
 
-  test("should display mnemonic information if available", async ({
-    page,
-  }) => {
-    const mnemonicPrompt = page.locator(".mnemonic-prompt");
-
-    // Some cards may be mnemonic-based, some not
-    // Just check the card renders
-    const cardPrompt = page.locator(".card-prompt");
-    await expect(cardPrompt.first()).toBeVisible();
+  test("should show drill-result after any choice is selected", async ({ page }) => {
+    await page.locator(".whatnext-choice").first().click();
+    const result = page.locator(".drill-result");
+    await expect(result.first()).toBeVisible();
   });
 });

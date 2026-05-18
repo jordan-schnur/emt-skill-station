@@ -1966,11 +1966,16 @@
     ]));
 
     // ---- Key numbers ----
-    wrap.appendChild(h("div", { class: "stat-grid" }, [
+    const medQuiz = (state.drills || {}).medcondquiz;
+    const medStatCards = [
       statCard("📝", state.stats.totalReviews, "Total Reviews"),
       statCard("📖", total, "Total Cards"),
       statCard("🗓️", longestStreak + (longestStreak === 1 ? " day" : " days"), "Best Streak"),
-    ]));
+    ];
+    if (medQuiz && medQuiz.sessionCount >= 1) {
+      medStatCards.push(statCard("🩺", Math.round((medQuiz.bestScore || 0) * 100) + "%", "Med Quiz Best"));
+    }
+    wrap.appendChild(h("div", { class: "stat-grid" }, medStatCards));
 
     // ---- Achievements ----
     if (hasAchievements) {
@@ -2049,6 +2054,34 @@
       ]));
     }
     wrap.appendChild(sheetList);
+
+    // ---- Medical Conditions Quiz progress ----
+    if (medQuiz && medQuiz.sessionCount >= 1) {
+      wrap.appendChild(h("h2", {}, ["Medical Conditions Quiz"]));
+      const acc = medQuiz.totalAttempts > 0
+        ? Math.round((medQuiz.totalCorrect / medQuiz.totalAttempts) * 100)
+        : 0;
+      wrap.appendChild(h("div", { class: "stat-grid" }, [
+        statCard("🩺", medQuiz.sessionCount, "Sessions"),
+        statCard("🎯", Math.round((medQuiz.bestScore || 0) * 100) + "%", "Best Score"),
+        statCard("📊", acc + "%", "Overall Accuracy"),
+        statCard("📝", medQuiz.totalAttempts, "Questions Answered"),
+      ]));
+      wrap.appendChild(h("button", {
+        class: "btn btn-primary",
+        type: "button",
+        onclick: () => ctx.navigate({ view: "medconditions", tab: "quiz" }),
+      }, ["Take Medical Conditions Quiz →"]));
+    } else {
+      wrap.appendChild(h("div", { class: "medcond-stats-cta" }, [
+        h("p", {}, ["Haven't tried the Medical Conditions Quiz yet?"]),
+        h("button", {
+          class: "btn btn-primary",
+          type: "button",
+          onclick: () => ctx.navigate({ view: "medconditions", tab: "quiz" }),
+        }, ["Try Medical Conditions Quiz →"]),
+      ]));
+    }
 
     return wrap;
   };
@@ -3519,6 +3552,417 @@
       subtitle: "Clinical assessment and treatment acronyms used throughout EMS. Tap a card to expand, or use Quiz mode for spaced repetition.",
     });
   };
+
+  // ---------- MEDICAL CONDITIONS ----------------------------------------
+  Views.medConditions = (ctx) => {
+    const conditions = (typeof MEDICAL_CONDITIONS !== "undefined") ? MEDICAL_CONDITIONS : [];
+    const tab = (ctx.route && ctx.route.tab) || "browse";
+    const wrap = h("div", { class: "medcond-wrap" });
+
+    // ── Tab strip ────────────────────────────────────────────────────────
+    const tabs = [
+      { id: "browse", label: "Browse" },
+      { id: "compare", label: "Compare" },
+      { id: "quiz", label: "Quiz" },
+    ];
+    const tabStrip = h("div", { class: "medcond-tab-strip" });
+    for (const t of tabs) {
+      tabStrip.appendChild(h("button", {
+        class: "medcond-tab-btn" + (tab === t.id ? " active" : ""),
+        type: "button",
+        onclick: () => ctx.navigate({ view: "medconditions", tab: t.id }),
+      }, [t.label]));
+    }
+    wrap.appendChild(tabStrip);
+
+    if (tab === "browse") {
+      _medCondBrowse(wrap, ctx, conditions);
+    } else if (tab === "compare") {
+      _medCondCompare(wrap, ctx, conditions);
+    } else if (tab === "quiz") {
+      _medCondQuiz(wrap, ctx, conditions);
+    }
+
+    return wrap;
+  };
+
+  function _medCondBrowse(wrap, ctx, conditions) {
+    const header = h("div", { class: "medcond-header" });
+    header.appendChild(h("h1", {}, ["Medical Conditions Reference"]));
+    header.appendChild(h("p", { class: "subtitle" }, [
+      "Signs, symptoms, and distinguishing features for common EMT medical emergencies. Click a condition to expand.",
+    ]));
+    wrap.appendChild(header);
+
+    const categories = ["All", ...Array.from(new Set(conditions.map((c) => c.category)))];
+    let activeCat = "All";
+
+    const filterRow = h("div", { class: "medcond-filter-row" });
+    const grid = h("div", { class: "medcond-grid" });
+
+    function renderGrid() {
+      grid.innerHTML = "";
+      const filtered = activeCat === "All" ? conditions : conditions.filter((c) => c.category === activeCat);
+      for (const cond of filtered) {
+        grid.appendChild(_medCondCard(cond));
+      }
+    }
+
+    for (const cat of categories) {
+      filterRow.appendChild(h("button", {
+        class: "medcond-filter-chip" + (cat === activeCat ? " active" : ""),
+        type: "button",
+        onclick: (e) => {
+          activeCat = cat;
+          for (const b of filterRow.querySelectorAll(".medcond-filter-chip")) {
+            b.classList.toggle("active", b.textContent === cat);
+          }
+          renderGrid();
+        },
+      }, [cat]));
+    }
+
+    wrap.appendChild(filterRow);
+    renderGrid();
+    wrap.appendChild(grid);
+  }
+
+  function _medCondCard(cond) {
+    const body = h("div", { class: "medcond-card-body" });
+    body.style.display = "none";
+
+    const sections = [
+      { label: "Key Signs & Symptoms", items: cond.signs, cls: "medcond-signs" },
+      { label: "Distinguishing Features", items: cond.distinguishing, cls: "medcond-distinguishing" },
+      { label: "Critical Findings", items: cond.criticalFindings, cls: "medcond-critical" },
+      { label: "EMT Treatment Priority", items: cond.treatment, cls: "medcond-treatment" },
+    ];
+
+    for (const sec of sections) {
+      if (!sec.items || !sec.items.length) continue;
+      const secEl = h("div", { class: "medcond-section " + sec.cls });
+      secEl.appendChild(h("div", { class: "medcond-section-label" }, [sec.label]));
+      const list = h("ul", { class: "medcond-list" });
+      for (const item of sec.items) {
+        list.appendChild(h("li", {}, [item]));
+      }
+      secEl.appendChild(list);
+      body.appendChild(secEl);
+    }
+
+    if (cond.onset) {
+      body.appendChild(h("div", { class: "medcond-onset" }, [
+        h("strong", {}, ["Onset: "]),
+        cond.onset,
+      ]));
+    }
+
+    let expanded = false;
+    const card = h("div", { class: "medcond-card" }, [
+      h("div", {
+        class: "medcond-card-header",
+        onclick: () => {
+          expanded = !expanded;
+          body.style.display = expanded ? "" : "none";
+          card.classList.toggle("expanded", expanded);
+        },
+      }, [
+        h("div", { class: "medcond-card-left" }, [
+          h("span", { class: "medcond-name" }, [cond.name]),
+          h("span", { class: "medcond-key-diff" }, [cond.keyDifferentiator]),
+        ]),
+        h("div", { class: "medcond-card-right" }, [
+          h("span", { class: "medcond-cat-badge" }, [cond.category]),
+          h("span", { class: "medcond-expand-icon" }, ["▾"]),
+        ]),
+      ]),
+      body,
+    ]);
+    return card;
+  }
+
+  function _medCondCompare(wrap, ctx, conditions) {
+    wrap.appendChild(h("h1", {}, ["Side-by-Side Comparison"]));
+    wrap.appendChild(h("p", { class: "subtitle" }, [
+      "Select a group to compare commonly confused conditions.",
+    ]));
+
+    const compareGroups = {
+      diabetic:        { label: "Diabetic Emergencies", dimensions: ["onset", "skin", "breath", "respirations", "keySign", "history"] },
+      cardiac_dyspnea: { label: "Cardiac (AMI vs CHF)", dimensions: ["onset", "dyspnea", "skin", "edema", "keySign", "history"] },
+      obstructive:     { label: "Asthma vs COPD", dimensions: ["onset", "breathSounds", "skin", "cough", "keySign", "smokingHistory", "reversibility"] },
+      pulmonary_acute: { label: "PE vs Pneumothorax vs Pneumonia", dimensions: ["onset", "breathSounds", "fever", "cough", "keySign", "breathSoundsSymmetry"] },
+      neuro:           { label: "Stroke / TIA / Seizure", dimensions: ["onset", "symptomDuration", "FASTexam", "headache", "keySign", "urgency"] },
+      allergic:        { label: "Allergic Reaction vs Anaphylaxis", dimensions: ["onset", "airway", "bloodPressure", "skinFindings", "shockSigns", "keySign", "epinephrine"] },
+      shock:           { label: "Shock Types", dimensions: ["cause", "heartRate", "skin", "lungsounds", "JVD", "keySign"] },
+    };
+
+    const dimLabels = {
+      onset: "Onset",
+      skin: "Skin",
+      breath: "Breath Odor",
+      respirations: "Respirations",
+      keySign: "Key Finding",
+      history: "History",
+      dyspnea: "Dyspnea",
+      edema: "Peripheral Edema",
+      breathSounds: "Breath Sounds",
+      cough: "Cough",
+      smokingHistory: "Smoking History",
+      reversibility: "Reversibility",
+      fever: "Fever",
+      breathSoundsSymmetry: "Breath Sound Symmetry",
+      symptomDuration: "Duration",
+      FASTexam: "FAST Exam",
+      headache: "Headache",
+      urgency: "Urgency",
+      airway: "Airway",
+      bloodPressure: "Blood Pressure",
+      skinFindings: "Skin Findings",
+      shockSigns: "Shock Signs",
+      epinephrine: "Epinephrine",
+      cause: "Cause",
+      heartRate: "Heart Rate",
+      lungsounds: "Lung Sounds",
+      JVD: "JVD",
+    };
+
+    const groupIds = Object.keys(compareGroups);
+    let activeGroup = groupIds[0];
+
+    const groupRow = h("div", { class: "medcond-group-row" });
+    const tableWrap = h("div", { class: "medcond-compare-wrap" });
+
+    function renderTable() {
+      tableWrap.innerHTML = "";
+      const group = compareGroups[activeGroup];
+      const groupConditions = conditions.filter((c) => c.compareGroup === activeGroup);
+      if (!groupConditions.length) {
+        tableWrap.appendChild(h("p", { class: "muted" }, ["No conditions in this group."]));
+        return;
+      }
+
+      const table = h("div", {
+        class: "medcond-compare-table",
+        style: `--cols: ${groupConditions.length + 1}`,
+      });
+
+      // Header row
+      table.appendChild(h("div", { class: "medcond-th medcond-dim-label" }, [""]));
+      for (const cond of groupConditions) {
+        table.appendChild(h("div", { class: "medcond-th" }, [cond.name]));
+      }
+
+      // Data rows
+      for (const dim of group.dimensions) {
+        const label = dimLabels[dim] || dim;
+        table.appendChild(h("div", { class: "medcond-td medcond-dim-label" }, [label]));
+        for (const cond of groupConditions) {
+          const val = (cond.compareDimensions || {})[dim] || "—";
+          const isKey = dim === "keySign";
+          table.appendChild(h("div", { class: "medcond-td" + (isKey ? " medcond-key-row" : "") }, [val]));
+        }
+      }
+
+      tableWrap.appendChild(table);
+    }
+
+    for (const gid of groupIds) {
+      groupRow.appendChild(h("button", {
+        class: "medcond-group-chip" + (gid === activeGroup ? " active" : ""),
+        type: "button",
+        onclick: (e) => {
+          activeGroup = gid;
+          for (const b of groupRow.querySelectorAll(".medcond-group-chip")) {
+            b.classList.toggle("active", b.dataset.gid === gid);
+          }
+          renderTable();
+        },
+        dataset: { gid },
+      }, [compareGroups[gid].label]));
+    }
+
+    renderTable();
+    wrap.append(groupRow, tableWrap);
+  }
+
+  function _medCondQuiz(wrap, ctx, conditions) {
+    if (!conditions.length) {
+      wrap.appendChild(h("p", { class: "muted" }, ["No conditions data loaded."]));
+      return;
+    }
+
+    const QUESTIONS_PER_SESSION = 10;
+    const questions = _buildMedCondQuestions(conditions, QUESTIONS_PER_SESSION);
+
+    if (!questions.length) {
+      wrap.appendChild(h("p", { class: "muted" }, ["Could not build quiz questions."]));
+      return;
+    }
+
+    let currentIdx = 0;
+    let correct = 0;
+    let answered = false;
+
+    const counterEl = h("div", { class: "medcond-quiz-counter" }, []);
+    const questionEl = h("div", { class: "medcond-quiz-question" });
+    const optionsEl = h("div", { class: "medcond-quiz-options" });
+    const feedbackEl = h("div", { class: "medcond-quiz-feedback", style: "display:none" });
+    const nextBtn = h("button", {
+      class: "btn btn-primary medcond-quiz-next",
+      type: "button",
+      style: "display:none",
+    }, ["Next →"]);
+
+    nextBtn.addEventListener("click", () => {
+      currentIdx++;
+      if (currentIdx >= questions.length) {
+        showResults();
+      } else {
+        renderQuestion();
+      }
+    });
+
+    function renderQuestion() {
+      answered = false;
+      const q = questions[currentIdx];
+      counterEl.textContent = `Question ${currentIdx + 1} of ${questions.length}`;
+
+      questionEl.innerHTML = "";
+      questionEl.appendChild(h("div", { class: "medcond-quiz-label muted" }, ["Which condition does this describe?"]));
+      questionEl.appendChild(h("div", { class: "medcond-quiz-clue" }, [q.clue]));
+      if (q.category) {
+        questionEl.appendChild(h("div", { class: "medcond-quiz-hint muted" }, ["Category: " + q.category]));
+      }
+
+      optionsEl.innerHTML = "";
+      feedbackEl.style.display = "none";
+      nextBtn.style.display = "none";
+
+      for (const opt of q.options) {
+        const btn = h("button", {
+          class: "medcond-option btn",
+          type: "button",
+          onclick: () => {
+            if (answered) return;
+            answered = true;
+            const isCorrect = opt === q.answer;
+            if (isCorrect) correct++;
+
+            for (const b of optionsEl.querySelectorAll(".medcond-option")) {
+              b.disabled = true;
+              if (b.textContent === q.answer) b.classList.add("correct");
+              else if (b.textContent === opt && !isCorrect) b.classList.add("wrong");
+            }
+
+            feedbackEl.innerHTML = "";
+            if (isCorrect) {
+              feedbackEl.appendChild(h("div", { class: "medcond-feedback-correct" }, ["Correct!"]));
+            } else {
+              feedbackEl.appendChild(h("div", { class: "medcond-feedback-wrong" }, [
+                "Incorrect — the answer is ",
+                h("strong", {}, [q.answer]),
+              ]));
+            }
+            if (q.explanation) {
+              feedbackEl.appendChild(h("div", { class: "medcond-feedback-detail muted" }, [q.explanation]));
+            }
+            feedbackEl.style.display = "";
+            nextBtn.style.display = "";
+          },
+        }, [opt]);
+        optionsEl.appendChild(btn);
+      }
+    }
+
+    function showResults() {
+      const score = correct / questions.length;
+      const pct = Math.round(score * 100);
+
+      if (!ctx.state.drills) ctx.state.drills = {};
+      const prev = ctx.state.drills.medcondquiz || {};
+      ctx.state.drills.medcondquiz = {
+        sessionCount: (prev.sessionCount || 0) + 1,
+        bestScore: Math.max(prev.bestScore || 0, score),
+        lastScore: score,
+        totalAttempts: (prev.totalAttempts || 0) + questions.length,
+        totalCorrect: (prev.totalCorrect || 0) + correct,
+      };
+      ctx.save();
+
+      wrap.innerHTML = "";
+      wrap.appendChild(h("div", { class: "medcond-tab-strip" }, [
+        ...[
+          { id: "browse", label: "Browse" },
+          { id: "compare", label: "Compare" },
+          { id: "quiz", label: "Quiz" },
+        ].map((t) => h("button", {
+          class: "medcond-tab-btn" + (t.id === "quiz" ? " active" : ""),
+          type: "button",
+          onclick: () => ctx.navigate({ view: "medconditions", tab: t.id }),
+        }, [t.label])),
+      ]));
+
+      const grade = pct >= 90 ? "Excellent!" : pct >= 70 ? "Good job!" : pct >= 50 ? "Keep studying!" : "Keep at it!";
+      const gradeClass = pct >= 90 ? "medcond-grade-great" : pct >= 70 ? "medcond-grade-good" : "medcond-grade-low";
+
+      wrap.appendChild(h("div", { class: "medcond-results" }, [
+        h("div", { class: "medcond-results-icon" }, [pct >= 70 ? "🏥" : "📋"]),
+        h("div", { class: "medcond-results-score " + gradeClass }, [pct + "%"]),
+        h("div", { class: "medcond-results-grade" }, [grade]),
+        h("div", { class: "medcond-results-detail" }, [correct + " / " + questions.length + " correct"]),
+        h("button", {
+          class: "btn btn-primary",
+          type: "button",
+          onclick: () => ctx.navigate({ view: "medconditions", tab: "quiz" }),
+        }, ["Try Again"]),
+        h("button", {
+          class: "btn",
+          type: "button",
+          onclick: () => ctx.navigate({ view: "medconditions", tab: "browse" }),
+        }, ["Browse Conditions"]),
+      ]));
+    }
+
+    renderQuestion();
+    wrap.append(
+      h("div", { class: "medcond-quiz-header" }, [counterEl]),
+      h("div", { class: "medcond-quiz-card" }, [questionEl, optionsEl, feedbackEl, nextBtn]),
+    );
+  }
+
+  function _buildMedCondQuestions(conditions, count) {
+    const questions = [];
+    const shuffled = [...conditions].sort(() => Math.random() - 0.5);
+
+    for (const cond of shuffled) {
+      if (questions.length >= count) break;
+      const clue = cond.keyDifferentiator;
+      if (!clue) continue;
+
+      const sameGroup = conditions.filter((c) => c.compareGroup === cond.compareGroup && c.id !== cond.id);
+      const otherGroup = conditions.filter((c) => c.compareGroup !== cond.compareGroup);
+
+      const distractors = [];
+      for (const d of [...sameGroup, ...otherGroup.sort(() => Math.random() - 0.5)]) {
+        if (distractors.length >= 3) break;
+        if (!distractors.find((x) => x.id === d.id)) distractors.push(d);
+      }
+
+      if (distractors.length < 3) continue;
+
+      const options = [cond.name, ...distractors.map((d) => d.name)].sort(() => Math.random() - 0.5);
+      questions.push({
+        answer: cond.name,
+        clue,
+        category: cond.category,
+        options,
+        explanation: cond.distinguishing && cond.distinguishing[0] ? cond.distinguishing[0] : null,
+      });
+    }
+
+    return questions;
+  }
 
   // ---------- NOT FOUND ----------------------------------------------
   Views.notFound = () =>

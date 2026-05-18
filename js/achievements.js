@@ -149,6 +149,59 @@
         return false;
       },
     },
+    {
+      id: "thousand_reviews",
+      name: "On the Clock",
+      desc: "Complete 1,000 card reviews",
+      icon: "⏱️",
+      check: (s) => s.stats.totalReviews >= 1000,
+    },
+    {
+      id: "all_sheets_started",
+      name: "Survey Complete",
+      desc: "Study at least one card on every skill sheet",
+      icon: "🗺️",
+      check: (s) => {
+        const data = global.NREMT_DATA;
+        if (!data || !data.sheets.length) return false;
+        for (const sheet of data.sheets) {
+          const hasAny = sheet.cards.some((c) => {
+            const r = s.srs[c.id];
+            return r && r.reps >= 1;
+          });
+          if (!hasAny) return false;
+        }
+        return true;
+      },
+    },
+    {
+      id: "streak_14",
+      name: "Two-Week Grind",
+      desc: "Use the app 14 days in a row",
+      icon: "📆",
+      check: (s) => (s.stats.longestStreak || 0) >= 14,
+    },
+    {
+      id: "med_quiz_first",
+      name: "First Diagnosis",
+      desc: "Complete your first Medical Conditions quiz session",
+      icon: "🩺",
+      check: (s) => ((s.drills || {}).medcondquiz || {}).sessionCount >= 1,
+    },
+    {
+      id: "med_quiz_pass",
+      name: "Clinical Eye",
+      desc: "Score 70%+ on the Medical Conditions quiz",
+      icon: "🔬",
+      check: (s) => ((s.drills || {}).medcondquiz || {}).bestScore >= 0.7,
+    },
+    {
+      id: "med_quiz_ace",
+      name: "Sharp Clinician",
+      desc: "Score 90%+ on the Medical Conditions quiz",
+      icon: "🏥",
+      check: (s) => ((s.drills || {}).medcondquiz || {}).bestScore >= 0.9,
+    },
   ];
 
   function check(state) {
