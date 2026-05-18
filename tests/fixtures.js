@@ -77,6 +77,7 @@ export function createEmptyState() {
     achievements: {},
     mnemonics: {},
     chats: {},
+    emsSrs: {},
   };
 }
 
