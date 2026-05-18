@@ -2,7 +2,6 @@
  * Unit tests for achievements.js
  */
 
-require("../js/srs.js");
 require("../js/achievements.js");
 
 import {
@@ -14,7 +13,6 @@ import {
 describe("Achievements", () => {
   beforeEach(() => {
     setupMockNREMTData();
-    global.SRS = window.SRS;
     global.NREMT_DATA = window.NREMT_DATA;
   });
 
@@ -193,17 +191,10 @@ describe("Achievements", () => {
       expect(def.check(state)).toBe(false);
     });
 
-    it("sheet_mastery_75 uses SRS.masteryFor", () => {
-      const state = createEmptyState();
-      // No cards studied — mastery should be 0
-      const def = window.Achievements.DEFS.find((d) => d.id === "sheet_mastery_75");
-      expect(def.check(state)).toBe(false);
-    });
-
-    it("halfway_overall returns false with empty state", () => {
-      const state = createEmptyState();
-      const def = window.Achievements.DEFS.find((d) => d.id === "halfway_overall");
-      expect(def.check(state)).toBe(false);
+    it("sheet_mastery_75 and halfway_overall removed (SRS-dependent)", () => {
+      // These two achievements were removed when SRS was removed
+      expect(window.Achievements.DEFS.find((d) => d.id === "sheet_mastery_75")).toBeUndefined();
+      expect(window.Achievements.DEFS.find((d) => d.id === "halfway_overall")).toBeUndefined();
     });
 
     it("all_drills_one_sheet returns false when drills not mastered", () => {

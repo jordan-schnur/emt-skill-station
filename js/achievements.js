@@ -130,35 +130,6 @@
       check: (s) => (s.stats.longestStreak || 0) >= 7,
     },
     {
-      id: "sheet_mastery_75",
-      name: "Sheet Expert",
-      desc: "Get any skill sheet to 75%+ mastery",
-      icon: "⭐",
-      check: (s) => {
-        const data = global.NREMT_DATA;
-        const SRS = global.SRS;
-        if (!data || !SRS) return false;
-        for (const sheet of data.sheets) {
-          if (SRS.masteryFor(s, sheet) >= 0.75) return true;
-        }
-        return false;
-      },
-    },
-    {
-      id: "halfway_overall",
-      name: "Halfway There",
-      desc: "Reach 50%+ average mastery across all sheets",
-      icon: "🌟",
-      check: (s) => {
-        const data = global.NREMT_DATA;
-        const SRS = global.SRS;
-        if (!data || !SRS || !data.sheets.length) return false;
-        let sum = 0;
-        for (const sheet of data.sheets) sum += SRS.masteryFor(s, sheet);
-        return sum / data.sheets.length >= 0.5;
-      },
-    },
-    {
       id: "all_drills_one_sheet",
       name: "Complete Package",
       desc: "Master all 5 drill types on a single sheet",
