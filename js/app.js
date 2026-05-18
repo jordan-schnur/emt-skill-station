@@ -166,7 +166,7 @@
       const initial = _firstAuth;
       _firstAuth = false;
       if (!user) {
-        if (!initial) ctx.refresh();
+        ctx.refresh();
         return;
       }
       try {
