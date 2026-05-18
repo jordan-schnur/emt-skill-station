@@ -251,12 +251,9 @@
     wrap.append(
       h("h1", {}, ["NREMT Skill Sheet Trainer"]),
       h("p", { class: "subtitle" }, [
-        "Pick a skill sheet to study. Cards you struggle with come back sooner; cards you nail go on a longer interval. ",
+        "Pick a skill sheet to study. Use the drills to master section order, step sequences, and more.",
         helpIcon("How the home screen works",
-          `<p><strong>Due pill</strong> — the colored bubble on each sheet shows how many flashcards are due for review right now.</p>
-          <p><strong>Mastery bar</strong> — shows what percentage of cards you've rated Good or Easy at least once.</p>
-          <p><strong>"all good"</strong> means no cards are currently due. Come back later, or open the sheet and use "Cram all cards" to force a session.</p>
-          <p>Click any sheet to open it. Each sheet has multiple study modes available via the tab row at the top.</p>
+          `<p>Click any sheet to open it. Each sheet has multiple study modes available via the tab row at the top.</p>
           <p>See the <strong>Guide</strong> page (top nav) for a full explanation of every study mode.</p>`
         ),
       ])
@@ -285,10 +282,6 @@
           "Step Sequence Drill — pick a section, drag its steps into the correct exam order",
         ]),
         h("li", {}, [
-          h("span", { class: "tag shipped" }, ["✓ live"]),
-          "Critical Criteria Drill — drill only the auto-fail criteria with spaced repetition",
-        ]),
-        h("li", {}, [
           h("span", { class: "tag" }, ["soon"]),
           "Timed run-through — simulate the 10/15 minute station with a checklist and stopwatch",
         ]),
@@ -299,9 +292,6 @@
   };
 
   function renderSheetCard(ctx, sheet) {
-    const due = SRS.dueCount(ctx.state, sheet);
-    const mastery = SRS.masteryFor(ctx.state, sheet);
-    const pct = Math.round(mastery * 100);
     const noteCount = Notes.countSheetNotes(ctx.state, sheet);
     const secRec = ctx.state.drills && ctx.state.drills.secorder && ctx.state.drills.secorder[sheet.id];
     const secBadge = secRec
@@ -316,26 +306,19 @@
       "div",
       {
         class: "sheet-card",
-        onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "study" }),
+        onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "sheet" }),
       },
       [
         h("div", { class: "row" }, [
           h("span", { class: "sheet-id" }, [sheet.id.toUpperCase()]),
-          h("span", { class: "due-pill " + (due ? "" : "zero") }, [
-            due ? `${due} due` : "all good",
-          ]),
         ]),
         h("div", { class: "sheet-title" }, [sheet.title]),
         h("div", { class: "sheet-meta" }, [
-          `${sheet.totalPoints} pts · ${sheet.cards.length} cards`,
+          `${sheet.totalPoints} pts`,
           sheet.timeLimit ? ` · ${sheet.timeLimit}` : "",
           noteCount ? ` · ${noteCount} note${noteCount === 1 ? "" : "s"}` : "",
         ]),
-        h("div", { class: "mastery-bar" }, [
-          h("div", { class: "mastery-fill", style: `width: ${pct}%` }),
-        ]),
         h("div", { class: "sheet-stats" }, [
-          h("span", {}, [`mastery ${pct}%`]),
           secBadge || h("span", {}, [sheet.category]),
         ]),
       ]
@@ -348,7 +331,7 @@
     if (!sheet) return Views.notFound();
 
     const wrap = h("div");
-    const tab = ctx.route.tab || "study";
+    const tab = ctx.route.tab || "sheet";
 
     wrap.append(
       h("div", { class: "crumbs" }, [
@@ -364,12 +347,10 @@
         ]),
       ]),
       renderTabs(ctx, sheet, tab),
-      tab === "study"    ? Views.study(ctx, sheet)
-      : tab === "sheet"  ? Views.reference(ctx, sheet)
+      tab === "sheet"    ? Views.reference(ctx, sheet)
       : tab === "notes"  ? Views.notes(ctx, sheet)
       : tab === "order"   ? Views.sectionOrderDrill(ctx, sheet)
       : tab === "steps"   ? Views.stepSeqDrill(ctx, sheet)
-      : tab === "critical" ? Views.criticalDrill(ctx, sheet)
       : tab === "whatnext" ? Views.whatNextDrill(ctx, sheet)
       : tab === "recall"  ? Views.blankRecall(ctx, sheet)
       : tab === "script"  ? Views.spokenScript(ctx, sheet)
@@ -400,21 +381,6 @@
           ? `Step Drill (${masteredSecCount}/${drillableSections.length})`
           : "Step Drill";
 
-    // Critical Criteria tab label — shows how many criteria have been reviewed at least once
-    const criticalCount = (sheet.criticalCriteria || []).length;
-    let critKnownCount = 0;
-    for (let ci = 0; ci < criticalCount; ci++) {
-      const rec = ctx.state.srs[`critical::${sheet.id}::${ci}`];
-      if (rec && rec.reps > 0) critKnownCount++;
-    }
-    const critLabel = criticalCount === 0
-      ? "Critical Criteria"
-      : critKnownCount === criticalCount
-        ? "Critical Criteria ✓"
-        : critKnownCount > 0
-          ? `Critical Criteria (${critKnownCount}/${criticalCount})`
-          : "Critical Criteria";
-
     const wnRec = ctx.state.drills && ctx.state.drills.whatnext && ctx.state.drills.whatnext[sheet.id];
     const whatNextLabel = wnRec && wnRec.mastered
       ? "What's Next? ✓"
@@ -435,11 +401,9 @@
         : "Spoken Script";
 
     const tabs = [
-      { id: "study", label: "Flashcards (SRS)" },
       // Only show Order Drill tab for sheets with multiple sections
       ...(sheet.sections.length > 1 ? [{ id: "order", label: orderLabel }] : []),
       { id: "steps", label: stepLabel },
-      // { id: "critical", label: critLabel }, // hidden until redesigned
       { id: "whatnext", label: whatNextLabel },
       { id: "recall", label: recallLabel },
       { id: "script", label: scriptLabel },
@@ -462,295 +426,6 @@
         )
       )
     );
-  }
-
-  // ---------- STUDY / FLASHCARDS -------------------------------------
-  Views.study = (ctx, sheet) => {
-    const queue = SRS.buildQueue(ctx.state, sheet);
-    if (!queue.length) {
-      return h("div", { class: "empty-state" }, [
-        h("div", { class: "big" }, ["✓"]),
-        h("p", {}, ["Nothing due right now."]),
-        h("p", { class: "muted" }, [
-          "Spaced repetition will bring cards back when it's time. Come back later, or open another sheet.",
-        ]),
-        h("p", {}, [
-          h(
-            "button",
-            { class: "btn-ghost btn", onclick: () => studyAllForced(ctx, sheet) },
-            ["Cram all cards anyway →"]
-          ),
-        ]),
-      ]);
-    }
-    return renderCard(ctx, sheet, queue, 0);
-  };
-
-  function studyAllForced(ctx, sheet) {
-    const queue = sheet.cards.map((card) => ({
-      card,
-      rec: SRS.getRecord(ctx.state, card.id),
-    }));
-    const root = document.getElementById("root");
-    root.innerHTML = "";
-    root.appendChild(
-      h("div", {}, [
-        h("div", { class: "crumbs" }, [
-          h("button", { class: "btn-link", onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "study" }) }, ["← Back"]),
-        ]),
-        h("h1", {}, [`Cramming · ${sheet.title}`]),
-        renderCard(ctx, sheet, queue, 0, /*cram*/ true),
-      ])
-    );
-  }
-
-  function renderCard(ctx, sheet, queue, index, cram = false) {
-    const total = queue.length;
-    const pane = h("div", { class: "study-pane" });
-
-    function showAt(i) {
-      pane.innerHTML = "";
-      if (i >= queue.length) {
-        pane.appendChild(
-          h("div", { class: "empty-state" }, [
-            h("div", { class: "big" }, ["✓"]),
-            h("p", {}, ["Session complete — nice work."]),
-            h("p", { class: "muted" }, [
-              `You reviewed ${queue.length} card${queue.length === 1 ? "" : "s"}.`,
-            ]),
-            h("p", {}, [
-              h("button", { class: "btn btn-primary", onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "study" }) }, ["Continue studying"]),
-              " ",
-              h("button", { class: "btn", onclick: () => ctx.navigate({ view: "home" }) }, ["Home"]),
-            ]),
-          ])
-        );
-        return;
-      }
-      const { card } = queue[i];
-      pane.appendChild(buildFlashcard(ctx, sheet, card, i, total, cram, showAt, queue));
-    }
-
-    showAt(index);
-    return pane;
-  }
-
-  function buildFlashcard(ctx, sheet, card, idx, total, cram, advance, queue) {
-    let revealed = false;
-
-    const FLASHCARD_HELP = `<p>Flashcards use <strong>Spaced Repetition (SM-2)</strong> — cards come back based on how well you know them.</p>
-      <ul>
-      <li><strong>Again</strong> — didn't know it; resurfaces in ~1 min</li>
-      <li><strong>Hard</strong> — knew it but with effort; returns in a few days</li>
-      <li><strong>Good</strong> — knew it comfortably; returns in about a week</li>
-      <li><strong>Easy</strong> — knew it instantly; pushed out much further</li>
-      </ul>
-      <p>Keyboard: <span class="kbd-help">Space</span> or <span class="kbd-help">Enter</span> to reveal · <span class="kbd-help">1</span>–<span class="kbd-help">4</span> to grade</p>
-      <p>"Again" cards are re-queued later in the same session so you see them again before finishing.</p>`;
-    const meta = h("div", { class: "study-meta" }, [
-      h("span", {}, [`Card ${idx + 1} of ${total}`]),
-      h("span", { class: "study-meta-right" }, [
-        SRS.describeDue(ctx.state.srs[card.id]),
-        " · ease ", (ctx.state.srs[card.id]?.ease ?? 2.5).toFixed(2),
-        helpIcon("Flashcards (Spaced Repetition)", FLASHCARD_HELP),
-      ]),
-    ]);
-
-    const sectionLabel = h("div", { class: "card-section" }, [sheet.id.toUpperCase() + " · " + card.section]);
-    const parent = card.parent ? h("div", { class: "card-parent" }, [card.parent]) : null;
-
-    // Look up canonical step + parent BEFORE rendering the prompt so we can
-    // upgrade it to a mnemonic-driven active-recall prompt when applicable.
-    const canonical = findCanonicalStep(sheet, card);
-    const parentStep = findParentStep(sheet, card);
-    const mnemonic = mnemonicMatch(parentStep, canonical);
-
-    let prompt;
-    if (mnemonic) {
-      prompt = h("div", { class: "card-prompt mnemonic-prompt" }, [
-        h("div", { class: "mnemonic-label" }, ["Mnemonic"]),
-        renderMnemonicLetters(mnemonic.letters, mnemonic.letter),
-        h("div", { class: "mnemonic-ask" }, [
-          `What does the `,
-          h("strong", {}, [mnemonic.letter]),
-          ` stand for in this step?`,
-        ]),
-      ]);
-    } else {
-      prompt = h("div", { class: "card-prompt" }, [
-        card.parent
-          ? `Within "${card.parent}" — what's expected?`
-          : (idx === 0
-              ? `What is the first step in this section?`
-              : `What is the next step?`),
-      ]);
-    }
-
-    const answer = h("div", { class: "card-answer", style: "display:none" }, [card.text]);
-    const points = h("div", { class: "card-points", style: "display:none" }, [
-      `${card.points} point${card.points === 1 ? "" : "s"}`,
-    ]);
-
-    // Look up extra context from the canonical sheet for this card.
-    // (canonical already resolved above for mnemonic detection.)
-    const extras = h("div", { style: "display:none" });
-    if (canonical) {
-      if (canonical.mnemonic) {
-        extras.appendChild(h("div", { class: "card-mnemonic" }, [
-          h("span", { class: "label" }, ["Mnemonic:"]),
-          canonical.mnemonic,
-        ]));
-      }
-      if (canonical.examinerNote) {
-        extras.appendChild(h("div", { class: "card-examiner" }, [
-          "Examiner says: " + canonical.examinerNote,
-        ]));
-      }
-      if (canonical.note) {
-        extras.appendChild(h("div", { class: "card-examiner" }, [canonical.note]));
-      }
-    }
-
-    const userNoteText = Notes.getStepNote(ctx.state, card.id);
-    const userNote = h("div", { class: "card-note", style: "display:none" }, []);
-    if (userNoteText) {
-      userNote.appendChild(h("span", { class: "label" }, ["Your note"]));
-      userNote.appendChild(renderMarkdownEl(userNoteText));
-    }
-
-    const reveal = h("button", { class: "btn btn-primary", onclick: () => doReveal() }, ["Show answer  ", h("span", { class: "kbd" }, ["space"])]);
-
-    const grades = h("div", { class: "grade-row", style: "display:none" }, [
-      h("button", { class: "grade again", onclick: () => doGrade("again") }, ["Again", h("small", {}, ["< 1 min"])]),
-      h("button", { class: "grade hard",  onclick: () => doGrade("hard")  }, ["Hard",  h("small", {}, [dueLabel("hard", ctx, card)])]),
-      h("button", { class: "grade good",  onclick: () => doGrade("good")  }, ["Good",  h("small", {}, [dueLabel("good", ctx, card)])]),
-      h("button", { class: "grade easy",  onclick: () => doGrade("easy")  }, ["Easy",  h("small", {}, [dueLabel("easy", ctx, card)])]),
-    ]);
-
-    const actions = h("div", { class: "card-actions" }, [reveal]);
-
-    const noteRow = h("div", { class: "card-actions" }, [
-      h("button", { class: "btn-link", onclick: () => openInlineNote(ctx, card, userNote, () => {}) }, [
-        userNoteText ? "Edit your note" : "+ Add a note",
-      ]),
-    ]);
-
-    const cardEl = h("div", { class: "card" }, [
-      sectionLabel,
-      parent,
-      prompt,
-      answer,
-      points,
-      extras,
-      userNote,
-      actions,
-      grades,
-      noteRow,
-    ]);
-
-    function doReveal() {
-      if (revealed) return;
-      revealed = true;
-      answer.style.display = "";
-      points.style.display = "";
-      extras.style.display = "";
-      if (userNoteText) userNote.style.display = "";
-      reveal.style.display = "none";
-      grades.style.display = "";
-    }
-
-    function doGrade(name) {
-      const before = SRS.getRecord(ctx.state, card.id);
-      const after = SRS.grade(before, name);
-      ctx.state.srs[card.id] = after;
-      ctx.state.stats.totalReviews += 1;
-      ctx.state.stats.lastReviewedAt = Date.now();
-      ctx.save();
-      // For "again" we re-queue this card later in the session
-      if (name === "again" && !cram) {
-        queue.push({ card, rec: after });
-      }
-      advance(idx + 1);
-    }
-
-    // keyboard handlers
-    cardEl.tabIndex = 0;
-    cardEl.addEventListener("keydown", (e) => {
-      if (!revealed && (e.key === " " || e.key === "Enter")) {
-        e.preventDefault();
-        doReveal();
-      } else if (revealed) {
-        if (e.key === "1") doGrade("again");
-        if (e.key === "2") doGrade("hard");
-        if (e.key === "3") doGrade("good");
-        if (e.key === "4") doGrade("easy");
-      }
-    });
-    setTimeout(() => cardEl.focus(), 0);
-
-    return h("div", {}, [meta, cardEl]);
-  }
-
-  function dueLabel(gradeName, ctx, card) {
-    const before = SRS.getRecord(ctx.state, card.id);
-    const after = SRS.grade({ ...before }, gradeName);
-    return SRS.describeDue(after);
-  }
-
-  function findCanonicalStep(sheet, card) {
-    for (const section of sheet.sections) {
-      if (section.name !== card.section) continue;
-      const step = section.steps[card.stepIndex];
-      if (!step) return null;
-      if (card.subIndex == null) return step;
-      return (step.substeps || [])[card.subIndex] || null;
-    }
-    return null;
-  }
-
-  function findParentStep(sheet, card) {
-    if (card.subIndex == null) return null;
-    for (const section of sheet.sections) {
-      if (section.name !== card.section) continue;
-      return section.steps[card.stepIndex] || null;
-    }
-    return null;
-  }
-
-  /**
-   * Given a parent step with a `mnemonic` field (e.g. "OPQRST") and a substep
-   * (e.g. "Provocation"), return the matching letter if the substep's first
-   * character appears in the mnemonic acronym — otherwise null.
-   *
-   * Active-recall prompts use this to turn "what's expected?" into "OPQRST —
-   * what does the P stand for?", which research consistently identifies as a
-   * higher-yield prompt than a generic checklist cue.
-   */
-  function mnemonicMatch(parentStep, substep) {
-    if (!parentStep || !parentStep.mnemonic || !substep || !substep.text) return null;
-    const acronym = parentStep.mnemonic.match(/^[A-Z]+/);
-    if (!acronym) return null;
-    const letters = acronym[0];
-    const firstLetter = substep.text.trim().charAt(0).toUpperCase();
-    if (!letters.includes(firstLetter)) return null;
-    // If the same letter appears twice in the acronym, prefer the first
-    // unused index — for OPQRST and SAMPLE this never happens, but it's
-    // cheap insurance.
-    return { letters, letter: firstLetter };
-  }
-
-  /** Render the mnemonic letters with one letter highlighted. */
-  function renderMnemonicLetters(letters, activeLetter) {
-    const wrap = h("div", { class: "mnemonic-letters" });
-    let highlightedOnce = false;
-    for (const ch of letters) {
-      const isActive = !highlightedOnce && ch === activeLetter;
-      if (isActive) highlightedOnce = true;
-      wrap.appendChild(
-        h("span", { class: isActive ? "mn-letter active" : "mn-letter" }, [ch])
-      );
-    }
-    return wrap;
   }
 
   function buildFlatSequence(sheet) {
@@ -1106,13 +781,13 @@
         h("div", { class: "big" }, ["—"]),
         h("p", {}, ["This sheet has a single continuous sequence."]),
         h("p", { class: "muted" }, [
-          "Section Order Drill works for sheets with multiple named sections (e.g. Trauma Assessment, Medical Assessment). Use the Flashcards tab to study the steps for this sheet.",
+          "Section Order Drill works for sheets with multiple named sections (e.g. Trauma Assessment, Medical Assessment). Use the Full Sheet tab to review the steps for this sheet.",
         ]),
         h("p", {}, [
           h("button", {
             class: "btn btn-primary",
-            onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "study" }),
-          }, ["Go to Flashcards →"]),
+            onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "sheet" }),
+          }, ["View Full Sheet →"]),
         ]),
       ]);
     }
@@ -1325,8 +1000,8 @@
               h("button", {
                 class: "btn",
                 onclick: () =>
-                  ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "study" }),
-              }, ["Back to flashcards"]),
+                  ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "sheet" }),
+              }, ["View full sheet"]),
             ]),
           ])
         );
@@ -2254,220 +1929,13 @@
     return pane;
   };
 
-  // ---------- CRITICAL FAIL MODE -------------------------------------
-  /**
-   * Drill all critical criteria for a sheet with SRS scheduling.
-   * Each criterion is revealed on demand; the user self-rates:
-   *   ✗ Would fail   → "again"  (resurfaces in 30 s)
-   *   ~ Close call   → "hard"
-   *   ✓ Know it cold → "easy"
-   * Card IDs: "critical::<sheetId>::<idx>" stored in state.srs.
-   */
-  Views.criticalDrill = (ctx, sheet) => {
-    const criteria = sheet.criticalCriteria || [];
-
-    if (criteria.length === 0) {
-      return h("div", { class: "empty-state" }, [
-        h("div", { class: "big" }, ["—"]),
-        h("p", {}, ["No critical criteria found for this sheet."]),
-        h("p", {}, [
-          h("button", {
-            class: "btn btn-primary",
-            onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "sheet" }),
-          }, ["View full sheet →"]),
-        ]),
-      ]);
-    }
-
-    const now = Date.now();
-    const allCards = criteria.map((text, idx) => ({
-      id: `critical::${sheet.id}::${idx}`,
-      text,
-      idx,
-      section: "CRITICAL CRITERIA",
-    }));
-
-    const pane = h("div", { class: "study-pane" });
-
-    function buildCritQueue(cram) {
-      if (cram) {
-        return allCards.map((card) => ({ card, rec: SRS.getRecord(ctx.state, card.id) }));
-      }
-      const due = [];
-      const fresh = [];
-      for (const card of allCards) {
-        const rec = ctx.state.srs[card.id];
-        if (!rec || !rec.due || rec.due <= 0) {
-          fresh.push({ card, rec: SRS.defaultRecord() });
-        } else if (rec.due <= now) {
-          due.push({ card, rec });
-        }
-        // future-due: not shown until SRS says it's time
-      }
-      due.sort((a, b) => a.rec.due - b.rec.due);
-      return [...due, ...fresh];
-    }
-
-    let queue = buildCritQueue(false);
-
-    function startSession(q) {
-      queue = q;
-      showAt(0);
-    }
-
-    function showAt(i) {
-      pane.innerHTML = "";
-
-      if (queue.length === 0) {
-        // Nothing due: all criteria are scheduled for the future
-        pane.appendChild(
-          h("div", { class: "empty-state" }, [
-            h("div", { class: "big" }, ["✓"]),
-            h("p", {}, ["All critical criteria are on schedule."]),
-            h("p", { class: "muted" }, ["SRS will bring these back when it's time."]),
-            h("p", {}, [
-              h("button", {
-                class: "btn btn-primary",
-                onclick: () => startSession(buildCritQueue(true)),
-              }, ["Drill all anyway →"]),
-              " ",
-              h("button", { class: "btn", onclick: () => ctx.navigate({ view: "home" }) }, ["Home"]),
-            ]),
-          ])
-        );
-        return;
-      }
-
-      if (i >= queue.length) {
-        pane.appendChild(
-          h("div", { class: "empty-state" }, [
-            h("div", { class: "big" }, ["✓"]),
-            h("p", {}, ["Critical criteria session complete."]),
-            h("p", { class: "muted" }, [
-              `Reviewed ${queue.length} criterion${queue.length === 1 ? "" : "ia"}.`,
-            ]),
-            h("p", {}, [
-              h("button", {
-                class: "btn btn-primary",
-                onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "critical" }),
-              }, ["Go again"]),
-              " ",
-              h("button", { class: "btn", onclick: () => ctx.navigate({ view: "home" }) }, ["Home"]),
-            ]),
-          ])
-        );
-        return;
-      }
-
-      pane.appendChild(buildCritCard(i));
-    }
-
-    function buildCritCard(i) {
-      const { card } = queue[i];
-
-      const CRIT_HELP = `<p><strong>Critical criteria</strong> are the auto-fail behaviors — doing or failing to do any one of these immediately fails you on the NREMT exam, regardless of everything else.</p>
-        <p>Each criterion is shown immediately (no reveal needed). Rate yourself:</p>
-        <ul>
-        <li><strong>✗ Would fail</strong> — you'd have missed this; resurfaces in ~30 seconds</li>
-        <li><strong>~ Close call</strong> — you'd probably catch it, but not automatically; returns sooner</li>
-        <li><strong>✓ Know it cold</strong> — automatic; scheduled further out</li>
-        </ul>
-        <p>Don't advance to a real exam until every criterion is a reflex, not a memory.</p>`;
-      const meta = h("div", { class: "study-meta" }, [
-        h("span", {}, [`Criterion ${i + 1} of ${queue.length}`]),
-        h("span", { class: "study-meta-right" }, [
-          SRS.describeDue(ctx.state.srs[card.id]),
-          helpIcon("Critical Criteria Drill", CRIT_HELP),
-        ]),
-      ]);
-
-      const sheetLabel = h("div", { class: "card-section" }, [
-        sheet.id.toUpperCase() + " · CRITICAL CRITERIA",
-      ]);
-
-      const critBadge = h("div", { class: "crit-badge" }, ["⚠ Auto-fail if missed"]);
-
-      // Show criterion text immediately — user rates whether they'd catch it
-      const criterionText = h("div", { class: "card-answer crit-answer" }, [card.text]);
-
-      const prompt = h("div", { class: "card-prompt" }, [
-        "Would you catch this in an exam?",
-      ]);
-
-      // 3-button rating shown directly — no reveal step needed
-      const grades = h("div", { class: "grade-row crit-grade-row" }, [
-        h("button", { class: "grade again", onclick: () => doGrade("again") }, [
-          "✗ Would fail", h("small", {}, ["< 30 sec"]),
-        ]),
-        h("button", { class: "grade hard", onclick: () => doGrade("hard") }, [
-          "~ Close call", h("small", {}, [dueLabel("hard", ctx, card)]),
-        ]),
-        h("button", { class: "grade easy", onclick: () => doGrade("easy") }, [
-          "✓ Know it cold", h("small", {}, [dueLabel("easy", ctx, card)]),
-        ]),
-      ]);
-
-      const cardEl = h("div", { class: "card crit-card" }, [
-        sheetLabel,
-        critBadge,
-        criterionText,
-        prompt,
-        grades,
-      ]);
-
-      function doGrade(name) {
-        const before = SRS.getRecord(ctx.state, card.id);
-        const after = SRS.grade(before, name);
-        // Critical criteria resurface faster on "again" — 30 s instead of 1 min
-        if (name === "again") {
-          after.due = Date.now() + 30 * 1000;
-        }
-        ctx.state.srs[card.id] = after;
-        ctx.state.stats.totalReviews += 1;
-        ctx.state.stats.lastReviewedAt = Date.now();
-        ctx.save();
-        if (name === "again") {
-          queue.push({ card, rec: after });
-        }
-        showAt(i + 1);
-      }
-
-      // Keyboard: space/enter to reveal; 1/2/3 to grade
-      cardEl.tabIndex = 0;
-      // Keyboard: 1/2/3 to grade directly (no reveal step)
-      cardEl.addEventListener("keydown", (e) => {
-        if (e.key === "1") doGrade("again");
-        if (e.key === "2") doGrade("hard");
-        if (e.key === "3") doGrade("easy");
-      });
-      setTimeout(() => cardEl.focus(), 0);
-
-      return h("div", {}, [meta, cardEl]);
-    }
-
-    showAt(0);
-    return pane;
-  };
-
   // ---------- STATS ---------------------------------------------------
   Views.stats = (ctx) => {
     const state = ctx.state;
     const now = Date.now();
     const data = NREMT_DATA;
 
-    // Aggregates
-    let reviewed = 0, dueNow = 0, totalMastery = 0;
-    for (const sheet of data.sheets) {
-      totalMastery += SRS.masteryFor(state, sheet);
-      for (const card of sheet.cards) {
-        const rec = state.srs[card.id];
-        if (rec && rec.reps) reviewed++;
-        if (!rec || rec.due <= now) dueNow++;
-      }
-    }
-    const overallPct = data.sheets.length
-      ? Math.round((totalMastery / data.sheets.length) * 100)
-      : 0;
+    // Aggregates (SRS-based mastery removed; drill progress still tracked)
     const total = data.totalCards;
 
     const streak = state.stats.dailyStreak || 0;
@@ -2487,15 +1955,6 @@
         h("div", { class: "hero-num" }, [String(streak)]),
         h("div", { class: "hero-label" }, ["day streak"]),
       ]),
-      h("div", { class: "hero-block hero-center" }, [
-        h("div", { class: "hero-num hero-num-big" }, [overallPct + "%"]),
-        h("div", { class: "hero-label" }, ["overall mastery"]),
-        h("div", { class: "hero-bar-wrap" }, [
-          h("div", { class: "hero-bar" }, [
-            h("div", { class: "hero-bar-fill", style: `width:${overallPct}%` }),
-          ]),
-        ]),
-      ]),
       hasAchievements ? h("div", { class: "hero-block" }, [
         h("div", { class: "hero-icon-big" }, ["🏅"]),
         h("div", { class: "hero-num" }, [unlockedCount + "/" + allAchs.length]),
@@ -2506,8 +1965,7 @@
     // ---- Key numbers ----
     wrap.appendChild(h("div", { class: "stat-grid" }, [
       statCard("📝", state.stats.totalReviews, "Total Reviews"),
-      statCard("📖", reviewed + " / " + total, "Cards Studied"),
-      statCard(dueNow > 0 ? "⚠️" : "✅", dueNow > 0 ? dueNow : "None", "Due Now", dueNow > 0 ? "stat-card-warn" : ""),
+      statCard("📖", total, "Total Cards"),
       statCard("🗓️", longestStreak + (longestStreak === 1 ? " day" : " days"), "Best Streak"),
     ]));
 
@@ -2548,9 +2006,6 @@
 
     const sheetList = h("div", { class: "sheet-progress-list" });
     for (const sheet of data.sheets) {
-      const mastery = SRS.masteryFor(state, sheet);
-      const pct = Math.round(mastery * 100);
-      const due = SRS.dueCount(state, sheet);
       const notesCount = Notes.countSheetNotes(state, sheet);
 
       const drillBadges = drillDefs.map((d) => {
@@ -2579,22 +2034,13 @@
         h("div", { class: "spc-header" }, [
           h("button", {
             class: "btn-link spc-title",
-            onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "study" }),
+            onclick: () => ctx.navigate({ view: "sheet", sheetId: sheet.id, tab: "sheet" }),
           }, [sheet.title]),
           h("div", { class: "spc-meta" }, [
-            due > 0
-              ? h("span", { class: "spc-due" }, [due + " due"])
-              : h("span", { class: "spc-ok" }, ["all good"]),
             notesCount > 0
               ? h("span", { class: "spc-notes" }, [notesCount + " note" + (notesCount !== 1 ? "s" : "")])
               : null,
           ]),
-        ]),
-        h("div", { class: "spc-bar-row" }, [
-          h("div", { class: "spc-bar" }, [
-            h("div", { class: "spc-fill", style: `width:${pct}%` }),
-          ]),
-          h("span", { class: "spc-pct" }, [pct + "%"]),
         ]),
         h("div", { class: "spc-drills" }, drillBadges),
       ]));
@@ -3726,8 +3172,7 @@
 
     sendBtn.addEventListener("click", doSend);
     textarea.addEventListener("keydown", (e) => {
-      // Ctrl/Cmd+Enter sends on desktop; plain Enter is a newline (mobile-friendly)
-      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         doSend();
       }
@@ -3735,8 +3180,7 @@
 
     wrap.appendChild(h("div", { class: "chat-input-row" }, [textarea, sendBtn]));
 
-    // Hint for keyboard shortcut
-    wrap.appendChild(h("div", { class: "chat-input-hint muted" }, ["Ctrl+Enter to send"]));
+    wrap.appendChild(h("div", { class: "chat-input-hint muted" }, ["Enter to send · Shift+Enter for new line"]));
 
     return wrap;
   }
