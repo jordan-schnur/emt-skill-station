@@ -72,10 +72,13 @@
   function relativeTime(isoStr) {
     if (!isoStr) return "unknown";
     const diff = Math.round((Date.now() - new Date(isoStr)) / 1000);
-    if (diff < 60) return "just now";
-    if (diff < 3600) return `${Math.round(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.round(diff / 3600)}h ago`;
-    return new Date(isoStr).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    if (diff < 60)      return "just now";
+    if (diff < 3600)    return `${Math.round(diff / 60)}m ago`;
+    if (diff < 86400)   return `${Math.round(diff / 3600)}h ago`;
+    if (diff < 604800)  return `${Math.round(diff / 86400)}d ago`;
+    if (diff < 2592000) return `${Math.round(diff / 604800)}w ago`;
+    if (diff < 31536000) return `${Math.round(diff / 2592000)}mo ago`;
+    return `${Math.round(diff / 31536000)}y ago`;
   }
 
   function showConflictModal({ localUpdatedAt, cloudUpdatedAt, onKeepLocal, onUseCloud }) {
@@ -2111,11 +2114,8 @@
       }
 
       let syncLabel = "Not yet synced";
-      if (ctx.state.updatedAt) {
-        const diff = Math.round((Date.now() - new Date(ctx.state.updatedAt)) / 1000);
-        if (diff < 60) syncLabel = "Synced just now";
-        else if (diff < 3600) syncLabel = `Synced ${Math.round(diff / 60)}m ago`;
-        else syncLabel = `Synced ${Math.round(diff / 3600)}h ago`;
+      if (ctx.state.lastSyncedAt) {
+        syncLabel = `Synced ${relativeTime(ctx.state.lastSyncedAt)}`;
       }
 
       cloudSection.append(
@@ -2140,7 +2140,7 @@
               try {
                 const meta = await CloudSync.downloadWithMeta();
                 const localTime = ctx.state.updatedAt ? new Date(ctx.state.updatedAt) : new Date(0);
-                const cloudTime = meta?.cloudUpdatedAt ? new Date(meta.cloudUpdatedAt) : new Date(0);
+                const cloudTime = meta?.state?.updatedAt ? new Date(meta.state.updatedAt) : new Date(0);
                 const hasConflict = meta?.state && cloudTime > localTime;
 
                 if (hasConflict) {
@@ -2148,9 +2148,10 @@
                   btn.textContent = "Sync now";
                   showConflictModal({
                     localUpdatedAt: ctx.state.updatedAt,
-                    cloudUpdatedAt: meta.cloudUpdatedAt,
+                    cloudUpdatedAt: meta.state?.updatedAt,
                     onKeepLocal: async () => {
                       ctx.state.updatedAt = new Date().toISOString();
+                      ctx.state.lastSyncedAt = ctx.state.updatedAt;
                       Storage.save(ctx.state);
                       await CloudSync.upload(ctx.state);
                       ctx.toast("Local version pushed to cloud");
@@ -2158,6 +2159,7 @@
                     },
                     onUseCloud: () => {
                       Object.assign(ctx.state, meta.state);
+                      ctx.state.lastSyncedAt = new Date().toISOString();
                       Storage.save(ctx.state);
                       ctx.toast("Cloud version restored locally");
                       ctx.refresh();
@@ -2165,6 +2167,7 @@
                   });
                 } else {
                   ctx.state.updatedAt = new Date().toISOString();
+                  ctx.state.lastSyncedAt = ctx.state.updatedAt;
                   Storage.save(ctx.state);
                   await CloudSync.upload(ctx.state);
                   ctx.toast("Synced to cloud");
