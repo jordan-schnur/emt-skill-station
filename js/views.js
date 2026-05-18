@@ -3185,6 +3185,338 @@
     return wrap;
   }
 
+  // ---------- EMS CLINICAL MNEMONICS ----------------------------------
+
+  // Minimal SM-2 implementation, self-contained because window.SRS was removed.
+  const _emsSrsDAY = 24 * 60 * 60 * 1000;
+  const _emsSrsDefaultRecord = () => ({
+    ease: 2.5, interval: 0, reps: 0, due: 0,
+    lastGrade: null, lapses: 0, lastReviewed: null,
+  });
+  function _emsSrsGrade(record, gradeName, now = Date.now()) {
+    const rec = { ...record };
+    rec.lastGrade = gradeName;
+    rec.lastReviewed = now;
+    if (gradeName === "again") {
+      rec.lapses += 1; rec.reps = 0; rec.interval = 0;
+      rec.ease = Math.max(1.3, rec.ease - 0.2);
+      rec.due = now + 60 * 1000;
+      return rec;
+    }
+    if (rec.reps === 0)      rec.interval = 1;
+    else if (rec.reps === 1) rec.interval = 6;
+    else {
+      const mult = gradeName === "hard" ? 1.2 : gradeName === "easy" ? rec.ease * 1.3 : rec.ease;
+      rec.interval = rec.interval * mult;
+    }
+    if (gradeName === "hard") rec.ease = Math.max(1.3, rec.ease - 0.15);
+    if (gradeName === "easy") rec.ease = rec.ease + 0.15;
+    if (rec.interval > 365 * 4) rec.interval = 365 * 4;
+    rec.reps += 1;
+    rec.due = now + rec.interval * _emsSrsDAY;
+    return rec;
+  }
+  function _emsSrsDescribeDue(rec, now = Date.now()) {
+    if (!rec || !rec.due) return "new";
+    const diff = rec.due - now;
+    if (diff <= 0) return "due now";
+    const days = diff / _emsSrsDAY;
+    if (days < 1) return `due in ${Math.round(diff / (60 * 60 * 1000))}h`;
+    if (days < 30) return `due in ${Math.round(days)}d`;
+    return `due in ${Math.round(days / 30)}mo`;
+  }
+
+  /**
+   * renderReferenceLibrary(ctx, config) – reusable renderer for any reference library
+   * that follows the EMS_CLINICAL_MNEMONICS data shape.
+   *
+   * config: { data, srsKey, cardIdPrefix, title, subtitle }
+   *
+   * Adding a new library (e.g. BLS diagnoses):
+   *   1. Create js/<library>.js with the same shape → window.<LIBRARY_NAME>
+   *   2. Add a route in app.js
+   *   3. Call renderReferenceLibrary(ctx, { data: window.<LIBRARY_NAME>, srsKey: "...", ... })
+   */
+  function renderReferenceLibrary(ctx, config) {
+    const { data, srsKey, cardIdPrefix, title, subtitle } = config;
+    const tab = (ctx.route && ctx.route.tab) || "browse";
+
+    const wrap = h("div", { class: "ems-mnemonics" });
+
+    // ── Back crumb (for quiz mode) ──────────────────────────────────────
+    if (tab === "quiz") {
+      wrap.appendChild(h("div", { class: "crumbs" }, [
+        h("button", {
+          class: "btn-link",
+          onclick: () => ctx.navigate({ view: ctx.route.view, tab: "browse" }),
+        }, ["← Back to " + title]),
+      ]));
+      return renderQuizMode(wrap, ctx, config);
+    }
+
+    // ── Browse header ───────────────────────────────────────────────────
+    wrap.append(
+      h("h1", {}, [title]),
+      h("p", { class: "subtitle" }, [subtitle || "Tap a card to expand. Use Quiz mode to drill with spaced repetition."]),
+    );
+
+    // ── Category filter ─────────────────────────────────────────────────
+    const categories = ["All", ...Array.from(new Set(data.map((m) => m.category)))];
+    let activeCategory = "All";
+
+    const grid = h("div", { class: "ems-mnemonic-grid" });
+
+    function renderGrid() {
+      grid.innerHTML = "";
+      const filtered = activeCategory === "All"
+        ? data
+        : data.filter((m) => m.category === activeCategory);
+      for (const mnemonic of filtered) {
+        grid.appendChild(renderMnemonicCard(ctx, mnemonic, srsKey, cardIdPrefix));
+      }
+    }
+
+    const filterRow = h("div", { class: "ems-filter-row" });
+    for (const cat of categories) {
+      const btn = h("button", {
+        class: "ems-filter-chip" + (cat === activeCategory ? " active" : ""),
+        type: "button",
+        onclick: () => {
+          activeCategory = cat;
+          for (const b of filterRow.querySelectorAll(".ems-filter-chip")) {
+            b.classList.toggle("active", b.textContent === cat);
+          }
+          renderGrid();
+        },
+      }, [cat]);
+      filterRow.appendChild(btn);
+    }
+
+    // ── Due count for quiz CTA ──────────────────────────────────────────
+    const srsStore = ctx.state[srsKey] || {};
+    const now = Date.now();
+    const dueCount = data.filter((m) => {
+      const rec = srsStore[cardIdPrefix + "::" + m.id];
+      return !rec || rec.due <= now;
+    }).length;
+
+    const quizBtn = h("button", {
+      class: "btn btn-primary ems-quiz-btn",
+      type: "button",
+      onclick: () => ctx.navigate({ view: ctx.route.view, tab: "quiz" }),
+    }, [
+      dueCount > 0
+        ? `Quiz — ${dueCount} card${dueCount === 1 ? "" : "s"} due`
+        : "Quiz — all caught up",
+    ]);
+
+    wrap.append(filterRow, quizBtn, grid);
+    renderGrid();
+    return wrap;
+  }
+
+  function renderMnemonicCard(ctx, mnemonic, srsKey, cardIdPrefix) {
+    const srsStore = ctx.state[srsKey] || {};
+    const cardId = cardIdPrefix + "::" + mnemonic.id;
+    const rec = srsStore[cardId];
+    const dueStr = rec ? _emsSrsDescribeDue(rec) : "new";
+
+    const body = h("div", { class: "ems-card-body", style: "display:none" });
+
+    if (mnemonic.note) {
+      body.appendChild(h("div", { class: "ems-card-note" }, [mnemonic.note]));
+    }
+
+    const table = h("div", { class: "ems-letter-table" });
+    for (const item of mnemonic.letters) {
+      if (item.stand === "(connector)") continue;
+      table.appendChild(h("div", { class: "ems-letter-row" }, [
+        h("span", { class: "ems-letter-badge" }, [item.letter]),
+        h("div", { class: "ems-letter-content" }, [
+          h("strong", {}, [item.stand]),
+          item.detail ? h("div", { class: "ems-letter-detail muted" }, [item.detail]) : null,
+        ]),
+      ]));
+    }
+    body.appendChild(table);
+
+    let expanded = false;
+    const card = h("div", { class: "ems-card", onclick: () => {
+      expanded = !expanded;
+      body.style.display = expanded ? "" : "none";
+      card.classList.toggle("expanded", expanded);
+    }}, [
+      h("div", { class: "ems-card-header" }, [
+        h("div", { class: "ems-card-left" }, [
+          h("span", { class: "ems-acronym" }, [mnemonic.acronym]),
+          h("span", { class: "ems-card-title" }, [mnemonic.title]),
+        ]),
+        h("div", { class: "ems-card-right" }, [
+          h("span", { class: "ems-category-tag" }, [mnemonic.category]),
+          h("span", { class: "ems-due-badge" + ((!rec || rec.due <= Date.now()) ? " due" : "") }, [dueStr]),
+          h("span", { class: "ems-expand-icon" }, ["▾"]),
+        ]),
+      ]),
+      body,
+    ]);
+
+    return card;
+  }
+
+  function renderQuizMode(wrap, ctx, config) {
+    const { data, srsKey, cardIdPrefix, title } = config;
+    const srsStore = ctx.state[srsKey] || {};
+    const now = Date.now();
+
+    // Build queue: due first (oldest-due first), then new cards
+    const due = [];
+    const fresh = [];
+    for (const m of data) {
+      const id = cardIdPrefix + "::" + m.id;
+      const rec = srsStore[id];
+      if (!rec || rec.due <= 0) {
+        fresh.push({ m, rec: _emsSrsDefaultRecord() });
+      } else if (rec.due <= now) {
+        due.push({ m, rec });
+      }
+    }
+    due.sort((a, b) => a.rec.due - b.rec.due);
+    const queue = [...due, ...fresh];
+
+    if (queue.length === 0) {
+      wrap.appendChild(h("div", { class: "empty-state" }, [
+        h("div", { class: "big" }, ["✓"]),
+        h("p", {}, ["All caught up! Come back later."]),
+        h("button", {
+          class: "btn",
+          onclick: () => ctx.navigate({ view: ctx.route.view, tab: "browse" }),
+        }, ["← Browse mnemonics"]),
+      ]));
+      return wrap;
+    }
+
+    let currentIdx = 0;
+    let revealed = false;
+
+    const counterEl   = h("span", { class: "ems-quiz-counter" }, []);
+    const frontEl     = h("div", { class: "ems-quiz-front" });
+    const backEl      = h("div", { class: "ems-quiz-back", style: "display:none" });
+    const revealBtn   = h("button", { class: "btn btn-primary ems-reveal-btn", type: "button" }, ["Reveal"]);
+    const gradeRow    = h("div", { class: "ems-grade-row", style: "display:none" });
+    const cardEl      = h("div", { class: "ems-quiz-card" }, [frontEl, backEl, revealBtn, gradeRow]);
+
+    for (const [grade, label, cls] of [
+      ["again", "Again", "btn-danger"],
+      ["hard",  "Hard",  ""],
+      ["good",  "Good",  "btn-primary"],
+      ["easy",  "Easy",  ""],
+    ]) {
+      gradeRow.appendChild(h("button", {
+        class: "btn " + cls,
+        type: "button",
+        onclick: () => applyGrade(grade),
+      }, [label]));
+    }
+
+    function applyGrade(gradeName) {
+      const { m, rec } = queue[currentIdx];
+      const cardId = cardIdPrefix + "::" + m.id;
+      if (!ctx.state[srsKey]) ctx.state[srsKey] = {};
+      ctx.state[srsKey][cardId] = _emsSrsGrade(rec, gradeName);
+      ctx.save();
+
+      if (gradeName === "again") {
+        // Requeue at end so user sees it again this session
+        queue.push({ m, rec: ctx.state[srsKey][cardId] });
+      }
+
+      currentIdx++;
+      if (currentIdx >= queue.length) {
+        // Done
+        wrap.innerHTML = "";
+        wrap.appendChild(h("div", { class: "crumbs" }, [
+          h("button", {
+            class: "btn-link",
+            onclick: () => ctx.navigate({ view: ctx.route.view, tab: "browse" }),
+          }, ["← Back to " + title]),
+        ]));
+        wrap.appendChild(h("div", { class: "empty-state" }, [
+          h("div", { class: "big" }, ["✓"]),
+          h("p", {}, ["Session complete!"]),
+          h("button", {
+            class: "btn",
+            onclick: () => ctx.navigate({ view: ctx.route.view, tab: "browse" }),
+          }, ["← Browse mnemonics"]),
+        ]));
+      } else {
+        renderCard();
+      }
+    }
+
+    function renderCard() {
+      revealed = false;
+      const { m } = queue[currentIdx];
+      const remaining = queue.length - currentIdx;
+      counterEl.textContent = `${remaining} card${remaining === 1 ? "" : "s"} remaining`;
+
+      frontEl.innerHTML = "";
+      frontEl.append(
+        h("div", { class: "ems-quiz-acronym" }, [m.acronym]),
+        h("div", { class: "ems-quiz-category" }, [m.category]),
+        h("div", { class: "ems-quiz-prompt muted" }, ["What does each letter stand for?"]),
+      );
+
+      backEl.innerHTML = "";
+      backEl.style.display = "none";
+      if (m.note) {
+        backEl.appendChild(h("div", { class: "ems-card-note" }, [m.note]));
+      }
+      const tbl = h("div", { class: "ems-letter-table" });
+      for (const item of m.letters) {
+        if (item.stand === "(connector)") continue;
+        tbl.appendChild(h("div", { class: "ems-letter-row" }, [
+          h("span", { class: "ems-letter-badge" }, [item.letter]),
+          h("div", { class: "ems-letter-content" }, [
+            h("strong", {}, [item.stand]),
+            item.detail ? h("div", { class: "ems-letter-detail muted" }, [item.detail]) : null,
+          ]),
+        ]));
+      }
+      backEl.appendChild(tbl);
+
+      revealBtn.style.display = "";
+      gradeRow.style.display = "none";
+    }
+
+    revealBtn.addEventListener("click", () => {
+      revealed = true;
+      backEl.style.display = "";
+      revealBtn.style.display = "none";
+      gradeRow.style.display = "";
+    });
+
+    renderCard();
+
+    wrap.append(
+      h("div", { class: "ems-quiz-header" }, [counterEl]),
+      cardEl,
+    );
+    return wrap;
+  }
+
+  Views.emsMnemonics = (ctx) => {
+    const data = (typeof EMS_CLINICAL_MNEMONICS !== "undefined")
+      ? EMS_CLINICAL_MNEMONICS
+      : [];
+    return renderReferenceLibrary(ctx, {
+      data,
+      srsKey: "emsSrs",
+      cardIdPrefix: "ems",
+      title: "EMS Mnemonics & Acronyms",
+      subtitle: "Clinical assessment and treatment acronyms used throughout EMS. Tap a card to expand, or use Quiz mode for spaced repetition.",
+    });
+  };
+
   // ---------- NOT FOUND ----------------------------------------------
   Views.notFound = () =>
     h("div", { class: "empty-state" }, [

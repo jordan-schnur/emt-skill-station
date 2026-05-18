@@ -30,6 +30,7 @@
     achievements: {},
     mnemonics: {},
     chats: {},
+    emsSrs: {},
   });
 
   function load() {
@@ -48,6 +49,7 @@
         achievements: { ...(parsed.achievements || {}) },
         mnemonics: { ...(parsed.mnemonics || {}) },
         chats: { ...(parsed.chats || {}) },
+        emsSrs: { ...(parsed.emsSrs || {}) },
         drills: {
           ...fresh.drills,
           ...(parsed.drills || {}),
@@ -105,6 +107,7 @@
       achievements: { ...(parsed.achievements || {}) },
       mnemonics: { ...(parsed.mnemonics || {}) },
       chats: { ...(parsed.chats || {}) },
+      emsSrs: { ...(parsed.emsSrs || {}) },
       drills: {
         ...fresh.drills,
         ...(parsed.drills || {}),
