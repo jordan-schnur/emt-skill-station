@@ -90,8 +90,9 @@
       case "settings":  view = Views.settings(ctx); break;
       case "guide":     view = Views.guide(ctx); break;
       case "chat":      view = Views.chat(ctx); break;
-      case "mnemonics": view = Views.emsMnemonics(ctx); break;
-      default:          view = Views.notFound();
+      case "mnemonics":      view = Views.emsMnemonics(ctx); break;
+      case "medconditions": view = Views.medConditions(ctx); break;
+      default:              view = Views.notFound();
     }
     root.appendChild(view);
 
@@ -120,6 +121,9 @@
     if (parts[0] === "mnemonics") {
       return { view: "mnemonics", tab: parts[1] || "browse" };
     }
+    if (parts[0] === "medconditions") {
+      return { view: "medconditions", tab: parts[1] || "browse" };
+    }
     if (["home", "stats", "settings", "guide"].includes(parts[0])) {
       return { view: parts[0] };
     }
@@ -130,6 +134,7 @@
     if (r.view === "sheet") h = `sheet/${r.sheetId}/${r.tab || "study"}`;
     else if (r.view === "chat") h = r.chatId ? `chat/${r.chatId}` : "chat";
     else if (r.view === "mnemonics") h = r.tab === "quiz" ? "mnemonics/quiz" : "mnemonics";
+    else if (r.view === "medconditions") h = r.tab && r.tab !== "browse" ? "medconditions/" + r.tab : "medconditions";
     else if (r.view !== "home") h = r.view;
     window.history.replaceState(null, "", h ? `#${h}` : "#");
   }

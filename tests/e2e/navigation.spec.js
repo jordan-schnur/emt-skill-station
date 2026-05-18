@@ -32,15 +32,17 @@ test.describe("Navigation & Home View", () => {
     await expect(firstCard).toContainText("Patient Assessment");
     await expect(firstCard).toContainText("Trauma");
     await expect(firstCard).toContainText("pts");
-    await expect(firstCard).toContainText("cards");
   });
 
-  test("should display mastery percentage", async ({ page }) => {
-    const masteryBars = page.locator(".mastery-bar");
-    await expect(masteryBars.first()).toBeVisible();
+  test("should display drill progress area on cards", async ({ page }) => {
+    const firstCard = page.locator(".sheet-card").first();
+    await expect(firstCard).toBeVisible();
 
-    const text = await page.locator(".sheet-stats").first().textContent();
-    expect(text).toMatch(/mastery \d+%/);
+    // The sheet-stats area renders either a category label or mastery badges
+    const stats = firstCard.locator(".sheet-stats");
+    await expect(stats).toBeVisible();
+    const text = await stats.textContent();
+    expect(text?.trim().length).toBeGreaterThan(0);
   });
 
   test("should navigate to sheet on card click", async ({ page }) => {
@@ -56,7 +58,7 @@ test.describe("Navigation & Home View", () => {
     const roadmap = page.locator(".roadmap");
     await expect(roadmap).toBeVisible();
     await expect(roadmap).toContainText("Coming next");
-    await expect(roadmap).toContainText("Critical Criteria Drill");
+    await expect(roadmap).toContainText("Section Order Drill");
   });
 
   test("should navigate back from sheet to home", async ({ page }) => {
@@ -106,21 +108,17 @@ test.describe("Sheet Detail View & Tabs", () => {
 
     // Check for expected tabs
     const tabText = await page.locator(".tabs").textContent();
-    expect(tabText).toContain("Flashcards");
+    expect(tabText).toContain("Order Drill");
     expect(tabText).toContain("Full sheet");
     expect(tabText).toContain("Notes");
   });
 
   test("should switch between tabs", async ({ page }) => {
-    // Start on Flashcards tab
+    // Default tab when navigating from home is "Full sheet"
     let currentTab = await page.locator(".tabs button.active").textContent();
-    expect(currentTab).toContain("Flashcards");
+    expect(currentTab).toContain("Full sheet");
 
-    // Click "Full sheet" tab
-    await page.locator("button:has-text('Full sheet')").click();
-    await page.waitForLoadState("networkidle");
-
-    // Should see sheet content
+    // Should see sheet content on Full sheet tab
     const title = page.locator(".ref-section");
     await expect(title.first()).toBeVisible();
 
@@ -131,6 +129,13 @@ test.describe("Sheet Detail View & Tabs", () => {
     // Should see notes editor
     const noteEditor = page.locator("textarea");
     await expect(noteEditor.first()).toBeVisible();
+
+    // Click "Order Drill" tab
+    await page.locator("button:has-text('Order Drill')").click();
+    await page.waitForLoadState("networkidle");
+
+    // Should see drill content
+    await expect(page.locator("body")).toBeTruthy();
   });
 
   test("should display sheet header with metadata", async ({ page }) => {

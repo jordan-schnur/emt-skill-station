@@ -93,41 +93,31 @@ test.describe("Data Persistence & Storage", () => {
     expect(updatedMastery).toBeTruthy();
   });
 
-  test("should show 'Due' counts based on progress", async ({ page }) => {
+  test("should show drill progress after answering a What's Next question", async ({ page }) => {
     await page.goto("/");
 
-    // Initially all cards should be due
+    // Navigate to the first sheet's What's Next? drill
     const firstCard = page.locator(".sheet-card").first();
-    let dueText = await firstCard.locator(".due-pill").textContent();
-
-    expect(dueText).toMatch(/\d+ due/);
-
-    // Grade a card
     await firstCard.click();
     await page.waitForURL(/.*sheet.*e201.*/);
 
-    const revealBtn = page.locator(
-      "button:has-text('Show answer'), button:has-text('Reveal')"
-    );
-    if ((await revealBtn.count()) > 0) {
-      await revealBtn.first().click();
+    await page.locator("button:has-text(\"What's Next?\")").first().click();
+    await page.waitForLoadState("networkidle");
 
-      const easyBtn = page.locator(".grade.easy");
-      if ((await easyBtn.count()) > 0) {
-        await easyBtn.first().click();
-        await page.waitForTimeout(300);
-      }
-    }
+    // Answer one question to trigger ctx.save()
+    const choice = page.locator(".whatnext-choice");
+    await choice.first().click();
+    await page.waitForTimeout(400);
 
-    // Go back and check due count decreased
+    // Go back to home
     await page.locator("text=← All sheets").click();
     await page.waitForURL(/#(?!.*sheet)/, { timeout: 5000 });
 
+    // Sheet card should still be visible and render correctly
     const updatedCard = page.locator(".sheet-card").first();
-    dueText = await updatedCard.locator(".due-pill").textContent();
-
-    // Should have decreased
-    expect(dueText).toBeTruthy();
+    await expect(updatedCard).toBeVisible();
+    const cardText = await updatedCard.textContent();
+    expect(cardText).toBeTruthy();
   });
 
   test("should persist notes across sessions", async ({ page }) => {
@@ -224,28 +214,18 @@ test.describe("Data Persistence & Storage", () => {
 });
 
 test.describe("Local Storage Inspection", () => {
-  test("should store progress in localStorage", async ({ page, context }) => {
-    // Get storage state before
-    const storageStateBefore = await context.storageState();
-
+  test("should store progress in localStorage after drill interaction", async ({ page }) => {
     await page.goto("/");
 
-    // Grade a card
+    // Navigate to What's Next? drill and answer one question to trigger ctx.save()
     await page.locator(".sheet-card").first().click();
     await page.waitForURL(/.*sheet.*e201.*/);
 
-    const revealBtn = page.locator(
-      "button:has-text('Show answer'), button:has-text('Reveal')"
-    );
-    if ((await revealBtn.count()) > 0) {
-      await revealBtn.first().click();
+    await page.locator("button:has-text(\"What's Next?\")").first().click();
+    await page.waitForLoadState("networkidle");
 
-      const goodBtn = page.locator(".grade.good");
-      if ((await goodBtn.count()) > 0) {
-        await goodBtn.first().click();
-        await page.waitForTimeout(500);
-      }
-    }
+    await page.locator(".whatnext-choice").first().click();
+    await page.waitForTimeout(500);
 
     // Check localStorage via JavaScript
     const storageData = await page.evaluate(() => {
