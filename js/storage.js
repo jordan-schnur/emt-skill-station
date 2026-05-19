@@ -31,6 +31,7 @@
     mnemonics: {},
     chats: {},
     emsSrs: {},
+    medcondSrs: {},
   });
 
   function load() {

@@ -3870,7 +3870,7 @@
 
       const table = h("div", {
         class: "medcond-compare-table",
-        style: `--cols: ${groupConditions.length + 1}`,
+        style: `--cols: ${groupConditions.length}`,
       });
 
       // Header row
@@ -3879,14 +3879,16 @@
         table.appendChild(h("div", { class: "medcond-th" }, [cond.name]));
       }
 
-      // Data rows
-      for (const dim of group.dimensions) {
+      // Data rows – alternating stripe on even rows
+      for (let ri = 0; ri < group.dimensions.length; ri++) {
+        const dim = group.dimensions[ri];
         const label = dimLabels[dim] || dim;
-        table.appendChild(h("div", { class: "medcond-td medcond-dim-label" }, [label]));
+        const stripe = ri % 2 === 1 ? " medcond-row-stripe" : "";
+        table.appendChild(h("div", { class: "medcond-td medcond-dim-label" + stripe }, [label]));
         for (const cond of groupConditions) {
           const val = (cond.compareDimensions || {})[dim] || "—";
           const isKey = dim === "keySign";
-          table.appendChild(h("div", { class: "medcond-td" + (isKey ? " medcond-key-row" : "") }, [val]));
+          table.appendChild(h("div", { class: "medcond-td" + (isKey ? " medcond-key-row" : stripe) }, [val]));
         }
       }
 
@@ -3912,6 +3914,64 @@
     wrap.append(groupRow, tableWrap);
   }
 
+  function _medCondSrsUpdate(record, correct) {
+    const ONE_DAY = 86400000;
+    const r = record || { interval: 1, ease: 2.5, reps: 0 };
+    let { interval, ease, reps } = r;
+    if (correct) {
+      reps++;
+      interval = reps <= 1 ? 1 : reps === 2 ? 4 : Math.round(interval * ease);
+      ease = Math.min(3.0, ease + 0.1);
+    } else {
+      reps = 0;
+      interval = 1;
+      ease = Math.max(1.3, ease - 0.2);
+    }
+    return { interval, ease, reps, due: Date.now() + interval * ONE_DAY };
+  }
+
+  function _buildMedCondQuestionsWithSrs(conditions, srsData, count) {
+    const now = Date.now();
+    const due = conditions.filter((c) => srsData[c.id] && srsData[c.id].due <= now)
+      .sort(() => Math.random() - 0.5);
+    const unseen = conditions.filter((c) => !srsData[c.id])
+      .sort(() => Math.random() - 0.5);
+    const upcoming = conditions.filter((c) => srsData[c.id] && srsData[c.id].due > now)
+      .sort((a, b) => srsData[a.id].due - srsData[b.id].due);
+
+    const ordered = [...due, ...unseen, ...upcoming];
+    const questions = [];
+
+    for (const cond of ordered) {
+      if (questions.length >= count) break;
+      const clue = cond.keyDifferentiator;
+      if (!clue) continue;
+
+      const sameGroup = conditions.filter((c) => c.compareGroup === cond.compareGroup && c.id !== cond.id);
+      const otherGroup = conditions.filter((c) => c.compareGroup !== cond.compareGroup);
+      const distractors = [];
+      for (const d of [...sameGroup, ...otherGroup.sort(() => Math.random() - 0.5)]) {
+        if (distractors.length >= 3) break;
+        if (!distractors.find((x) => x.id === d.id)) distractors.push(d);
+      }
+      if (distractors.length < 3) continue;
+
+      const rec = srsData[cond.id];
+      questions.push({
+        condId: cond.id,
+        answer: cond.name,
+        clue,
+        category: cond.category,
+        options: [cond.name, ...distractors.map((d) => d.name)].sort(() => Math.random() - 0.5),
+        explanation: cond.distinguishing && cond.distinguishing[0] ? cond.distinguishing[0] : null,
+        status: !rec ? "new" : rec.due <= now ? "due" : "review",
+        prevRec: rec || null,
+      });
+    }
+
+    return questions;
+  }
+
   function _medCondQuiz(wrap, ctx, conditions) {
     if (!conditions.length) {
       wrap.appendChild(h("p", { class: "muted" }, ["No conditions data loaded."]));
@@ -3919,18 +3979,25 @@
     }
 
     const QUESTIONS_PER_SESSION = 10;
-    const questions = _buildMedCondQuestions(conditions, QUESTIONS_PER_SESSION);
+    const srsData = ctx.state.medcondSrs || {};
+    const questions = _buildMedCondQuestionsWithSrs(conditions, srsData, QUESTIONS_PER_SESSION);
 
     if (!questions.length) {
       wrap.appendChild(h("p", { class: "muted" }, ["Could not build quiz questions."]));
       return;
     }
 
+    // Compute due/new counts for the session header
+    const now = Date.now();
+    const totalDue = conditions.filter((c) => srsData[c.id] && srsData[c.id].due <= now).length;
+    const totalNew = conditions.filter((c) => !srsData[c.id]).length;
+
     let currentIdx = 0;
     let correct = 0;
     let answered = false;
 
-    const counterEl = h("div", { class: "medcond-quiz-counter" }, []);
+    const counterEl = h("div", { class: "medcond-quiz-counter" });
+    const srsStatusEl = h("div", { class: "medcond-quiz-srs-status" });
     const questionEl = h("div", { class: "medcond-quiz-question" });
     const optionsEl = h("div", { class: "medcond-quiz-options" });
     const feedbackEl = h("div", { class: "medcond-quiz-feedback", style: "display:none" });
@@ -3954,6 +4021,13 @@
       const q = questions[currentIdx];
       counterEl.textContent = `Question ${currentIdx + 1} of ${questions.length}`;
 
+      srsStatusEl.innerHTML = "";
+      if (q.status === "new") {
+        srsStatusEl.appendChild(h("span", { class: "medcond-srs-badge medcond-srs-new" }, ["New"]));
+      } else if (q.status === "due") {
+        srsStatusEl.appendChild(h("span", { class: "medcond-srs-badge medcond-srs-due" }, ["Review"]));
+      }
+
       questionEl.innerHTML = "";
       questionEl.appendChild(h("div", { class: "medcond-quiz-label muted" }, ["Which condition does this describe?"]));
       questionEl.appendChild(h("div", { class: "medcond-quiz-clue" }, [q.clue]));
@@ -3975,6 +4049,12 @@
             const isCorrect = opt === q.answer;
             if (isCorrect) correct++;
 
+            // Update SRS record immediately
+            if (!ctx.state.medcondSrs) ctx.state.medcondSrs = {};
+            const updated = _medCondSrsUpdate(ctx.state.medcondSrs[q.condId], isCorrect);
+            ctx.state.medcondSrs[q.condId] = updated;
+            ctx.save();
+
             for (const b of optionsEl.querySelectorAll(".medcond-option")) {
               b.disabled = true;
               if (b.textContent === q.answer) b.classList.add("correct");
@@ -3984,10 +4064,17 @@
             feedbackEl.innerHTML = "";
             if (isCorrect) {
               feedbackEl.appendChild(h("div", { class: "medcond-feedback-correct" }, ["Correct!"]));
+              const days = updated.interval;
+              feedbackEl.appendChild(h("div", { class: "medcond-feedback-schedule" }, [
+                "Next review: " + (days === 1 ? "tomorrow" : `in ${days} days`),
+              ]));
             } else {
               feedbackEl.appendChild(h("div", { class: "medcond-feedback-wrong" }, [
                 "Incorrect — the answer is ",
                 h("strong", {}, [q.answer]),
+              ]));
+              feedbackEl.appendChild(h("div", { class: "medcond-feedback-schedule" }, [
+                "Flagged for review soon",
               ]));
             }
             if (q.explanation) {
@@ -4032,16 +4119,22 @@
       const grade = pct >= 90 ? "Excellent!" : pct >= 70 ? "Good job!" : pct >= 50 ? "Keep studying!" : "Keep at it!";
       const gradeClass = pct >= 90 ? "medcond-grade-great" : pct >= 70 ? "medcond-grade-good" : "medcond-grade-low";
 
+      const newSrsData = ctx.state.medcondSrs || {};
+      const newDue = conditions.filter((c) => newSrsData[c.id] && newSrsData[c.id].due <= Date.now()).length;
+
       wrap.appendChild(h("div", { class: "medcond-results" }, [
         h("div", { class: "medcond-results-icon" }, [pct >= 70 ? "🏥" : "📋"]),
         h("div", { class: "medcond-results-score " + gradeClass }, [pct + "%"]),
         h("div", { class: "medcond-results-grade" }, [grade]),
         h("div", { class: "medcond-results-detail" }, [correct + " / " + questions.length + " correct"]),
+        newDue > 0
+          ? h("div", { class: "medcond-results-detail" }, [newDue + " card" + (newDue === 1 ? "" : "s") + " due for review"])
+          : h("div", { class: "medcond-results-detail" }, ["All caught up!"]),
         h("button", {
           class: "btn btn-primary",
           type: "button",
           onclick: () => ctx.navigate({ view: "medconditions", tab: "quiz" }),
-        }, ["Try Again"]),
+        }, ["Continue Studying"]),
         h("button", {
           class: "btn",
           type: "button",
@@ -4050,44 +4143,24 @@
       ]));
     }
 
+    const headerRow = h("div", { class: "medcond-quiz-header" });
+    headerRow.appendChild(counterEl);
+    const srsInfo = h("div", { class: "medcond-quiz-srs-info" });
+    if (totalDue > 0) srsInfo.appendChild(h("span", { class: "medcond-srs-count medcond-srs-count-due" }, [totalDue + " due"]));
+    if (totalNew > 0) srsInfo.appendChild(h("span", { class: "medcond-srs-count medcond-srs-count-new" }, [totalNew + " new"]));
+    if (srsInfo.children.length) headerRow.appendChild(srsInfo);
+
     renderQuestion();
     wrap.append(
-      h("div", { class: "medcond-quiz-header" }, [counterEl]),
-      h("div", { class: "medcond-quiz-card" }, [questionEl, optionsEl, feedbackEl, nextBtn]),
+      headerRow,
+      h("div", { class: "medcond-quiz-card" }, [
+        h("div", { class: "medcond-quiz-card-header" }, [srsStatusEl]),
+        questionEl,
+        optionsEl,
+        feedbackEl,
+        nextBtn,
+      ]),
     );
-  }
-
-  function _buildMedCondQuestions(conditions, count) {
-    const questions = [];
-    const shuffled = [...conditions].sort(() => Math.random() - 0.5);
-
-    for (const cond of shuffled) {
-      if (questions.length >= count) break;
-      const clue = cond.keyDifferentiator;
-      if (!clue) continue;
-
-      const sameGroup = conditions.filter((c) => c.compareGroup === cond.compareGroup && c.id !== cond.id);
-      const otherGroup = conditions.filter((c) => c.compareGroup !== cond.compareGroup);
-
-      const distractors = [];
-      for (const d of [...sameGroup, ...otherGroup.sort(() => Math.random() - 0.5)]) {
-        if (distractors.length >= 3) break;
-        if (!distractors.find((x) => x.id === d.id)) distractors.push(d);
-      }
-
-      if (distractors.length < 3) continue;
-
-      const options = [cond.name, ...distractors.map((d) => d.name)].sort(() => Math.random() - 0.5);
-      questions.push({
-        answer: cond.name,
-        clue,
-        category: cond.category,
-        options,
-        explanation: cond.distinguishing && cond.distinguishing[0] ? cond.distinguishing[0] : null,
-      });
-    }
-
-    return questions;
   }
 
   // ---------- NOT FOUND ----------------------------------------------

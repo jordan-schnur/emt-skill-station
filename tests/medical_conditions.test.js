@@ -236,4 +236,49 @@ describe("Views.medConditions", () => {
     expect(state.drills.medcondquiz).toBeDefined();
     expect(state.drills.medcondquiz.sessionCount).toBe(1);
   });
+
+  it("updates medcondSrs after answering a quiz question", () => {
+    ctx.route = { view: "medconditions", tab: "quiz" };
+    const el = window.Views.medConditions(ctx);
+
+    expect(Object.keys(ctx.state.medcondSrs || {}).length).toBe(0);
+
+    const option = el.querySelector(".medcond-option:not([disabled])");
+    if (option) option.click();
+
+    expect(Object.keys(ctx.state.medcondSrs || {}).length).toBe(1);
+    const rec = Object.values(ctx.state.medcondSrs)[0];
+    expect(rec).toHaveProperty("interval");
+    expect(rec).toHaveProperty("ease");
+    expect(rec).toHaveProperty("reps");
+    expect(rec).toHaveProperty("due");
+    expect(rec.due).toBeGreaterThan(Date.now());
+  });
+
+  it("quiz prioritizes due cards over new cards", () => {
+    const now = Date.now();
+    // Mark first condition as overdue
+    const firstId = window.MEDICAL_CONDITIONS[0].id;
+    ctx.state.medcondSrs = {
+      [firstId]: { interval: 1, ease: 2.5, reps: 1, due: now - 1000 },
+    };
+
+    ctx.route = { view: "medconditions", tab: "quiz" };
+    const el = window.Views.medConditions(ctx);
+
+    // The due card should appear — badge should say Review (or session builds fine)
+    const badge = el.querySelector(".medcond-srs-due");
+    expect(badge).not.toBeNull();
+  });
+
+  it("compare table uses correct --cols value (no phantom column)", () => {
+    ctx.route = { view: "medconditions", tab: "compare" };
+    const el = window.Views.medConditions(ctx);
+    const table = el.querySelector(".medcond-compare-table");
+    expect(table).not.toBeNull();
+    const colsVar = table.style.getPropertyValue("--cols");
+    // --cols should equal the number of conditions in the first group (diabetic = 2)
+    // Not 3 (which was the bug: length + 1)
+    expect(parseInt(colsVar, 10)).toBe(2);
+  });
 });

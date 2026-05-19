@@ -78,6 +78,7 @@ export function createEmptyState() {
     mnemonics: {},
     chats: {},
     emsSrs: {},
+    medcondSrs: {},
   };
 }
 
