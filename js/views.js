@@ -2052,24 +2052,16 @@
     ]));
 
     // ---- Key numbers ----
-<<<<<<< Updated upstream
     const medQuiz = (state.drills || {}).medcondquiz;
     const medStatCards = [
-      statCard("📝", state.stats.totalReviews, "Total Reviews"),
-      statCard("📖", total, "Total Cards"),
+      statCard("🏋️", totalReviews, "Drill Attempts"),
+      statCard("📖", data.totalCards, "Total Cards"),
       statCard("🗓️", longestStreak + (longestStreak === 1 ? " day" : " days"), "Best Streak"),
     ];
     if (medQuiz && medQuiz.sessionCount >= 1) {
       medStatCards.push(statCard("🩺", Math.round((medQuiz.bestScore || 0) * 100) + "%", "Med Quiz Best"));
     }
     wrap.appendChild(h("div", { class: "stat-grid" }, medStatCards));
-=======
-    wrap.appendChild(h("div", { class: "stat-grid" }, [
-      statCard("🏋️", totalReviews, "Drill Attempts"),
-      statCard("🗓️", longestStreak + (longestStreak === 1 ? " day" : " days"), "Best Streak"),
-      statCard("📖", data.totalCards, "Total Cards"),
-    ]));
->>>>>>> Stashed changes
 
     // ---- Drill mastery overview ----
     wrap.appendChild(h("h2", {}, ["Drill Mastery"]));

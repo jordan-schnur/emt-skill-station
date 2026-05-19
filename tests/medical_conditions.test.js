@@ -161,7 +161,7 @@ describe("Medical conditions achievements", () => {
   });
 
   it("total achievements count increased by 6", () => {
-    expect(window.Achievements.DEFS.length).toBe(20);
+    expect(window.Achievements.DEFS.length).toBe(28);
   });
 });
 
