@@ -1209,6 +1209,54 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   color: var(--again);
 }
 
+/* Drill mastery overview table */
+.drill-mastery-table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.drill-mastery-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 48px;
+  align-items: center;
+  gap: 12px;
+}
+@media (max-width: 480px) {
+  .drill-mastery-row { grid-template-columns: 140px 1fr 40px; gap: 8px; }
+}
+.drill-mastery-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.drill-mastery-icon { font-size: 16px; line-height: 1; }
+.drill-mastery-bar-wrap { flex: 1; }
+.drill-mastery-bar {
+  height: 8px;
+  background: var(--bg-elev-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.drill-bar-fill {
+  height: 100%;
+  background: var(--text-mute);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+  min-width: 2px;
+}
+.drill-bar-fill.mid { background: var(--hard); }
+.drill-bar-fill.good { background: var(--good); }
+.drill-mastery-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-align: right;
+  white-space: nowrap;
+}
+
 /* Achievement toast (bigger, green-tinted) */
 .toast-achievement {
   display: flex;

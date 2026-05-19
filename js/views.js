@@ -1046,6 +1046,7 @@
       } else {
         rec.streak = 0;
       }
+      ctx.state.stats.totalReviews = (ctx.state.stats.totalReviews || 0) + 1;
       ctx.save();
       render();
     }
@@ -1546,6 +1547,7 @@
       } else {
         rec.streak = 0;
       }
+      ctx.state.stats.totalReviews = (ctx.state.stats.totalReviews || 0) + 1;
       ctx.save();
       render();
     }
@@ -1696,6 +1698,7 @@
       } else {
         rec.streak = 0;
       }
+      ctx.state.stats.totalReviews = (ctx.state.stats.totalReviews || 0) + 1;
       ctx.save();
       render();
     }
@@ -1817,6 +1820,7 @@
       rec.lastAttemptAt = Date.now();
       rec.lastScore = { matched, missed: total - matched, total, pct };
       rec.bestPct = Math.max(rec.bestPct, pct);
+      ctx.state.stats.totalReviews = (ctx.state.stats.totalReviews || 0) + 1;
       ctx.save();
 
       phase = "results";
@@ -1935,37 +1939,120 @@
   // ---------- STATS ---------------------------------------------------
   Views.stats = (ctx) => {
     const state = ctx.state;
-    const now = Date.now();
     const data = NREMT_DATA;
-
-    // Aggregates (SRS-based mastery removed; drill progress still tracked)
-    const total = data.totalCards;
+    const sheetCount = data.sheets.length;
 
     const streak = state.stats.dailyStreak || 0;
     const longestStreak = state.stats.longestStreak || 0;
+    const totalReviews = state.stats.totalReviews || 0;
+    const totalNotes = Object.keys((state.notes && state.notes.step) || {}).length;
 
     const hasAchievements = typeof Achievements !== "undefined";
     const allAchs = hasAchievements ? Achievements.getAll(state) : [];
     const unlockedCount = allAchs.filter((a) => a.unlockedAt).length;
 
+    // Compute per-drill mastery counts
+    const drillSummary = [
+      {
+        key: "secorder",
+        label: "Section Order",
+        icon: "🔢",
+        mastered: data.sheets.filter((sh) => {
+          const rec = (state.drills.secorder || {})[sh.id];
+          return rec && rec.mastered;
+        }).length,
+      },
+      {
+        key: "stepseq",
+        label: "Step Sequence",
+        icon: "👣",
+        mastered: data.sheets.filter((sh) => {
+          const sheetRec = (state.drills.stepseq || {})[sh.id] || {};
+          const drillable = sh.sections ? sh.sections.filter((s) => s.steps && s.steps.length >= 2) : [];
+          return drillable.length > 0 && drillable.every((s) => sheetRec[s.name] && sheetRec[s.name].mastered);
+        }).length,
+      },
+      {
+        key: "whatnext",
+        label: "What's Next?",
+        icon: "➡️",
+        mastered: data.sheets.filter((sh) => {
+          const rec = (state.drills.whatnext || {})[sh.id];
+          return rec && rec.mastered;
+        }).length,
+      },
+      {
+        key: "blankrecall",
+        label: "Blank Recall ≥80%",
+        icon: "🧠",
+        mastered: data.sheets.filter((sh) => {
+          const rec = (state.drills.blankrecall || {})[sh.id];
+          return rec && (rec.bestPct || 0) >= 80;
+        }).length,
+        isPct: true,
+      },
+      {
+        key: "spokenscript",
+        label: "Spoken Script",
+        icon: "🎤",
+        mastered: data.sheets.filter((sh) => {
+          const rec = (state.drills.spokenscript || {})[sh.id];
+          return rec && rec.mastered;
+        }).length,
+      },
+    ];
+
+    // Sheets with all 5 drills mastered/good
+    const sheetsComplete = data.sheets.filter((sh) => {
+      return drillSummary.every((d) => {
+        if (d.key === "secorder") {
+          const rec = (state.drills.secorder || {})[sh.id];
+          const hasMultiple = sh.sections && sh.sections.filter((s) => s.header).length > 1;
+          return !hasMultiple || (rec && rec.mastered);
+        }
+        if (d.key === "stepseq") {
+          const sheetRec = (state.drills.stepseq || {})[sh.id] || {};
+          const drillable = sh.sections ? sh.sections.filter((s) => s.steps && s.steps.length >= 2) : [];
+          return drillable.length === 0 || drillable.every((s) => sheetRec[s.name] && sheetRec[s.name].mastered);
+        }
+        if (d.key === "blankrecall") {
+          const rec = (state.drills.blankrecall || {})[sh.id];
+          return rec && (rec.bestPct || 0) >= 80;
+        }
+        const rec = (state.drills[d.key] || {})[sh.id];
+        return rec && rec.mastered;
+      });
+    }).length;
+
     const wrap = h("div");
 
     // ---- Hero banner ----
-    const heroIcon = streak >= 7 ? "🔥" : streak >= 3 ? "🔥" : streak >= 1 ? "📅" : "📅";
+    const streakIcon = streak >= 7 ? "🔥" : "📅";
     wrap.appendChild(h("div", { class: "stats-hero" }, [
       h("div", { class: "hero-block" }, [
-        h("div", { class: "hero-icon-big" }, [heroIcon]),
+        h("div", { class: "hero-icon-big" }, [streakIcon]),
         h("div", { class: "hero-num" }, [String(streak)]),
         h("div", { class: "hero-label" }, ["day streak"]),
       ]),
       hasAchievements ? h("div", { class: "hero-block" }, [
         h("div", { class: "hero-icon-big" }, ["🏅"]),
-        h("div", { class: "hero-num" }, [unlockedCount + "/" + allAchs.length]),
+        h("div", { class: "hero-num" }, [`${unlockedCount}/${allAchs.length}`]),
         h("div", { class: "hero-label" }, ["achievements"]),
       ]) : null,
+      h("div", { class: "hero-block" }, [
+        h("div", { class: "hero-icon-big" }, ["📝"]),
+        h("div", { class: "hero-num" }, [String(totalNotes)]),
+        h("div", { class: "hero-label" }, ["notes written"]),
+      ]),
+      h("div", { class: "hero-block" }, [
+        h("div", { class: "hero-icon-big" }, ["✅"]),
+        h("div", { class: "hero-num" }, [`${sheetsComplete}/${sheetCount}`]),
+        h("div", { class: "hero-label" }, ["sheets complete"]),
+      ]),
     ]));
 
     // ---- Key numbers ----
+<<<<<<< Updated upstream
     const medQuiz = (state.drills || {}).medcondquiz;
     const medStatCards = [
       statCard("📝", state.stats.totalReviews, "Total Reviews"),
@@ -1976,6 +2063,34 @@
       medStatCards.push(statCard("🩺", Math.round((medQuiz.bestScore || 0) * 100) + "%", "Med Quiz Best"));
     }
     wrap.appendChild(h("div", { class: "stat-grid" }, medStatCards));
+=======
+    wrap.appendChild(h("div", { class: "stat-grid" }, [
+      statCard("🏋️", totalReviews, "Drill Attempts"),
+      statCard("🗓️", longestStreak + (longestStreak === 1 ? " day" : " days"), "Best Streak"),
+      statCard("📖", data.totalCards, "Total Cards"),
+    ]));
+>>>>>>> Stashed changes
+
+    // ---- Drill mastery overview ----
+    wrap.appendChild(h("h2", {}, ["Drill Mastery"]));
+    const drillTable = h("div", { class: "drill-mastery-table" });
+    for (const d of drillSummary) {
+      const pct = sheetCount > 0 ? (d.mastered / sheetCount) * 100 : 0;
+      const barCls = pct >= 80 ? "drill-bar-fill good" : pct >= 40 ? "drill-bar-fill mid" : "drill-bar-fill";
+      drillTable.appendChild(h("div", { class: "drill-mastery-row" }, [
+        h("div", { class: "drill-mastery-label" }, [
+          h("span", { class: "drill-mastery-icon" }, [d.icon]),
+          h("span", {}, [d.label]),
+        ]),
+        h("div", { class: "drill-mastery-bar-wrap" }, [
+          h("div", { class: "drill-mastery-bar" }, [
+            h("div", { class: barCls, style: `width:${pct}%` }),
+          ]),
+        ]),
+        h("div", { class: "drill-mastery-count" }, [`${d.mastered}/${sheetCount}`]),
+      ]));
+    }
+    wrap.appendChild(drillTable);
 
     // ---- Achievements ----
     if (hasAchievements) {
@@ -2017,16 +2132,34 @@
       const notesCount = Notes.countSheetNotes(state, sheet);
 
       const drillBadges = drillDefs.map((d) => {
-        const rec = (state.drills[d.key] || {})[sheet.id];
+        let rec;
         let cls = "drill-badge drill-none";
         let label = d.label;
-        if (d.isPct) {
+
+        if (d.key === "stepseq") {
+          // stepseq: check if all drillable sections mastered
+          const sheetRec = (state.drills.stepseq || {})[sheet.id] || {};
+          const drillable = sheet.sections ? sheet.sections.filter((s) => s.steps && s.steps.length >= 2) : [];
+          if (drillable.length > 0) {
+            const masteredCount = drillable.filter((s) => sheetRec[s.name] && sheetRec[s.name].mastered).length;
+            const anyStarted = drillable.some((s) => sheetRec[s.name] && (sheetRec[s.name].attempts || 0) > 0);
+            if (masteredCount === drillable.length) {
+              cls = "drill-badge drill-good";
+              label = d.label + " ✓";
+            } else if (anyStarted) {
+              cls = "drill-badge drill-mid";
+              label = d.label + " " + masteredCount + "/" + drillable.length;
+            }
+          }
+        } else if (d.isPct) {
+          rec = (state.drills[d.key] || {})[sheet.id];
           if (rec && rec.attempts > 0) {
             const bp = Math.round(rec.bestPct || 0);
             cls = bp >= 80 ? "drill-badge drill-good" : bp >= 40 ? "drill-badge drill-mid" : "drill-badge drill-low";
             label = d.label + " " + bp + "%";
           }
         } else {
+          rec = (state.drills[d.key] || {})[sheet.id];
           if (rec && rec.mastered) {
             cls = "drill-badge drill-good";
             label = d.label + " ✓";
@@ -2564,6 +2697,7 @@
         rec.streak = pct >= SPOKENSCRIPT_PASS_RATE ? rec.streak + 1 : 0;
         rec.mastered = rec.streak >= SPOKENSCRIPT_MASTERY_RUNS;
       }
+      ctx.state.stats.totalReviews = (ctx.state.stats.totalReviews || 0) + 1;
       ctx.save();
       phase = "results";
       render();

@@ -15,6 +15,7 @@ module.exports = {
   ],
   testPathIgnorePatterns: [
     "/node_modules/",
+    "/.claude/worktrees/",
     "tests/setup.js",
     "tests/fixtures.js",
     "tests/e2e/*.spec.js",
