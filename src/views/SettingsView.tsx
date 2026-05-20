@@ -1,0 +1,335 @@
+import { useState, useEffect, useRef } from "preact/hooks";
+import { appState, navigate, save, showToast, mutateState } from "../store/appStore";
+import { reset, exportToFile, importFromFile, createEmptyState } from "../lib/storage";
+import { getConfig, saveConfig, clearConfig, fetchModels } from "../lib/chat";
+import { openConfirmModal, openConflictModal } from "../components/ui/Modal";
+
+// ─── CloudSync type (optional global) ───────────────────────────────────────
+
+interface CloudUser {
+  displayName: string | null;
+  email: string | null;
+  photoURL: string | null;
+}
+
+interface CloudSyncAPI {
+  isAuthReady: () => boolean;
+  getUser: () => CloudUser | null;
+  signIn: () => Promise<void>;
+  signOut: () => Promise<void>;
+  upload: (state: unknown) => Promise<void>;
+  downloadWithMeta: () => Promise<{ state: { updatedAt?: string } } | null>;
+  clearCloud: () => Promise<void>;
+  onAuthChange: (cb: (user: CloudUser | null) => void) => () => void;
+}
+
+function getCloudSync(): CloudSyncAPI | undefined {
+  return (window as unknown as Record<string, unknown>)["CloudSync"] as CloudSyncAPI | undefined;
+}
+
+// ─── Cloud section ──────────────────────────────────────────────────────────
+
+function CloudSection() {
+  const CS = getCloudSync();
+  const [user, setUser] = useState<CloudUser | null>(CS?.getUser?.() ?? null);
+  const [authReady, setAuthReady] = useState(CS?.isAuthReady?.() ?? false);
+  const [syncing, setSyncing] = useState(false);
+
+  useEffect(() => {
+    if (!CS) return;
+    const unsub = CS.onAuthChange((u) => {
+      setUser(u);
+      setAuthReady(true);
+    });
+    return unsub;
+  }, []);
+
+  async function handleSync() {
+    const cs = getCloudSync();
+    if (!cs) return;
+    setSyncing(true);
+    try {
+      const meta = await cs.downloadWithMeta();
+      const state = appState.value;
+      const localTime = state.updatedAt ? new Date(state.updatedAt) : new Date(0);
+      const cloudTime = meta?.state?.updatedAt ? new Date(meta.state.updatedAt) : new Date(0);
+
+      if (meta?.state && cloudTime > localTime) {
+        openConflictModal({
+          localUpdatedAt: state.updatedAt ?? null,
+          cloudUpdatedAt: meta.state.updatedAt ?? null,
+          onKeepLocal: async () => {
+            mutateState((draft) => {
+              draft.updatedAt = new Date().toISOString();
+              draft.lastSyncedAt = draft.updatedAt;
+            });
+            await cs.upload(appState.value);
+            showToast("Local version pushed to cloud");
+          },
+          onUseCloud: () => {
+            mutateState((draft) => { Object.assign(draft, meta.state, { lastSyncedAt: new Date().toISOString() }); });
+            save();
+            showToast("Cloud version restored locally");
+            navigate({ view: "settings" });
+          },
+        });
+      } else {
+        mutateState((draft) => {
+          draft.updatedAt = new Date().toISOString();
+          draft.lastSyncedAt = draft.updatedAt;
+        });
+        await cs.upload(appState.value);
+        showToast("Synced to cloud");
+      }
+    } catch {
+      showToast("Sync failed");
+    }
+    setSyncing(false);
+  }
+
+  async function handleSignIn() {
+    const cs = getCloudSync();
+    if (!cs) return;
+    try {
+      await cs.signIn();
+    } catch (err: unknown) {
+      if ((err as { code?: string }).code !== "auth/popup-closed-by-user") showToast("Sign-in failed");
+    }
+  }
+
+  async function handleSignOut() {
+    const cs = getCloudSync();
+    if (!cs) return;
+    await cs.signOut();
+    showToast("Signed out");
+  }
+
+  function handleClearAll() {
+    openConfirmModal({
+      title: "Clear all data?",
+      body: "This permanently deletes all your SRS progress, notes, and drill history — both locally and from the cloud. This cannot be undone.",
+      confirmLabel: "Delete everything",
+      onConfirm: async () => {
+        const cs = getCloudSync();
+        try { if (cs) await cs.clearCloud(); } catch (err) { console.error("Failed to clear cloud data", err); }
+        reset();
+        mutateState((draft) => { Object.assign(draft, createEmptyState()); });
+        showToast("All data deleted");
+      },
+    });
+  }
+
+  function relativeTime(iso: string): string {
+    const diff = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
+    if (diff < 60) return "just now";
+    if (diff < 3600) return `${Math.round(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.round(diff / 3600)}h ago`;
+    return `${Math.round(diff / 86400)}d ago`;
+  }
+
+  return (
+    <div class="settings-section">
+      <h3>Cloud sync</h3>
+      {!CS && (
+        <p class="muted">Cloud sync is not configured.</p>
+      )}
+      {CS && !authReady && (
+        <div class="sync-loading">
+          <div class="sync-spinner" />
+          <span class="muted">Checking sign-in…</span>
+        </div>
+      )}
+      {CS && authReady && !user && (
+        <>
+          <p class="muted">Sign in with Google to automatically sync your progress across all your devices.</p>
+          <div class="settings-row">
+            <button class="btn btn-google" onClick={handleSignIn}>
+              <img
+                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                alt="" width="18" height="18" aria-hidden="true"
+              />
+              Sign in with Google
+            </button>
+          </div>
+        </>
+      )}
+      {CS && authReady && user && (
+        <>
+          <div class="sync-user">
+            {user.photoURL
+              ? <img src={user.photoURL} alt="" width="28" height="28" class="sync-avatar" referrerpolicy="no-referrer" />
+              : <div class="sync-avatar-placeholder">{user.displayName ? user.displayName[0] : "?"}</div>
+            }
+            <div class="sync-user-info">
+              <div>{user.displayName || "Signed in"}</div>
+              <div class="muted" style="font-size:12px">{user.email}</div>
+            </div>
+          </div>
+          <p class="muted" style="margin-top:8px;margin-bottom:10px">
+            {appState.value.lastSyncedAt ? `Synced ${relativeTime(appState.value.lastSyncedAt)}` : "Not yet synced"}
+          </p>
+          <div class="settings-row">
+            <button class="btn btn-primary" onClick={handleSync} disabled={syncing}>
+              {syncing ? "Checking…" : "Sync now"}
+            </button>
+            <button class="btn" onClick={handleSignOut}>Sign out</button>
+            <button class="btn btn-danger" onClick={handleClearAll}>Clear all data</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─── AI Chat section ─────────────────────────────────────────────────────────
+
+function AISection() {
+  const initial = getConfig();
+  const [provider, setProvider] = useState<"openai" | "anthropic">((initial.provider as "openai" | "anthropic") || "openai");
+  const [apiKey, setApiKey] = useState(initial.apiKey || "");
+  const [model, setModel] = useState(initial.model || "");
+  const [models, setModels] = useState<Array<{ id: string; label: string }>>(
+    initial.apiKey && initial.model ? [{ id: initial.model, label: initial.model }] : []
+  );
+  const [fetching, setFetching] = useState(false);
+  const [saved, setSaved] = useState(!!(initial.apiKey && initial.model));
+
+  async function handleFetch() {
+    if (!apiKey.trim()) { showToast("Enter an API key first"); return; }
+    setFetching(true);
+    try {
+      const list = await fetchModels(provider, apiKey.trim());
+      if (!list.length) throw new Error("No models returned");
+      setModels(list);
+      if (!model) setModel(list[0].id);
+      showToast(`${list.length} models loaded`);
+    } catch (err: unknown) {
+      showToast("Failed: " + (err as Error).message);
+    }
+    setFetching(false);
+  }
+
+  function handleSave() {
+    saveConfig({ provider, model, apiKey: apiKey.trim() });
+    showToast("AI Chat settings saved");
+    setSaved(true);
+  }
+
+  function handleClear() {
+    clearConfig();
+    setApiKey("");
+    setModel("");
+    setModels([]);
+    setSaved(false);
+    showToast("API key cleared");
+  }
+
+  return (
+    <div class="settings-section">
+      <h3>AI Chat</h3>
+      <p class="muted">
+        Configure the chatbot for context-aware study help and examiner simulation. Your API key is stored locally only and is never synced to the cloud.
+      </p>
+      <div class="ai-config-grid">
+        <label class="ai-config-label">Provider</label>
+        <select class="ai-select" value={provider} onChange={(e) => { setProvider((e.target as HTMLSelectElement).value as "openai" | "anthropic"); setModels([]); setModel(""); setSaved(false); }}>
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic</option>
+        </select>
+        <label class="ai-config-label">API key</label>
+        <input
+          type="password"
+          class="ai-key-input"
+          placeholder={provider === "anthropic" ? "sk-ant-…" : "sk-…"}
+          value={apiKey}
+          autocomplete="off"
+          onInput={(e) => { setApiKey((e.target as HTMLInputElement).value); setSaved(false); }}
+        />
+      </div>
+      <div class="settings-row" style="margin-top:10px">
+        <button class="btn" type="button" disabled={fetching} onClick={handleFetch}>
+          {fetching ? "Fetching…" : "Fetch models"}
+        </button>
+      </div>
+      {models.length > 0 && (
+        <div class="ai-model-row">
+          <label class="ai-config-label">Model</label>
+          <select class="ai-select" value={model} onChange={(e) => { setModel((e.target as HTMLSelectElement).value); setSaved(false); }}>
+            {models.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+          </select>
+        </div>
+      )}
+      <div class="settings-row" style="margin-top:10px">
+        <button class="btn btn-primary" type="button" disabled={!model || !apiKey} onClick={handleSave}>
+          {saved ? "Saved ✓" : "Save"}
+        </button>
+        <button class="btn btn-danger" type="button" onClick={handleClear}>Clear key</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main SettingsView ──────────────────────────────────────────────────────
+
+export function SettingsView() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleImport(e: Event) {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    try {
+      const next = await importFromFile(file);
+      mutateState((draft) => { Object.assign(draft, next); });
+      save();
+      showToast("Import successful");
+      navigate({ view: "settings" });
+    } catch (err: unknown) {
+      alert("Couldn't import that file: " + (err as Error).message);
+    }
+  }
+
+  function handleReset() {
+    if (!confirm("Erase ALL local progress and notes?")) return;
+    reset();
+    mutateState((draft) => { Object.assign(draft, createEmptyState()); });
+    showToast("Reset complete");
+  }
+
+  return (
+    <div>
+      <h1>Backup &amp; Settings</h1>
+      <p class="muted">
+        Progress + notes live in this browser's local storage. Sign in with Google to sync across devices, or export a JSON backup.
+      </p>
+
+      <CloudSection />
+
+      <div class="settings-section">
+        <h3>Export progress</h3>
+        <p class="muted">Downloads a nremt-progress-YYYY-MM-DD.json file you can keep as a local backup.</p>
+        <div class="settings-row">
+          <button class="btn btn-primary" onClick={() => exportToFile(appState.value)}>Download JSON</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Import progress</h3>
+        <p class="muted">Replaces current progress + notes with the contents of a previously exported file.</p>
+        <div class="settings-row">
+          <button class="btn" onClick={() => fileInputRef.current?.click()}>Choose JSON file…</button>
+          <input ref={fileInputRef} type="file" accept="application/json" style="display:none" onChange={handleImport} />
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Reset everything</h3>
+        <p class="muted">Erases all SRS progress and notes. There's no undo — export first if you might want them.</p>
+        <div class="settings-row">
+          <button class="btn" onClick={handleReset}>Reset</button>
+        </div>
+      </div>
+
+      <AISection />
+    </div>
+  );
+}

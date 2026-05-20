@@ -4,8 +4,11 @@ import { route, appState, navigate, showToast, save } from "./store/appStore";
 import { parseHash } from "./router/hashRouter";
 import { Toast } from "./components/ui/Toast";
 import { Modal } from "./components/ui/Modal";
-import { GuideView } from "./views/GuideView";
+import { HomeView } from "./views/HomeView";
+import { SheetView } from "./views/SheetView";
 import { StatsView } from "./views/StatsView";
+import { GuideView } from "./views/GuideView";
+import { SettingsView } from "./views/SettingsView";
 import { NotFoundView } from "./views/NotFoundView";
 import type { Route } from "./types";
 
@@ -28,10 +31,28 @@ declare global {
 }
 
 function makeLegacyCtx(): LegacyCtx {
+  const r = route.value;
+  // Legacy views use ctx.route.tab for sub-navigation; medconditions and
+  // mnemonics routes now store their tab in dedicated fields. Provide a
+  // compatibility shim so legacy code still reads the right value from .tab.
+  const legacyRoute = { ...r, tab: r.tab ?? r.medcondTab ?? r.mnemonicsTab } as Route;
+
+  function legacyNavigate(next: Route): void {
+    // Legacy views call navigate({ view: "medconditions", tab: X }) or
+    // navigate({ view: "mnemonics", tab: X }). Map them to the typed fields.
+    if (next.view === "medconditions" && next.tab && !next.medcondTab) {
+      navigate({ view: "medconditions", medcondTab: next.tab as string });
+    } else if (next.view === "mnemonics" && next.tab && !next.mnemonicsTab) {
+      navigate({ view: "mnemonics", mnemonicsTab: next.tab as string });
+    } else {
+      navigate(next);
+    }
+  }
+
   return {
     state: appState.value,
-    get route() { return route.value; },
-    navigate,
+    get route() { return legacyRoute; },
+    navigate: legacyNavigate,
     // refresh: re-use current route to force signal update & LegacyView remount
     refresh: () => { route.value = { ...route.value }; },
     toast: showToast,
@@ -39,17 +60,17 @@ function makeLegacyCtx(): LegacyCtx {
   };
 }
 
-// Views handled natively in Preact (Phase 5+)
+// Views handled natively in Preact (Phases 5–6)
 const NATIVE_VIEWS: Partial<Record<string, () => JSX.Element | null>> = {
-  guide: () => <GuideView />,
+  home: () => <HomeView />,
+  sheet: () => <SheetView />,
   stats: () => <StatsView />,
+  guide: () => <GuideView />,
+  settings: () => <SettingsView />,
 };
 
-// Views still delegated to window.Views.* (legacy)
+// Views still delegated to window.Views.* (legacy — Phases 7+)
 const LEGACY_VIEW_FN_MAP: Record<string, string> = {
-  home: "home",
-  sheet: "sheet",
-  settings: "settings",
   chat: "chat",
   mnemonics: "emsMnemonics",
   medconditions: "medConditions",
