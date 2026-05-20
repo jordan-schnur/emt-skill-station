@@ -4,6 +4,11 @@ import { route, appState, navigate, showToast, save } from "../store/appStore";
 import { NREMT_DATA } from "../data/sheets";
 import { ReferenceView } from "./drills/ReferenceView";
 import { NotesView } from "./drills/NotesView";
+import { WhatNextDrill } from "./drills/WhatNextDrill";
+import { BlankRecallView } from "./drills/BlankRecallView";
+import { SpokenScriptView } from "./drills/SpokenScriptView";
+import { SectionOrderDrill } from "./drills/SectionOrderDrill";
+import { StepSeqDrill } from "./drills/StepSeqDrill";
 import { NotFoundView } from "./NotFoundView";
 import type { Route, Sheet, SheetTab } from "../types";
 
@@ -146,6 +151,16 @@ export function SheetView() {
     tabContent = <ReferenceView sheet={sheet} />;
   } else if (tab === "notes") {
     tabContent = <NotesView sheet={sheet} />;
+  } else if (tab === "whatnext") {
+    tabContent = <WhatNextDrill key={`${sheet.id}:whatnext`} sheet={sheet} />;
+  } else if (tab === "recall") {
+    tabContent = <BlankRecallView key={`${sheet.id}:recall`} sheet={sheet} />;
+  } else if (tab === "script") {
+    tabContent = <SpokenScriptView key={`${sheet.id}:script`} sheet={sheet} />;
+  } else if (tab === "order") {
+    tabContent = <SectionOrderDrill key={`${sheet.id}:order`} sheet={sheet} />;
+  } else if (tab === "steps") {
+    tabContent = <StepSeqDrill key={`${sheet.id}:steps`} sheet={sheet} />;
   } else {
     tabContent = <LegacyTabView key={`${sheet.id}:${tab}`} tab={tab} sheet={sheet} />;
   }
