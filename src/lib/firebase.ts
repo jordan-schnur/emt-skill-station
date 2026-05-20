@@ -58,6 +58,9 @@ function toCloudUser(u: User | null): CloudUser | null {
 }
 
 export const CloudSync = {
+  // No-op: initialization is automatic at module load time (kept for app.js compat)
+  init: () => {},
+
   isAuthReady: () => _authReady,
 
   getUser: () => toCloudUser(_user),
@@ -104,6 +107,11 @@ export const CloudSync = {
     _pendingState = null;
     if (_uploadTimer) { clearTimeout(_uploadTimer); _uploadTimer = null; }
     CloudSync.upload(state).catch(console.error);
+  },
+
+  // Alias used by legacy app.js
+  download: async (): Promise<{ state: Record<string, unknown> } | null> => {
+    return CloudSync.downloadWithMeta();
   },
 
   downloadWithMeta: async (): Promise<{ state: Record<string, unknown> } | null> => {

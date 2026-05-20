@@ -13,11 +13,13 @@ interface CloudUser {
 }
 
 interface CloudSyncAPI {
+  init: () => void;
   isAuthReady: () => boolean;
   getUser: () => CloudUser | null;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   upload: (state: unknown) => Promise<void>;
+  download: () => Promise<{ state: { updatedAt?: string } } | null>;
   downloadWithMeta: () => Promise<{ state: { updatedAt?: string } } | null>;
   clearCloud: () => Promise<void>;
   onAuthChange: (cb: (user: CloudUser | null) => void) => () => void;
@@ -93,7 +95,10 @@ function CloudSection() {
     try {
       await cs.signIn();
     } catch (err: unknown) {
-      if ((err as { code?: string }).code !== "auth/popup-closed-by-user") showToast("Sign-in failed");
+      const code = (err as { code?: string }).code;
+      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return;
+      console.error("Sign-in error:", err);
+      showToast("Sign-in failed: " + (code ?? (err as Error).message ?? "unknown error"));
     }
   }
 
