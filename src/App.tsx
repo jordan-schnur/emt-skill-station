@@ -4,6 +4,7 @@ import { route, appState, navigate, showToast, save } from "./store/appStore";
 import { parseHash } from "./router/hashRouter";
 import { Toast } from "./components/ui/Toast";
 import { Modal } from "./components/ui/Modal";
+import { UpdateBanner } from "./components/ui/UpdateBanner";
 import { HomeView } from "./views/HomeView";
 import { SheetView } from "./views/SheetView";
 import { StatsView } from "./views/StatsView";
@@ -158,6 +159,7 @@ export function App() {
 
   return (
     <>
+      <UpdateBanner />
       {content}
       <Toast />
       <Modal />
