@@ -17,9 +17,11 @@ yarn-error.log
 dist/
 build/
 
-# Environment
+# Environment (Firebase keys — add secrets to GitHub Actions instead)
 .env
 .env.local
+.env.production
+.env.staging
 
 # Test & coverage files
 coverage/
