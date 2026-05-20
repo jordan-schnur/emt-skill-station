@@ -89,12 +89,21 @@ export interface SpokenScriptRecord {
   lastScore: SpokenScriptScore | null;
 }
 
+export interface MedCondQuizRecord {
+  sessionCount: number;
+  bestScore: number;
+  lastScore: number;
+  totalAttempts: number;
+  totalCorrect: number;
+}
+
 export interface Drills {
   secorder: Record<string, DrillRecord>;
   stepseq: Record<string, Record<string, DrillRecord>>;
   whatnext: Record<string, DrillRecord>;
   blankrecall: Record<string, BlankRecallRecord>;
   spokenscript: Record<string, SpokenScriptRecord>;
+  medcondquiz?: MedCondQuizRecord;
 }
 
 export interface Notes {
@@ -105,6 +114,35 @@ export interface Notes {
 export interface MnemonicData {
   sections?: string;
   steps?: Record<string, string>;
+}
+
+export interface MnemonicLetter {
+  letter: string;
+  stand: string;
+  detail: string;
+}
+
+export interface ClinicalMnemonic {
+  id: string;
+  acronym: string;
+  title: string;
+  category: string;
+  note: string | null;
+  letters: MnemonicLetter[];
+}
+
+export interface MedicalCondition {
+  id: string;
+  name: string;
+  category: string;
+  compareGroup: string;
+  onset: string;
+  keyDifferentiator: string;
+  signs: string[];
+  distinguishing: string[];
+  criticalFindings: string[];
+  treatment: string[];
+  compareDimensions: Record<string, string>;
 }
 
 export interface ChatMessage {

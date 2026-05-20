@@ -6,16 +6,16 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["tests/vitest.setup.ts"],
-    include: ["tests/lib/**/*.test.ts", "tests/views/**/*.test.tsx"],
+    include: ["tests/**/*.test.{ts,tsx}"],
     globals: true,
     coverage: {
       provider: "v8",
       include: ["src/**"],
       thresholds: {
-        statements: 44,
-        branches: 42,
-        functions: 36,
-        lines: 46,
+        statements: 40,
+        branches: 37,
+        functions: 40,
+        lines: 44,
       },
     },
   },

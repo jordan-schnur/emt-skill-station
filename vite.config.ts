@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import preact from "@preact/preset-vite";
-import { viteStaticCopy } from "vite-plugin-static-copy";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -38,12 +37,7 @@ export default defineConfig(({ mode }) => {
         },
       },
 
-      viteStaticCopy({
-        targets: [
-          { src: "js", dest: "." },
-          { src: "css", dest: "." },
-        ],
-      }),
+
     ],
 
     define: {
