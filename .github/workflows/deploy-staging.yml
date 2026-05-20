@@ -1,9 +1,12 @@
 name: Deploy staging
 
 on:
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build and deploy to staging'
+        required: true
+        default: 'feature/preact-vite-migration'
 
 jobs:
   deploy:
@@ -14,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ inputs.branch }}
 
       - uses: actions/setup-node@v4
         with:
