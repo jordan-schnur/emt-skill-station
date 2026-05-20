@@ -2,6 +2,10 @@
  * app.js – top-level controller. Owns state, routes, and the render loop.
  */
 (function () {
+  // When served by Vite dev server, the Preact app (src/main.tsx) takes over.
+  // Vite injects /@vite/client as a module script — bail if present.
+  if (document.querySelector('script[src^="/@vite/"]')) return;
+
   if (!window.NREMT_DATA) {
     document.body.innerHTML =
       '<div style="padding:24px;color:#e5534b;font-family:monospace">'
