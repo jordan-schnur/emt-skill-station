@@ -1,0 +1,26 @@
+{
+  "name": "nremt-study-tool",
+  "version": "1.0.0",
+  "description": "NREMT Skill Sheet Trainer with spaced repetition and drills",
+  "scripts": {
+    "test": "jest --coverage --watchAll=false",
+    "test:watch": "jest --watch",
+    "test:srs": "jest srs.test.js --coverage",
+    "test:storage": "jest storage.test.js --coverage",
+    "test:views": "jest views.test.js --coverage",
+    "test:e2e": "jest --testMatch='**/*.e2e.test.js'",
+    "test:e2e:browser": "bash scripts/check-playwright.sh",
+    "test:playwright:install": "npx playwright install",
+    "test:all": "jest --coverage --verbose",
+    "test:ci": "npm test && npm run test:playwright:install && npm run test:e2e:browser",
+    "serve": "python3 -m http.server 8000",
+    "preprocess": "python3 preprocess.py"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.20.0",
+    "@playwright/test": "^1.40.0",
+    "babel-jest": "^29.3.0",
+    "jest": "^29.3.0",
+    "jest-environment-jsdom": "^29.3.0"
+  }
+}
