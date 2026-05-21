@@ -1,4 +1,4 @@
-import { useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { route, appState, navigate, save } from "./store/appStore";
 import { parseHash } from "./router/hashRouter";
 import { Toast } from "./components/ui/Toast";
@@ -28,8 +28,12 @@ const VIEWS: Partial<Record<Route["view"], () => JSX.Element | null>> = {
 };
 
 export function App() {
-  const r = route.value;
+  const [r, setR] = useState<Route>(() => route.value);
   const routeKey = JSON.stringify(r);
+
+  // Bridge signal changes to Preact state so re-renders fire reliably from
+  // any context (hashchange, programmatic navigate, etc.).
+  useEffect(() => route.subscribe(setR), []);
 
   useEffect(() => {
     const footer = document.getElementById("footer-status");

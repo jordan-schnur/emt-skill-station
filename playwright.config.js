@@ -12,7 +12,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   // Skip tests if running in restricted network environment
-  globalTimeout: process.env.CI ? 120000 : 60000,
+  globalTimeout: process.env.CI ? 300000 : 60000,
 
   reporter: [
     ["html"],

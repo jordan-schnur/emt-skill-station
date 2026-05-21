@@ -78,7 +78,7 @@ function BrowseMode() {
       <button
         class="btn btn-primary ems-quiz-btn"
         type="button"
-        onClick={() => navigate({ view: "mnemonics", tab: "quiz" })}
+        onClick={() => navigate({ view: "mnemonics", mnemonicsTab: "quiz" })}
       >
         {dueCount > 0 ? `Quiz — ${dueCount} card${dueCount === 1 ? "" : "s"} due` : "Quiz — all caught up"}
       </button>
@@ -118,7 +118,7 @@ function QuizMode() {
       <div class="empty-state">
         <div class="big">✓</div>
         <p>{queue.length === 0 ? "All caught up! Come back later." : "Session complete!"}</p>
-        <button class="btn" onClick={() => navigate({ view: "mnemonics", tab: "browse" })}>← Browse mnemonics</button>
+        <button class="btn" onClick={() => navigate({ view: "mnemonics", mnemonicsTab: "browse" })}>← Browse mnemonics</button>
       </div>
     );
   }
@@ -149,7 +149,7 @@ function QuizMode() {
   return (
     <>
       <div class="crumbs">
-        <button class="btn-link" onClick={() => navigate({ view: "mnemonics", tab: "browse" })}>← Back to EMS Mnemonics &amp; Acronyms</button>
+        <button class="btn-link" onClick={() => navigate({ view: "mnemonics", mnemonicsTab: "browse" })}>← Back to EMS Mnemonics &amp; Acronyms</button>
       </div>
       <div class="ems-quiz-header">
         <span class="ems-quiz-counter">{remaining} card{remaining === 1 ? "" : "s"} remaining</span>
@@ -199,7 +199,7 @@ function QuizMode() {
 // ─── Root view ────────────────────────────────────────────────────────────────
 
 export function EmsMnemonicsView() {
-  const tab = (route.value as { tab?: string }).tab ?? "browse";
+  const tab = route.value.mnemonicsTab ?? "browse";
   return (
     <div class="ems-mnemonics">
       {tab === "quiz" ? <QuizMode /> : <BrowseMode />}

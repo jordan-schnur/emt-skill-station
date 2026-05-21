@@ -9,7 +9,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
-      preact(),
+      // devToolsEnabled:false skips preset-vite's transform-hook-names plugin,
+      // which crashes on require()-ing the now ESM-only zimmerframe.
+      preact({ devToolsEnabled: false }),
 
       // Stamps ?v=<hash> onto local (non-CDN, non-hashed) asset references so
       // browsers always re-fetch legacy js/css after a new deploy.
