@@ -44,6 +44,18 @@ export function App() {
     for (const btn of document.querySelectorAll<HTMLElement>(".topnav button, .brand")) {
       btn.classList.toggle("active", btn.dataset["nav"] === r.view);
     }
+    // Streak pill
+    const streakEl = document.getElementById("streak-pill");
+    if (streakEl) {
+      const days = appState.value.stats?.dailyStreak ?? 0;
+      if (days >= 2) {
+        streakEl.hidden = false;
+        const txt = streakEl.querySelector(".streak-text");
+        if (txt) txt.textContent = `${days}-day streak`;
+      } else {
+        streakEl.hidden = true;
+      }
+    }
   });
 
   useEffect(() => {
@@ -54,14 +66,35 @@ export function App() {
 
   useEffect(() => {
     const entries: Array<[HTMLElement, () => void]> = [];
-    for (const btn of document.querySelectorAll<HTMLElement>(".topnav button, .brand")) {
+    const navSel = ".topnav button, .topbar-menu-pop button, .brand";
+    for (const btn of document.querySelectorAll<HTMLElement>(navSel)) {
       const tgt = btn.dataset["nav"] as Route["view"] | undefined;
       if (!tgt) continue;
-      const handler = () => navigate({ view: tgt });
+      const handler = () => {
+        navigate({ view: tgt });
+        // Close cog menu after navigation
+        document.getElementById("topbar-menu")?.classList.remove("is-open");
+      };
       btn.addEventListener("click", handler);
       entries.push([btn, handler]);
     }
-    return () => entries.forEach(([btn, h]) => btn.removeEventListener("click", h));
+
+    // Cog menu toggle
+    const menuBtn = document.getElementById("topbar-menu-btn");
+    const menuEl = document.getElementById("topbar-menu");
+    const toggleMenu = (e: Event) => {
+      e.stopPropagation();
+      menuEl?.classList.toggle("is-open");
+    };
+    const closeMenu = () => menuEl?.classList.remove("is-open");
+    menuBtn?.addEventListener("click", toggleMenu);
+    document.addEventListener("click", closeMenu);
+
+    return () => {
+      entries.forEach(([btn, h]) => btn.removeEventListener("click", h));
+      menuBtn?.removeEventListener("click", toggleMenu);
+      document.removeEventListener("click", closeMenu);
+    };
   }, []);
 
   const viewFn = VIEWS[r.view];
