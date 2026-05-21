@@ -72,6 +72,13 @@ export function GuideView() {
         <strong>Backup → Download JSON</strong>
         {" "}before clearing your browser or switching devices, then import that file on the new device to continue where you left off.
       </div>
+
+      <h2>What's coming</h2>
+      <ul class="guide-upcoming">
+        <li><strong>Timed Simulation</strong> — full-station run with a countdown timer and automatic step-by-step scoring</li>
+        <li><strong>Critical Criteria drill</strong> — dedicated flashcard mode for auto-fail behaviors only</li>
+        <li><strong>Daily review log</strong> — per-day review counts powering the home screen sparkline</li>
+      </ul>
     </div>
   );
 }
