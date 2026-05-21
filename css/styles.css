@@ -296,6 +296,71 @@ a:hover, .link:hover { text-decoration: underline; }
 }
 .due-pill.zero { background: var(--bg-elev-2); color: var(--text-mute); }
 
+/* -- mastery ring ---------------------------------------------------- */
+.mastery-ring {
+  position: relative;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+}
+.mastery-ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  pointer-events: none;
+}
+.mastery-ring-label sup {
+  font-size: 8px;
+  vertical-align: super;
+  font-weight: 600;
+}
+
+/* -- sheet card head + badges --------------------------------------- */
+.sheet-card-head {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.sheet-card-headtext {
+  flex: 1;
+  min-width: 0;
+}
+.sheet-card-headtext .sheet-title {
+  margin: 2px 0 4px;
+}
+.sheet-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: auto;
+}
+.drill-badge {
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.drill-badge.is-done {
+  background: rgba(46, 160, 67, 0.14);
+  color: var(--good);
+}
+.drill-badge.is-progress {
+  background: rgba(79, 158, 255, 0.12);
+  color: var(--accent);
+}
+.drill-badge.is-empty {
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--text-mute);
+}
+
 /* -- roadmap --------------------------------------------------------- */
 .roadmap {
   margin-top: 36px;

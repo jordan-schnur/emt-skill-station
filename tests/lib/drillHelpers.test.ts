@@ -1,5 +1,5 @@
-import { buildFlatSequence, buildScriptSequence, jaccardSimilarity, matchLines, shuffle } from "../../src/lib/drillHelpers";
-import type { Sheet } from "../../src/types";
+import { buildFlatSequence, buildScriptSequence, jaccardSimilarity, matchLines, shuffle, sheetMasteryPct } from "../../src/lib/drillHelpers";
+import type { AppState, Sheet } from "../../src/types";
 
 const SHEET: Sheet = {
   id: "test",
@@ -129,5 +129,81 @@ describe("shuffle", () => {
       }
     }
     expect(differentFound).toBe(true);
+  });
+});
+
+const MULTI_SECTION_SHEET: Sheet = {
+  id: "e201",
+  title: "Test",
+  shortTitle: "T",
+  category: "Test",
+  totalPoints: 10,
+  sections: [
+    { name: "A", header: true, steps: [{ text: "1", points: 1 }, { text: "2", points: 1 }] },
+    { name: "B", header: true, steps: [{ text: "3", points: 1 }, { text: "4", points: 1 }] },
+  ],
+  criticalCriteria: [],
+  cards: [],
+};
+
+function emptyState(): AppState {
+  return {
+    version: 1,
+    srs: {},
+    notes: { step: {}, sheet: {} },
+    stats: { totalReviews: 0, lastReviewedAt: null, dailyStreak: 0, longestStreak: 0, lastStreakDay: null },
+    drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {} },
+    achievements: {},
+    mnemonics: {},
+    chats: {},
+    emsSrs: {},
+    medcondSrs: {},
+  };
+}
+
+describe("sheetMasteryPct", () => {
+  it("returns 0 for pristine state", () => {
+    expect(sheetMasteryPct(emptyState(), MULTI_SECTION_SHEET)).toBe(0);
+  });
+
+  it("returns 20 when only secorder is mastered (1 of 5 sources)", () => {
+    const state = emptyState();
+    state.drills.secorder["e201"] = { mastered: true, streak: 3, attempts: 3 };
+    expect(sheetMasteryPct(state, MULTI_SECTION_SHEET)).toBe(20);
+  });
+
+  it("returns 20 when only blankrecall bestPct is 100", () => {
+    const state = emptyState();
+    state.drills.blankrecall["e201"] = { attempts: 1, lastAttemptAt: null, lastScore: null, bestPct: 100 };
+    expect(sheetMasteryPct(state, MULTI_SECTION_SHEET)).toBe(20);
+  });
+
+  it("returns 100 when all five drills are fully mastered", () => {
+    const state = emptyState();
+    state.drills.secorder["e201"] = { mastered: true, streak: 3, attempts: 3 };
+    state.drills.stepseq["e201"] = {
+      A: { mastered: true, streak: 3, attempts: 3 },
+      B: { mastered: true, streak: 3, attempts: 3 },
+    };
+    state.drills.whatnext["e201"] = { mastered: true, streak: 3, attempts: 3 };
+    state.drills.blankrecall["e201"] = { attempts: 1, lastAttemptAt: null, lastScore: null, bestPct: 100 };
+    state.drills.spokenscript["e201"] = { mastered: true, streak: 3, attempts: 3, lastScore: null };
+    expect(sheetMasteryPct(state, MULTI_SECTION_SHEET)).toBe(100);
+  });
+
+  it("counts partial stepseq progress proportionally", () => {
+    const state = emptyState();
+    state.drills.stepseq["e201"] = {
+      A: { mastered: true, streak: 3, attempts: 3 },
+    };
+    const pct = sheetMasteryPct(state, MULTI_SECTION_SHEET);
+    expect(pct).toBeGreaterThan(0);
+    expect(pct).toBeLessThan(20);
+  });
+
+  it("counts blankrecall bestPct as fraction of 100", () => {
+    const state = emptyState();
+    state.drills.blankrecall["e201"] = { attempts: 2, lastAttemptAt: null, lastScore: null, bestPct: 50 };
+    expect(sheetMasteryPct(state, MULTI_SECTION_SHEET)).toBe(10);
   });
 });
