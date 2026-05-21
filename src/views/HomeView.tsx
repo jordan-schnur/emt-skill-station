@@ -1,15 +1,31 @@
+import { useState } from "preact/hooks";
 import { appState, navigate } from "../store/appStore";
 import { NREMT_DATA } from "../data/sheets";
 import { countSheetNotes } from "../lib/notes";
-import { HelpIcon } from "../components/ui/HelpIcon";
 import { sheetMasteryPct } from "../lib/drillHelpers";
-import type { Sheet } from "../types";
+import type { AppState, Sheet, SheetTab } from "../types";
 
 const MASTERY_RUNS = 3;
 
-function MasteryRing({ pct }: { pct: number }) {
-  const size = 52;
-  const stroke = 5;
+// ─── Next-mode suggestion ─────────────────────────────────────────────────────
+
+function suggestNextModeForSheet(state: AppState, sheet: Sheet): { tab: SheetTab; label: string } {
+  const drillable = sheet.sections.filter((s) => s.steps.length >= 2);
+  const seqRecs = state.drills?.stepseq?.[sheet.id] ?? {};
+  if (sheet.sections.length > 1 && !state.drills?.secorder?.[sheet.id]?.mastered) {
+    return { tab: "order", label: "Section Order Drill" };
+  }
+  const nextSec = drillable.find((s) => !seqRecs[s.name]?.mastered);
+  if (nextSec) return { tab: "steps", label: `Step Drill — ${nextSec.name}` };
+  if ((state.drills?.blankrecall?.[sheet.id]?.bestPct ?? 0) < 90) {
+    return { tab: "recall", label: "Blank Recall" };
+  }
+  return { tab: "sheet", label: "Full sheet review" };
+}
+
+// ─── MasteryRing ──────────────────────────────────────────────────────────────
+
+export function MasteryRing({ pct, size = 52, stroke = 5 }: { pct: number; size?: number; stroke?: number }) {
   const r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
   const fill = (pct / 100) * circ;
@@ -20,7 +36,7 @@ function MasteryRing({ pct }: { pct: number }) {
     "var(--text-mute)";
 
   return (
-    <div class="mastery-ring" aria-label={`${Math.round(pct)}% mastery`}>
+    <div class="mastery-ring" style={{ width: size, height: size }} aria-label={`${Math.round(pct)}% mastery`}>
       <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }} aria-hidden="true">
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
         <circle
@@ -29,33 +45,32 @@ function MasteryRing({ pct }: { pct: number }) {
           strokeDasharray={`${fill} ${circ}`} strokeLinecap="round"
         />
       </svg>
-      <span class="mastery-ring-label" style={{ color }}>
+      <span class="mastery-ring-label" style={{ color, fontSize: size > 60 ? 15 : 11 }}>
         {Math.round(pct)}<sup>%</sup>
       </span>
     </div>
   );
 }
 
-type BadgeState = "done" | "empty" | number | { done: number; total: number };
+// ─── DrillBadge ───────────────────────────────────────────────────────────────
 
-function DrillBadge({ label, state: bs }: { label: string; state: BadgeState }) {
-  if (bs === "done") {
-    return <span class="drill-badge is-done">{label} ✓</span>;
-  }
-  if (bs === "empty") {
-    return <span class="drill-badge is-empty">{label}</span>;
-  }
+export type BadgeState = "done" | "empty" | number | { done: number; total: number };
+
+export function DrillBadge({ label, state: bs }: { label: string; state: BadgeState }) {
+  if (bs === "done") return <span class="drill-badge is-done">{label} ✓</span>;
+  if (bs === "empty") return <span class="drill-badge is-empty">{label}</span>;
   if (typeof bs === "number") {
     return <span class={`drill-badge ${bs >= 80 ? "is-done" : "is-progress"}`}>{label} {bs}%</span>;
   }
   const { done, total } = bs;
-  if (done >= total && total > 0) {
-    return <span class="drill-badge is-done">{label} ✓</span>;
-  }
-  return <span class="drill-badge is-progress">{label} {done}/{total}</span>;
+  if (done >= total && total > 0) return <span class="drill-badge is-done">{label} ✓</span>;
+  if (done > 0) return <span class="drill-badge is-progress">{label} {done}/{total}</span>;
+  return <span class="drill-badge is-empty">{label} 0/{total}</span>;
 }
 
-function SheetCard({ sheet }: { sheet: Sheet }) {
+// ─── SheetCard ────────────────────────────────────────────────────────────────
+
+export function SheetCard({ sheet }: { sheet: Sheet }) {
   const state = appState.value;
   const pct = sheetMasteryPct(state, sheet);
   const noteCount = countSheetNotes(state, sheet);
@@ -73,16 +88,14 @@ function SheetCard({ sheet }: { sheet: Sheet }) {
 
   const drillableSections = sheet.sections.filter((s) => s.steps.length >= 2);
   const stepsMastered = drillableSections.filter(
-    (s) => state.drills?.stepseq?.[sheet.id]?.[s.name]?.mastered
+    (s) => state.drills?.stepseq?.[sheet.id]?.[s.name]?.mastered,
   ).length;
   const stepsState: BadgeState =
     drillableSections.length === 0
       ? "empty"
-      : stepsMastered === drillableSections.length
+      : stepsMastered === drillableSections.length && drillableSections.length > 0
       ? "done"
-      : stepsMastered > 0
-      ? { done: stepsMastered, total: drillableSections.length }
-      : "empty";
+      : { done: stepsMastered, total: drillableSections.length };
 
   const nextState: BadgeState = wnRec?.mastered
     ? "done"
@@ -98,6 +111,9 @@ function SheetCard({ sheet }: { sheet: Sheet }) {
     ? { done: ssRec.streak, total: MASTERY_RUNS }
     : "empty";
 
+  const critCount = sheet.criticalCriteria.length;
+  const critState: BadgeState = critCount > 0 ? { done: 0, total: critCount } : "empty";
+
   return (
     <div
       class="sheet-card"
@@ -110,7 +126,7 @@ function SheetCard({ sheet }: { sheet: Sheet }) {
         <MasteryRing pct={pct} />
         <div class="sheet-card-headtext">
           <span class="sheet-id">{sheet.id.toUpperCase()}</span>
-          <div class="sheet-title">{sheet.title}</div>
+          <div class="sheet-title">{sheet.shortTitle || sheet.title}</div>
           <div class="sheet-meta">
             {sheet.totalPoints} pts
             {sheet.timeLimit ? ` · ${sheet.timeLimit}` : ""}
@@ -124,42 +140,191 @@ function SheetCard({ sheet }: { sheet: Sheet }) {
         <DrillBadge label="Next?" state={nextState} />
         <DrillBadge label="Recall" state={recallState} />
         <DrillBadge label="Script" state={scriptState} />
-        <span class="drill-badge is-empty">{sheet.criticalCriteria.length} crit</span>
+        <DrillBadge label="Critical" state={critState} />
       </div>
     </div>
   );
 }
 
+// ─── Today hero ───────────────────────────────────────────────────────────────
+
+function TodayHero() {
+  const state = appState.value;
+  const sheets = NREMT_DATA.sheets;
+
+  // Weakest-mastery sheet → "Start now" target
+  let target = sheets[0];
+  let targetPct = 101;
+  for (const s of sheets) {
+    const p = sheetMasteryPct(state, s);
+    if (p < targetPct) { targetPct = p; target = s; }
+  }
+  const nextMode = suggestNextModeForSheet(state, target);
+
+  const overallPct = Math.round(sheets.reduce((a, s) => a + sheetMasteryPct(state, s), 0) / sheets.length);
+  const masteredCount = sheets.filter((s) => sheetMasteryPct(state, s) >= 80).length;
+
+  const dateLabel = new Date().toLocaleDateString("en-US", {
+    weekday: "long", month: "short", day: "numeric",
+  }).toUpperCase();
+
+  // Week sparkline — uses dailyReviewLog if available, else all zeros
+  const rawLog = (state.stats as unknown as Record<string, unknown> & { dailyReviewLog?: Record<string, number> }).dailyReviewLog;
+  const weekBars: number[] = (() => {
+    if (!rawLog) return Array(7).fill(0) as number[];
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today); d.setDate(d.getDate() - (6 - i));
+      return rawLog[d.toISOString().slice(0, 10)] ?? 0;
+    });
+  })();
+  const weekMax = Math.max(...weekBars, 1);
+  const weekTotal = weekBars.reduce((a, b) => a + b, 0);
+  const dayLetters = ["M", "T", "W", "T", "F", "S", "S"];
+  const todayDow = (new Date().getDay() + 6) % 7; // Mon = 0
+
+  const headline = masteredCount === sheets.length
+    ? "All sheets mastered. Keep practicing to stay sharp."
+    : masteredCount === 0
+    ? <>Let's get started. Begin with <strong>{target.shortTitle || target.title}</strong>.</>
+    : <>{masteredCount} of {sheets.length} sheets at 80%+. Next: <strong>{target.shortTitle || target.title}</strong>.</>;
+
+  return (
+    <div class="today-row">
+      <div class="today-card">
+        <div class="today-eyebrow">{dateLabel}</div>
+        <h1 class="today-headline">{headline}</h1>
+        <p class="today-suggestion">
+          Suggested: <strong>{nextMode.label}</strong>.
+        </p>
+        <div class="today-actions">
+          <button
+            class="btn btn-primary btn-large"
+            onClick={() => navigate({ view: "sheet", sheetId: target.id, tab: nextMode.tab })}
+          >
+            ▶ Start now
+          </button>
+          <button
+            class="btn btn-ghost"
+            onClick={() => document.querySelector<HTMLElement>(".home-section-row")?.scrollIntoView({ behavior: "smooth" })}
+          >
+            Browse sheets
+          </button>
+        </div>
+      </div>
+
+      <div class="today-stats">
+        <div class="today-stats-card">
+          <MasteryRing pct={overallPct} size={64} stroke={6} />
+          <div>
+            <div class="today-stats-label">OVERALL MASTERY</div>
+            <div class="today-stats-value">{masteredCount} of {sheets.length} sheets ≥ 80%</div>
+          </div>
+        </div>
+        <div class="today-stats-card today-stats-week">
+          <div class="today-stats-label">THIS WEEK</div>
+          <div class="today-week-bars">
+            {weekBars.map((n, i) => {
+              const dow = (todayDow - (6 - i) + 7) % 7;
+              return (
+                <div class="today-week-col" key={i}>
+                  <div
+                    class={`today-week-bar${i === 6 ? " is-today" : ""}`}
+                    style={{ height: `${Math.max(3, Math.round(n / weekMax * 56))}px` }}
+                  />
+                  <div class="today-week-label">{dayLetters[dow]}</div>
+                </div>
+              );
+            })}
+          </div>
+          <div class="today-stats-value">
+            {weekTotal > 0 ? `${weekTotal} reviews this week` : `${state.stats.totalReviews} total reviews`}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Category grouping helpers ────────────────────────────────────────────────
+
+const CATEGORY_ORDER = [
+  "Patient Assessment",
+  "Airway / Ventilation",
+  "Cardiac",
+  "Trauma / Immobilization",
+  "Trauma / Circulation",
+];
+
+// ─── HomeView ─────────────────────────────────────────────────────────────────
+
 export function HomeView() {
+  const state = appState.value;
+  const [sortMode, setSortMode] = useState(() => localStorage.getItem("nremt.home.sort") ?? "category");
+
+  function handleSort(m: string) {
+    localStorage.setItem("nremt.home.sort", m);
+    setSortMode(m);
+  }
+
+  const flatSheets = (() => {
+    if (sortMode === "mastery") {
+      return NREMT_DATA.sheets.slice().sort((a, b) => sheetMasteryPct(state, a) - sheetMasteryPct(state, b));
+    }
+    return NREMT_DATA.sheets;
+  })();
+
   return (
     <div>
-      <h1>NREMT Skill Sheet Trainer</h1>
-      <p class="subtitle">
-        Pick a skill sheet to study. Use the drills to master section order, step sequences, and more.
-        <HelpIcon
-          title="How the home screen works"
-          bodyHTML={`<p>Click any sheet to open it. Each sheet has multiple study modes available via the tab row at the top.</p>
-          <p>See the <strong>Guide</strong> page (top nav) for a full explanation of every study mode.</p>`}
-        />
-      </p>
+      <TodayHero />
 
-      <div class="sheet-grid">
-        {NREMT_DATA.sheets.map((sheet) => (
-          <SheetCard key={sheet.id} sheet={sheet} />
-        ))}
+      <div class="home-section-row">
+        <h2 class="home-section-title">All sheets</h2>
+        <div class="home-sort">
+          {(["category", "mastery"] as const).map((id) => (
+            <button
+              key={id}
+              class={`home-sort-btn${sortMode === id ? " is-active" : ""}`}
+              onClick={() => handleSort(id)}
+            >
+              {id === "category" ? "By category" : "By mastery"}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div class="roadmap">
-        <h2>Coming next</h2>
-        <p class="muted">
-          Open any sheet and use the Order Drill tab to learn sections in sequence. More modes coming:
-        </p>
-        <ul>
-          <li><span class="tag shipped">✓ live</span>Section Order Drill — drag the major sections of each sheet into the correct exam order</li>
-          <li><span class="tag shipped">✓ live</span>Step Sequence Drill — pick a section, drag its steps into the correct exam order</li>
-          <li><span class="tag">soon</span>Timed run-through — simulate the 10/15 minute station with a checklist and stopwatch</li>
-        </ul>
-      </div>
+      {sortMode === "category" ? (
+        (() => {
+          const groups: Record<string, Sheet[]> = {};
+          for (const s of NREMT_DATA.sheets) {
+            (groups[s.category] ??= []).push(s);
+          }
+          const ordered = [
+            ...CATEGORY_ORDER.filter((k) => groups[k]),
+            ...Object.keys(groups).filter((k) => !CATEGORY_ORDER.includes(k)),
+          ];
+          return (
+            <>
+              {ordered.map((cat) => (
+                <div class="sheet-group" key={cat}>
+                  <div class="sheet-group-head">
+                    <h3 class="sheet-group-title">{cat}</h3>
+                    <div class="sheet-group-rule" />
+                    <span class="sheet-group-count">{groups[cat].length}</span>
+                  </div>
+                  <div class="sheet-grid">
+                    {groups[cat].map((s) => <SheetCard key={s.id} sheet={s} />)}
+                  </div>
+                </div>
+              ))}
+            </>
+          );
+        })()
+      ) : (
+        <div class="sheet-grid">
+          {flatSheets.map((s) => <SheetCard key={s.id} sheet={s} />)}
+        </div>
+      )}
     </div>
   );
 }

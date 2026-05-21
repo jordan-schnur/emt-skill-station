@@ -27,14 +27,25 @@
       </span>
     </button>
     <nav class="topnav">
-      <button data-nav="home" type="button">Home</button>
+      <button data-nav="home" type="button">Today</button>
       <button data-nav="mnemonics" type="button">Mnemonics</button>
       <button data-nav="medconditions" type="button">Medical</button>
-      <button data-nav="stats" type="button">Stats</button>
-      <button data-nav="settings" type="button">Backup</button>
-      <button data-nav="guide" type="button">Guide</button>
       <button data-nav="chat" type="button">AI Chat</button>
     </nav>
+    <div class="topbar-right">
+      <span id="streak-pill" class="streak-pill" hidden>
+        <span class="streak-emoji">🔥</span>
+        <span class="streak-text"></span>
+      </span>
+      <div class="topbar-menu" id="topbar-menu">
+        <button class="topbar-menu-btn" type="button" aria-label="More options" id="topbar-menu-btn">⚙</button>
+        <div class="topbar-menu-pop" role="menu">
+          <button data-nav="stats" type="button">Stats</button>
+          <button data-nav="settings" type="button">Backup &amp; sync</button>
+          <button data-nav="guide" type="button">Guide</button>
+        </div>
+      </div>
+    </div>
   </header>
 
   <main id="root" class="root"></main>
