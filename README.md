@@ -4,6 +4,10 @@ Local study tool for the 10 NREMT EMT psychomotor skill sheets in this folder.
 Memorize the steps with flashcards + spaced repetition, attach personal
 notes to any step, and keep your progress in your browser.
 
+[![Deploy production](https://github.com/jordan-schnur/emt-skill-station/actions/workflows/deploy-production.yml/badge.svg?branch=main)](https://github.com/jordan-schnur/emt-skill-station/actions/workflows/deploy-production.yml)
+[![Tests](https://github.com/jordan-schnur/emt-skill-station/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/jordan-schnur/emt-skill-station/actions/workflows/test.yml)
+[![E2E Tests](https://github.com/jordan-schnur/emt-skill-station/actions/workflows/e2e.yml/badge.svg?branch=main)](https://github.com/jordan-schnur/emt-skill-station/actions/workflows/e2e.yml)
+
 ## What's in here
 
 ```
