@@ -1,4 +1,4 @@
-import type { Sheet } from "../types";
+import type { AppState, Sheet } from "../types";
 
 export interface FlatStep {
   text: string;
@@ -72,6 +72,31 @@ export function matchLines(typedLines: string[], expectedSteps: FlatStep[], thre
     }
     return { expected, matched: false, typedLine: null, score: bestScore };
   });
+}
+
+const DRILL_MASTERY_RUNS = 3;
+
+export function sheetMasteryPct(state: AppState, sheet: Sheet): number {
+  const secRec = state.drills?.secorder?.[sheet.id];
+  const secScore = secRec?.mastered ? 1 : Math.min((secRec?.streak ?? 0) / DRILL_MASTERY_RUNS, 1);
+
+  const drillable = sheet.sections.filter((s) => s.steps.length >= 2);
+  const stepScore =
+    drillable.length === 0
+      ? 0
+      : drillable.filter((s) => state.drills?.stepseq?.[sheet.id]?.[s.name]?.mastered).length /
+        drillable.length;
+
+  const wnRec = state.drills?.whatnext?.[sheet.id];
+  const wnScore = wnRec?.mastered ? 1 : Math.min((wnRec?.streak ?? 0) / DRILL_MASTERY_RUNS, 1);
+
+  const brRec = state.drills?.blankrecall?.[sheet.id];
+  const brScore = (brRec?.bestPct ?? 0) / 100;
+
+  const ssRec = state.drills?.spokenscript?.[sheet.id];
+  const ssScore = ssRec?.mastered ? 1 : Math.min((ssRec?.streak ?? 0) / DRILL_MASTERY_RUNS, 1);
+
+  return Math.round(((secScore + stepScore + wnScore + brScore + ssScore) / 5) * 100);
 }
 
 export function shuffle<T>(arr: T[]): T[] {
