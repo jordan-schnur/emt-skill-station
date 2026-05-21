@@ -1,3 +1,4 @@
+import type { JSX } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { route, appState, navigate, save } from "./store/appStore";
 import { parseHash } from "./router/hashRouter";

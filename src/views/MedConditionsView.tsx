@@ -214,8 +214,8 @@ function QuizTab() {
         <div class="medcond-results-grade">{grade}</div>
         <div class="medcond-results-detail">{correct} / {questions.length} correct</div>
         <div class="medcond-results-detail">{newDue > 0 ? `${newDue} card${newDue === 1 ? "" : "s"} due for review` : "All caught up!"}</div>
-        <button class="btn btn-primary" onClick={() => navigate({ view: "medconditions", tab: "quiz" })}>Continue Studying</button>
-        <button class="btn" onClick={() => navigate({ view: "medconditions", tab: "browse" })}>Browse Conditions</button>
+        <button class="btn btn-primary" onClick={() => navigate({ view: "medconditions", medcondTab: "quiz" })}>Continue Studying</button>
+        <button class="btn" onClick={() => navigate({ view: "medconditions", medcondTab: "browse" })}>Browse Conditions</button>
       </div>
     );
   }
@@ -311,7 +311,7 @@ export function MedConditionsView() {
             key={t.id}
             class={`medcond-tab-btn${tab === t.id ? " active" : ""}`}
             type="button"
-            onClick={() => navigate({ view: "medconditions", tab: t.id })}
+            onClick={() => navigate({ view: "medconditions", medcondTab: t.id })}
           >{t.label}</button>
         ))}
       </div>

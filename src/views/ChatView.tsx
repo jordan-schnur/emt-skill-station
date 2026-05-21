@@ -123,7 +123,7 @@ function ChatDetail({ chatId, sheetCtx }: { chatId: string; sheetCtx?: Sheet }) 
     try {
       const cfg = getConfig();
       const notes = sheet ? (appState.value.notes?.sheet?.[sheet.id] ?? "") : "";
-      const systemPrompt = buildSystemPrompt(chat.mode, sheet ?? null, notes);
+      const systemPrompt = buildSystemPrompt(chat?.mode ?? "chat", sheet ?? null, notes);
       const msgs = getChat(appState.value, chatId)?.messages ?? [];
       const reply = await sendMessage(msgs.filter(m => m.role !== "system"), systemPrompt, cfg);
       mutateState(draft => addMessage(draft, chatId, { role: "assistant", content: reply }));
