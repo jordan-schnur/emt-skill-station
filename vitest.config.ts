@@ -10,6 +10,7 @@ export default defineConfig({
     globals: true,
     coverage: {
       provider: "v8",
+      reporter: ["text", "lcov"],
       include: ["src/**"],
       thresholds: {
         statements: 40,

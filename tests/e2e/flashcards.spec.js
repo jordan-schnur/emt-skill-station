@@ -10,7 +10,7 @@ import { test, expect } from "@playwright/test";
 
 // Navigate to the first sheet's "What's Next?" tab.
 async function goToWhatNextDrill(page) {
-  await page.goto("/");
+  await page.goto(".");
   await page.locator(".sheet-card").first().click();
   await page.waitForURL(/.*sheet.*e201.*/);
   await page.locator("button:has-text(\"What's Next?\")").first().click();

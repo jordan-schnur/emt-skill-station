@@ -78,6 +78,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
       - name: Check test coverage thresholds
         run: npm test
         continue-on-error: true

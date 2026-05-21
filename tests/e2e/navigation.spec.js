@@ -7,7 +7,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Navigation & Home View", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+    await page.goto(".");
   });
 
   test("should load home page with title", async ({ page }) => {
@@ -94,7 +94,7 @@ test.describe("Navigation & Home View", () => {
 
 test.describe("Sheet Detail View & Tabs", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+    await page.goto(".");
     // Navigate to first sheet (E201)
     await page.locator(".sheet-card").first().click();
     await page.waitForURL(/.*sheet.*e201.*/);
@@ -148,7 +148,7 @@ test.describe("Sheet Detail View & Tabs", () => {
 
 test.describe("Footer & Status Display", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+    await page.goto(".");
   });
 
   test("should display footer with stats", async ({ page }) => {
@@ -201,7 +201,7 @@ test.describe("Responsive Design", () => {
   test("should be mobile-responsive", async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto("/");
+    await page.goto(".");
 
     // Page should load without horizontal scroll
     const body = page.locator("body");
@@ -217,7 +217,7 @@ test.describe("Responsive Design", () => {
 
   test("should work on tablet size", async ({ page }) => {
     await page.setViewportSize({ width: 768, height: 1024 });
-    await page.goto("/");
+    await page.goto(".");
 
     // Should load fine
     await expect(page.locator("h1")).toContainText("NREMT");
@@ -230,7 +230,7 @@ test.describe("Responsive Design", () => {
 
   test("should work on desktop size", async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await page.goto("/");
+    await page.goto(".");
 
     await expect(page.locator("h1")).toContainText("NREMT");
 
@@ -242,7 +242,7 @@ test.describe("Responsive Design", () => {
 
 test.describe("Accessibility", () => {
   test("should have proper heading hierarchy", async ({ page }) => {
-    await page.goto("/");
+    await page.goto(".");
 
     // Should have h1
     const h1 = page.locator("h1");
@@ -251,7 +251,7 @@ test.describe("Accessibility", () => {
   });
 
   test("should support keyboard navigation", async ({ page }) => {
-    await page.goto("/");
+    await page.goto(".");
 
     // Tab to first sheet card
     await page.keyboard.press("Tab");
@@ -270,7 +270,7 @@ test.describe("Accessibility", () => {
   test("should have alt text or ARIA labels on interactive elements", async ({
     page,
   }) => {
-    await page.goto("/");
+    await page.goto(".");
 
     // Check that buttons have accessible text
     const buttons = page.locator("button");

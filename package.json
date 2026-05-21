@@ -12,7 +12,8 @@
     "test:e2e:browser": "playwright test",
     "test:playwright:install": "playwright install --with-deps",
     "test:ci": "vitest run --coverage && playwright test",
-    "serve": "python3 -m http.server 8000"
+    "serve": "python3 -m http.server 8000",
+    "test:e2e:staging": "BASE_URL=http://jordanschnur.com/emt-skill-station/staging/ playwright test --project=chromium"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
