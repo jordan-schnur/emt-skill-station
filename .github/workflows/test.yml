@@ -3,6 +3,7 @@ name: Tests
 on:
   push:
     branches: [main]
+    tags: ['e2e-*']
   pull_request:
     branches: [main]
 
@@ -13,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [20.x, 22.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +29,7 @@ jobs:
         run: npm install
 
       - name: Run unit and integration tests
-        run: npm test -- --coverage --watchAll=false
+        run: npm test
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -77,8 +78,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
       - name: Check test coverage thresholds
-        run: npm test -- --coverage --watchAll=false --passWithNoTests
+        run: npm test
         continue-on-error: true
 
       - name: Display coverage summary
@@ -90,14 +94,15 @@ jobs:
   results:
     name: Test Results Summary
     runs-on: ubuntu-latest
-    needs: [unit-tests, python-tests]
+    needs: [unit-tests, python-tests, code-quality]
     if: always()
 
     steps:
       - name: Check test results
         run: |
           if [ "${{ needs.unit-tests.result }}" = "failure" ] || \
-             [ "${{ needs.python-tests.result }}" = "failure" ]; then
+             [ "${{ needs.python-tests.result }}" = "failure" ] || \
+             [ "${{ needs.code-quality.result }}" = "failure" ]; then
             echo "Some tests failed"
             exit 1
           else

@@ -5,45 +5,54 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm test                        # Run all unit tests with coverage
-npm run test:watch              # Watch mode during development
-npm run test:all                # Verbose output with coverage
-npm test tests/views.test.js    # Run a single test file
-npm run test:e2e:browser        # Playwright E2E tests (requires browsers installed)
+npm run dev                     # Vite dev server (hot reload, primary development mode)
+npm run build                   # Production build → dist/
+npm run preview                 # Preview production build locally
+npm test                        # Vitest unit tests with coverage (watch: npm run test:watch)
+npm run test:ci                 # Full pipeline: Vitest + Playwright
+npm run test:e2e:browser        # Playwright E2E tests only (requires browsers installed)
 npm run test:playwright:install # One-time browser install (needs internet)
-npm run test:ci                 # Full pipeline: unit + E2E
-npm run serve                   # python3 -m http.server 8000 (app works from file:// too)
+npm run serve                   # python3 -m http.server 8000 (legacy path, still works)
+npx tsc --noEmit                # Type-check without building
 python3 preprocess.py           # Regenerate data.json and js/data.js from PDFs
 ```
 
-## Feature Documentation
-
-Detailed feature docs live in `.claude/docs/`:
-- `.claude/docs/features.md` — every study mode, global view, state shape, routing, and key constants
-- `.claude/docs/achievements.md` — full achievement list with IDs, triggers, and implementation notes
-
-Read these before adding features or modifying the stats/achievements system.
-
 ## Architecture
 
-This is a **static, no-build frontend**. All JS files are loaded via `<script>` tags in `index.html`. There is no bundler.
+The app uses **Preact + Vite + TypeScript**. Source lives in `src/`; the legacy `js/` files still exist for the data pipeline output but are no longer the primary runtime.
 
-**Data pipeline:** `preprocess.py` reads the 10 NREMT PDF skill sheets using `pdfplumber`, validates step wording against PDF text, and writes `data.json` + `js/data.js`. The canonical step list lives in `preprocess.py` as `SHEETS = [...]` — edit there, re-run the script, reload the browser.
+**Data pipeline:** `preprocess.py` reads the 10 NREMT PDF skill sheets using `pdfplumber` and writes `data.json` + `js/data.js`. The canonical step list lives in `preprocess.py` as `SHEETS = [...]` — edit there, re-run the script, reload the browser. Card IDs: `<sheetId>::<sectionSlug>::<stepIndex>`. Total ~172 cards across 10 sheets.
 
-**JS module load order matters** (no ES modules in prod):
-1. `js/data.js` — sets `window.NREMT_DATA = { sheets, totalCards }`
-2. `js/storage.js` — sets `window.Storage`
-3. `js/srs.js` — sets `window.SRS` (placeholder — SRS removed)
-4. `js/notes.js` — sets `window.Notes`
-5. `js/achievements.js` — sets `window.Achievements`
-6. `js/views.js` — sets `window.Views`
-7. `js/app.js` — wires everything together, owns the render loop
+**Entry point:** `src/main.tsx` → `src/App.tsx`. Vite builds everything into `dist/`.
 
-**App state** lives in `localStorage` under `"nremt.state.v1"`. Full shape:
-```js
+**State management:** `@preact/signals` — global state lives in `src/store/appStore.ts`.
+- `appState` signal holds the full `AppState` (loaded from localStorage on boot)
+- `route` signal holds the current `Route`
+- `mutateState(fn)` — clones state, calls `fn(draft)`, writes the signal. Must be followed by `save()`.
+- `save()` — persists to localStorage, runs achievement checks, triggers cloud sync
+- `navigate(route)` — updates the `route` signal and syncs the URL hash
+- Never write `appState.value = ...` directly outside the store
+
+**Routing:** Hash-based via `src/router/hashRouter.ts`. Routes: `#sheet/<sheetId>/<tab>`, `#stats`, `#settings`, `#guide`, `#chat[/<chatId>]`, `#mnemonics[/quiz]`, `#medconditions[/<tab>]`. Use `navigate()` from `appStore.ts` — never manipulate `window.location.hash` directly.
+
+**Views:** Preact components in `src/views/`. `App.tsx` dispatches on `route.value.view` via the `VIEWS` map. To add a new top-level view: create `src/views/MyView.tsx` and add it to `VIEWS` in `App.tsx`.
+
+**Drill views** live in `src/views/drills/` and receive the current `Sheet` as a prop from `SheetView.tsx`.
+
+**Shared UI:** `src/components/ui/` — `Modal`, `Toast`, `HelpIcon`, `DraggableList`, `MarkdownEditor`, `UpdateBanner`. Modal and Toast are rendered once in `App.tsx` and driven by signals (`openHelpModal`, `openConfirmModal` from `Modal.tsx`).
+
+**`dangerouslySetInnerHTML`:** Used only in `Modal.tsx` for help-modal `bodyHTML`. All callers pass developer-authored literal strings — no user input flows into it.
+
+**Cloud sync:** Optional Firestore (`src/lib/firebase.ts`). On sign-in, compares `updatedAt` timestamps and takes the newer version. AI chat API keys are never synced.
+
+## App State
+
+Lives in `localStorage` under `"nremt.state.v1"`. Types in `src/types/index.ts`.
+
+```ts
 {
   version: 1,
-  srs:    {},                                          // legacy SRS (removed; kept for compat)
+  srs:    {},                  // legacy; kept for compat — do not add new features here
   notes:  { step: { "<cardId>": "text" }, sheet: { "<sheetId>": "text" } },
   stats:  { totalReviews, lastReviewedAt, dailyStreak, longestStreak, lastStreakDay },
   drills: {
@@ -51,54 +60,119 @@ This is a **static, no-build frontend**. All JS files are loaded via `<script>` 
     stepseq:     { "<sheetId>": { "<sectionName>": { mastered, streak, attempts } } },
     whatnext:    { "<sheetId>": { mastered, streak, attempts } },
     blankrecall: { "<sheetId>": { attempts, lastAttemptAt, lastScore: { matched, missed, total, pct }, bestPct } },
-    spokenscript:{ "<sheetId>": { mastered, streak, attempts, lastScore: { correct, total, pct } } }
+    spokenscript:{ "<sheetId>": { mastered, streak, attempts, lastScore: { correct, total, pct } } },
   },
   achievements: { "<id>": timestampMs },
-  mnemonics:    { "<sheetId>": { sections, steps: { "<sectionName>": "..." } } },
+  mnemonics:    { "<sheetId>": { sections: "...", steps: { "<sectionName>": "..." } } },
   chats:        { "<chatId>": { id, title, mode, sheetId, messages } },
-  emsSrs:       { "<cardId>": SRSRecord }
+  emsSrs:       { "<cardId>": SRSRecord },
+  medcondSrs:   { "<cardId>": SRSRecord },
 }
 ```
 
 `stats.totalReviews` is incremented on every drill submission (all 5 drill types). Drives engagement achievements.
 
-**Routing** is hash-based in `app.js`: `#sheet/<sheetId>/<tab>`, `#stats`, `#settings`, `#guide`, `#chat`, `#chat/<chatId>`, `#mnemonics`. The `navigate(route)` function on `ctx` is the only way to change routes.
+## Study Modes (Per-Sheet Tabs in `src/views/drills/`)
 
-**Views** (`js/views.js`): Every view is a function in the `Views` object that takes `ctx = { state, route, navigate, refresh, toast, save }` and returns an `HTMLElement`. Views never touch `localStorage` directly — they call `ctx.save()`. To add a new study mode: add an entry to `Views`, add a tab in `renderTabs`.
+| Tab | File | Description |
+|-----|------|-------------|
+| `sheet` | `ReferenceView.tsx` | Read-only full sheet with collapsible sections and inline note editing |
+| `notes` | `NotesView.tsx` | Per-sheet markdown note + all step notes for this sheet |
+| `order` | `SectionOrderDrill.tsx` | Drag header sections into correct exam order; mastery = 3 consecutive correct |
+| `steps` | `StepSeqDrill.tsx` | Pick a section, drag its steps into order; mastered per-section; tab shows `M/N` |
+| `whatnext` | `WhatNextDrill.tsx` | 4-choice: pick the step that comes next; mastery = 3 consecutive correct |
+| `recall` | `BlankRecallView.tsx` | Type every step from memory; Jaccard fuzzy match (threshold 0.45); tracks `bestPct` |
+| `script` | `SpokenScriptView.tsx` | Type what you'd say aloud; ≥80% on 3 runs = mastered |
+| `mnemonics` | `MnemonicsView.tsx` | AI-generated section/step mnemonics; user-editable |
+| `chat` | `ChatView.tsx` | Q&A or Examiner role-play via AI API |
 
-**SRS** (`js/srs.js`): File exists as placeholder — spaced repetition was removed. `state.srs` is kept empty for data compatibility. Do not add new features to `state.srs`; use new top-level keys on `state` instead.
+**Key constants** (all in `src/lib/drillHelpers.ts` and drill view files):
+- `MASTERY_RUNS = 3` — consecutive correct runs required for secorder / stepseq / whatnext / spokenscript mastery
+- `SPOKENSCRIPT_PASS_RATE = 0.8` — minimum score per run for spoken script mastery
+- Blank recall fuzzy match threshold: `0.45` (Jaccard similarity)
 
-**Drill mastery** uses 3-consecutive-correct-runs as the gate, tracked per drill type in `state.drills.*`. See `.claude/docs/features.md` for per-type state shapes.
+## Global Views (`src/views/`)
 
-**Achievements** (`js/achievements.js`): `Achievements.check(state)` is called after every `ctx.save()` in `app.js`. Returns newly unlocked achievements. See `.claude/docs/achievements.md` for the full list. When adding a new drill type, add corresponding achievements here.
+| Route | File | Description |
+|-------|------|-------------|
+| `#` / `#home` | `HomeView.tsx` | Sheet grid with mastery badges |
+| `#stats` | `StatsView.tsx` | Streak, achievements, per-sheet drill summary |
+| `#settings` | `SettingsView.tsx` | Cloud sync, JSON export/import, AI API config |
+| `#guide` | `GuideView.tsx` | Tutorial for every study mode |
+| `#mnemonics` | `EmsMnemonicsView.tsx` | EMS clinical acronyms (OPQRST, SAMPLE, etc.) with browse + quiz modes |
+| `#medconditions` | `MedConditionsView.tsx` | Medical conditions reference + quiz |
+
+## Achievements (`src/lib/achievements.ts`)
+
+`check(state)` runs automatically inside `save()` — never call it manually. Returns newly unlocked achievements; each triggers an achievement toast.
+
+| ID | Name | Trigger |
+|----|------|---------|
+| `first_review` | First Responder | `totalReviews >= 1` |
+| `ten_reviews` | Getting Started | `totalReviews >= 10` |
+| `fifty_reviews` | Building Momentum | `totalReviews >= 50` |
+| `hundred_reviews` | Dedicated Student | `totalReviews >= 100` |
+| `five_hundred_reviews` | Study Machine | `totalReviews >= 500` |
+| `first_note` | Note Taker | Any step note written |
+| `ten_notes` | Detailed Notes | 10+ step notes |
+| `first_drill_mastered` | Drill Sergeant | Any drill mastered |
+| `order_mastered_first` | In Order | Section order mastered on any sheet |
+| `stepseq_mastered_first` | Step by Step | Step sequence mastered in any section |
+| `whatnext_mastered_first` | What Comes Next | What's Next? mastered on any sheet |
+| `first_recall_attempt` | From Memory | First blank recall attempt |
+| `good_recall` | Memory Champion | Blank recall ≥ 80% on any sheet |
+| `perfect_recall` | Total Recall | Blank recall 100% on any sheet |
+| `recall_three_sheets` | Recall Ace | Blank recall ≥ 80% on 3+ sheets |
+| `spoken_script_pass` | Verbal Fluency | Spoken script ≥ 80% on any sheet |
+| `spoken_script_mastered` | Script Master | Spoken script mastered on any sheet |
+| `streak_3` / `streak_7` / `streak_30` | Consistent / Week Warrior / Monthly Scholar | `longestStreak` milestones |
+| `all_drills_one_sheet` | Complete Package | All 5 drills mastered/good on one sheet |
+| `all_drills_three_sheets` | Triple Threat | All 5 drills mastered/good on 3 sheets |
+
+When adding a new drill type, add corresponding achievements here.
 
 ## Testing
 
-Tests run in jsdom via Jest with Babel. The test environment provides DOM but not a real browser, so `views.js` tests render elements via the DOM shim.
+Tests use **Vitest** + `@testing-library/preact` in jsdom.
 
-**Test fixtures** are in `tests/fixtures.js` — use `createMockSheet()`, `createEmptyState()`, `createMockContext()`, etc. Do not create new mock data inline.
+**Unit/component tests:** `tests/**/*.test.{ts,tsx}` — run with `npm test`.
 
-Coverage thresholds (enforced by Jest): 44% statements, 42% branches, 36% functions, 46% lines. These are the current floor; don't lower them.
+**Test fixtures:** `tests/vitest.fixtures.ts` — use `createMockSheet()`, `createEmptyState()`, `createMockRoute()`, etc. Do not create new mock data inline.
 
-E2E tests (`tests/e2e/*.spec.js`) use Playwright and are excluded from Jest runs — they run only via `npm run test:e2e:browser`.
+**Coverage thresholds** (enforced by Vitest): 40% statements, 37% branches, 40% functions, 44% lines. These are the floor; don't lower them.
 
-## Active roadmap
+**E2E tests:** `tests/e2e/*.spec.js` use Playwright — run with `npm run test:e2e:browser`. Excluded from Vitest runs.
 
-`README.md` is the living todo list. It tracks what's shipped (✅) and what's planned across Phases 1–7, with a prioritized build order. Check it before starting any new feature to understand where work fits in the sequence.
+**Type checking:** Run `npx tsc --noEmit` before marking any TypeScript task done. CI enforces this in the `code-quality` job.
+
+## Coding Conventions
+
+- **No comments by default.** Only add one when the WHY is non-obvious. Never describe what the code does.
+- **State writes:** always `mutateState(draft => { ... })` then `save()`. Never mutate `appState.value` directly.
+- **New state keys** go on the top-level `AppState` — never add to `state.srs`.
+- **New views** → `src/views/MyView.tsx` + entry in `VIEWS` map in `App.tsx`.
+- **New lib functions** → `src/lib/` with a matching test in `tests/`.
+- Keep `src/types/index.ts` as the single source of truth for all shared types.
+
+## Active Roadmap
+
+`README.md` tracks what's shipped (✅) and what's planned. Check it before starting any new feature.
 
 ## Workflow
 
 For every task:
-1. Write tests first (or alongside) — unit tests in `tests/*.test.js`, E2E in `tests/e2e/*.spec.js`
+1. Write tests first (or alongside) — unit in `tests/*.test.{ts,tsx}`, E2E in `tests/e2e/*.spec.js`
 2. Implement the feature
 3. Run `npm test` — must pass
-4. Run `npm run test:e2e:browser` — must pass for any user-facing change
-5. Visually verify in the browser (`npm run serve`)
+4. Run `npx tsc --noEmit` — zero errors
+5. Run `npm run test:e2e:browser` — must pass for any user-facing change
+6. Visually verify in the browser (`npm run dev`)
 
 A task is **not done** until:
-- `npm test` shows green (you ran it yourself, not just assumed)
+- `npm test` shows green (run it yourself)
+- `npx tsc --noEmit` is clean
 - E2E tests pass for UI changes
 - No new console errors or warnings
 - Coverage thresholds are not regressed
 
-When tests fail: fix the code or the test — never skip or comment out. Never move forward with a failing suite.
+When tests fail: fix the code or the test — never skip, comment out, or lower thresholds.
