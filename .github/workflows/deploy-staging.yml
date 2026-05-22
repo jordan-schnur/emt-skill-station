@@ -44,3 +44,12 @@ jobs:
           publish_dir: ./dist
           destination_dir: staging
           keep_files: true
+
+      - name: Copy smart 404 to root (fixes SPA routing for /staging/* paths)
+        run: mkdir -p /tmp/spa-404 && cp dist/404.html /tmp/spa-404/404.html
+
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: /tmp/spa-404
+          keep_files: true

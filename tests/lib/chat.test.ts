@@ -229,10 +229,31 @@ describe("ChatStore – buildSystemPrompt", () => {
     expect(prompt).not.toContain("undefined");
   });
 
-  it("examiner mode includes 'Begin' instruction", () => {
+  it("examiner mode includes dispatch opening", () => {
     const prompt = buildSystemPrompt("examiner", sheet, "");
-    expect(prompt).toContain("Begin");
-    expect(prompt).toContain("examiner");
+    expect(prompt).toContain("Dispatch:");
+    expect(prompt).toContain("Begin when ready");
+  });
+
+  it("examiner mode includes equipment hint when sheet has mapping", () => {
+    const prompt = buildSystemPrompt("examiner", sheet, "");
+    expect(prompt).toMatch(/cervical collar|spine board|non-rebreather|BVM|AED|SAM splint|tourniquet/i);
+  });
+
+  it("examiner mode includes Big 5 gate instruction", () => {
+    const prompt = buildSystemPrompt("examiner", sheet, "");
+    expect(prompt).toContain("Big 5");
+    expect(prompt).toContain("You've entered the scene");
+  });
+
+  it("examiner mode includes hospital transport question", () => {
+    const prompt = buildSystemPrompt("examiner", sheet, "");
+    expect(prompt).toContain("Where would you transport");
+  });
+
+  it("examiner mode includes re-attempt note", () => {
+    const prompt = buildSystemPrompt("examiner", sheet, "");
+    expect(prompt).toContain("re-attempt");
   });
 
   it("examiner mode includes critical criteria", () => {
@@ -240,9 +261,9 @@ describe("ChatStore – buildSystemPrompt", () => {
     expect(prompt).toContain("Failure to take appropriate PPE precautions");
   });
 
-  it("examiner mode with no sheet uses generic station name", () => {
+  it("examiner mode with no sheet omits sheet-specific content", () => {
     const prompt = buildSystemPrompt("examiner", null, "");
-    expect(prompt).toContain("skill station");
     expect(prompt).not.toContain("undefined");
+    expect(prompt).toContain("Dispatch:");
   });
 });

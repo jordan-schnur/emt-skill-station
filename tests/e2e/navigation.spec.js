@@ -240,6 +240,48 @@ test.describe("Responsive Design", () => {
   });
 });
 
+test.describe("Exam Day View", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("./examday");
+    await page.waitForLoadState("domcontentloaded");
+  });
+
+  test("should load via #examday hash route", async ({ page }) => {
+    await expect(page.locator("h1")).toContainText("Exam Day");
+  });
+
+  test("should display all Big 5 cards", async ({ page }) => {
+    const cards = page.locator(".big-five-card");
+    await expect(cards).toHaveCount(5);
+    await expect(cards.nth(0)).toContainText("Scene safe");
+    await expect(cards.nth(1)).toContainText("BSI");
+    await expect(cards.nth(4)).toContainText("Additional resources");
+  });
+
+  test("should display scenario grid with linked and coming-soon cards", async ({ page }) => {
+    const linked = page.locator(".scenario-card--linked");
+    const soon = page.locator(".scenario-card--soon");
+    await expect(linked).toHaveCount(6);
+    await expect(soon).toHaveCount(4);
+  });
+
+  test("should navigate to sheet view when linked scenario card is clicked", async ({ page }) => {
+    const firstLinked = page.locator(".scenario-card--linked").first();
+    await firstLinked.click();
+    await expect(page).toHaveURL(/.*sheet.*/, { timeout: 5000 });
+  });
+
+  test("should navigate to exam day from cog menu", async ({ page }) => {
+    await page.goto(".");
+    await page.waitForLoadState("domcontentloaded");
+    const menuBtn = page.locator("#topbar-menu-btn");
+    await menuBtn.click();
+    const examDayBtn = page.locator("[data-nav='examday']");
+    await examDayBtn.click();
+    await expect(page.locator("h1")).toContainText("Exam Day");
+  });
+});
+
 test.describe("Accessibility", () => {
   test("should have proper heading hierarchy", async ({ page }) => {
     await page.goto(".");

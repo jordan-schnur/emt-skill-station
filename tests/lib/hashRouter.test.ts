@@ -34,25 +34,25 @@ describe("parseHash — mnemonics single-card quiz", () => {
 describe("writeHash — mnemonics single-card quiz", () => {
   it("emits mnemonics/quiz/<id> when mnemonicsCardId is set", () => {
     const calls: string[] = [];
-    const orig = window.history.replaceState.bind(window.history);
-    window.history.replaceState = (_: unknown, __: string, url: string) => {
+    const orig = window.history.pushState.bind(window.history);
+    window.history.pushState = (_: unknown, __: string, url: string) => {
       calls.push(url);
       orig(_, __, url);
     };
     writeHash({ view: "mnemonics", mnemonicsTab: "quiz", mnemonicsCardId: "hs-and-ts" });
-    expect(calls.at(-1)).toBe("#mnemonics/quiz/hs-and-ts");
-    window.history.replaceState = orig;
+    expect(calls.at(-1)).toBe("/mnemonics/quiz/hs-and-ts");
+    window.history.pushState = orig;
   });
 
   it("emits mnemonics/quiz (no id) when mnemonicsCardId is absent", () => {
     const calls: string[] = [];
-    const orig = window.history.replaceState.bind(window.history);
-    window.history.replaceState = (_: unknown, __: string, url: string) => {
+    const orig = window.history.pushState.bind(window.history);
+    window.history.pushState = (_: unknown, __: string, url: string) => {
       calls.push(url);
       orig(_, __, url);
     };
     writeHash({ view: "mnemonics", mnemonicsTab: "quiz" });
-    expect(calls.at(-1)).toBe("#mnemonics/quiz");
-    window.history.replaceState = orig;
+    expect(calls.at(-1)).toBe("/mnemonics/quiz");
+    window.history.pushState = orig;
   });
 });

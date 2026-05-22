@@ -1,3 +1,5 @@
+import { navigate } from "../store/appStore";
+
 const MODES = [
   {
     name: "Flashcards (SRS)",
@@ -71,6 +73,19 @@ export function GuideView() {
         All data is saved in your browser's local storage — it's private and never leaves your device. Use{" "}
         <strong>Backup → Download JSON</strong>
         {" "}before clearing your browser or switching devices, then import that file on the new device to continue where you left off.
+      </div>
+
+      <div class="guide-tip" style={{ marginTop: "24px" }}>
+        <strong>Exam Day tips: </strong>
+        Going to the exam soon?{" "}
+        <button
+          class="link-btn"
+          type="button"
+          onClick={() => navigate({ view: "examday" })}
+        >
+          Read the Exam Day guide
+        </button>
+        {" "}for dispatch strategy, the Big 5, and a map of all PA scenarios.
       </div>
 
       <h2>What's coming</h2>

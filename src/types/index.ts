@@ -193,6 +193,8 @@ export type RouteView =
   | "stats"
   | "settings"
   | "guide"
+  | "examday"
+  | "sources"
   | "chat"
   | "mnemonics"
   | "medconditions"

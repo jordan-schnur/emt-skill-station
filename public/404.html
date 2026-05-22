@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>NREMT Psychomotor Skill Trainer</title>
+  <script>
+    // GitHub Pages SPA redirect.
+    // Auto-detects the correct app base from the requested path so this single
+    // file serves both production (/emt-skill-station) and staging (/emt-skill-station/staging).
+    var known = ['/emt-skill-station/staging', '/emt-skill-station'];
+    var path = window.location.pathname;
+    var base = known[known.length - 1];
+    for (var i = 0; i < known.length; i++) {
+      if (path === known[i] || path.startsWith(known[i] + '/')) { base = known[i]; break; }
+    }
+    var appPath = path.slice(base.length) || '/';
+    window.location.replace(
+      base + '/?p=' + encodeURIComponent(appPath) +
+      (window.location.search ? '&s=' + encodeURIComponent(window.location.search.slice(1)) : '') +
+      (window.location.hash ? '&h=' + encodeURIComponent(window.location.hash) : '')
+    );
+  </script>
+</head>
+<body></body>
+</html>
