@@ -12,6 +12,7 @@ import { GuideView } from "./views/GuideView";
 import { SettingsView } from "./views/SettingsView";
 import { EmsMnemonicsView } from "./views/EmsMnemonicsView";
 import { MedConditionsView } from "./views/MedConditionsView";
+import { BlsMedsView } from "./views/BlsMedsView";
 import { ChatView } from "./views/ChatView";
 import { ExamDayView } from "./views/ExamDayView";
 import { SourcesView } from "./views/SourcesView";
@@ -27,6 +28,7 @@ const VIEWS: Partial<Record<Route["view"], () => JSX.Element | null>> = {
   settings:      () => <SettingsView />,
   mnemonics:     () => <EmsMnemonicsView />,
   medconditions: () => <MedConditionsView />,
+  blsmeds:       () => <BlsMedsView />,
   chat:          () => <ChatView />,
   examday:       () => <ExamDayView />,
   sources:       () => <SourcesView />,

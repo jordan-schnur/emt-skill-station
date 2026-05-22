@@ -122,6 +122,26 @@ const DEFS: AchievementDef[] = [
   { id: "med_quiz_first", name: "First Diagnosis", desc: "Complete your first Medical Conditions quiz session", icon: "🩺", check: (s) => ((s.drills as unknown as Record<string, Record<string, number>>)["medcondquiz"] || {})["sessionCount"] >= 1 },
   { id: "med_quiz_pass",  name: "Clinical Eye",    desc: "Score 70%+ on the Medical Conditions quiz",          icon: "🔬", check: (s) => ((s.drills as unknown as Record<string, Record<string, number>>)["medcondquiz"] || {})["bestScore"] >= 0.7 },
   { id: "med_quiz_ace",   name: "Sharp Clinician", desc: "Score 90%+ on the Medical Conditions quiz",          icon: "🏥", check: (s) => ((s.drills as unknown as Record<string, Record<string, number>>)["medcondquiz"] || {})["bestScore"] >= 0.9 },
+  {
+    id: "blsmeds_first_scenario",
+    name: "First Dose",
+    desc: "Complete your first BLS medication scenario",
+    icon: "💊",
+    check: (s) => ((s.drills as unknown as Record<string, { scenariosCompleted?: number }>)["blsmedsquiz"]?.scenariosCompleted ?? 0) >= 1,
+  },
+  {
+    id: "blsmeds_all_drilled",
+    name: "Pharmacist",
+    desc: "Review all 9 BLS medications in the Drill tab at least once",
+    icon: "🧪",
+    check: (s) => {
+      const ids = ["oxygen", "aspirin", "nitroglycerin", "oral-glucose", "activated-charcoal", "epinephrine-auto-injector", "albuterol", "naloxone", "isopropyl-alcohol"];
+      return ids.every((id) => {
+        const rec = (s.blsMedsSrs ?? {})[`blsmed::${id}::dose`];
+        return rec && rec.reps >= 1;
+      });
+    },
+  },
 ];
 
 export function check(state: AppState): AchievementDef[] {

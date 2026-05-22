@@ -225,6 +225,35 @@ describe("Achievements", () => {
       const state = createEmptyState();
       expect(check(state).some((a) => a.id === "all_drills_three_sheets")).toBe(false);
     });
+
+    it("unlocks blsmeds_first_scenario after first scenario completed", () => {
+      const state = createEmptyState();
+      (state.drills as Record<string, unknown>)["blsmedsquiz"] = { scenariosCompleted: 1, lastSessionAt: new Date().toISOString() };
+      expect(check(state).some((a) => a.id === "blsmeds_first_scenario")).toBe(true);
+    });
+
+    it("does not unlock blsmeds_first_scenario with zero scenarios", () => {
+      const state = createEmptyState();
+      expect(check(state).some((a) => a.id === "blsmeds_first_scenario")).toBe(false);
+    });
+
+    it("unlocks blsmeds_all_drilled when all 9 meds have SRS records with reps >= 1", () => {
+      const state = createEmptyState();
+      const ids = ["oxygen", "aspirin", "nitroglycerin", "oral-glucose", "activated-charcoal", "epinephrine-auto-injector", "albuterol", "naloxone", "isopropyl-alcohol"];
+      for (const id of ids) {
+        state.blsMedsSrs[`blsmed::${id}::dose`] = { ease: 2.5, interval: 1, reps: 1, due: Date.now() + 86400000, lastGrade: "good", lapses: 0, lastReviewed: new Date().toISOString() };
+      }
+      expect(check(state).some((a) => a.id === "blsmeds_all_drilled")).toBe(true);
+    });
+
+    it("does not unlock blsmeds_all_drilled when only 8 meds drilled", () => {
+      const state = createEmptyState();
+      const ids = ["oxygen", "aspirin", "nitroglycerin", "oral-glucose", "activated-charcoal", "epinephrine-auto-injector", "albuterol", "naloxone"];
+      for (const id of ids) {
+        state.blsMedsSrs[`blsmed::${id}::dose`] = { ease: 2.5, interval: 1, reps: 1, due: Date.now() + 86400000, lastGrade: "good", lapses: 0, lastReviewed: new Date().toISOString() };
+      }
+      expect(check(state).some((a) => a.id === "blsmeds_all_drilled")).toBe(false);
+    });
   });
 
   describe("getAll()", () => {

@@ -56,7 +56,7 @@ test.describe("Data Persistence & Storage", () => {
     // Get initial mastery
     const firstCard = page.locator(".sheet-card").first();
     const initialMastery = await firstCard
-      .locator(".sheet-stats")
+      .locator(".sheet-card-badges")
       .textContent();
 
     // Go to sheet, study a bit
@@ -81,12 +81,12 @@ test.describe("Data Persistence & Storage", () => {
 
     // Go back to home
     await page.locator("text=← All sheets").click();
-    await page.waitForURL(/#(?!.*sheet)/, { timeout: 5000 });
+    await expect(page.locator(".today-headline")).toBeVisible({ timeout: 5000 });
 
     // Check mastery has changed
     const updatedCard = page.locator(".sheet-card").first();
     const updatedMastery = await updatedCard
-      .locator(".sheet-stats")
+      .locator(".sheet-card-badges")
       .textContent();
 
     // Should have some progress
@@ -111,7 +111,7 @@ test.describe("Data Persistence & Storage", () => {
 
     // Go back to home
     await page.locator("text=← All sheets").click();
-    await page.waitForURL(/#(?!.*sheet)/, { timeout: 5000 });
+    await expect(page.locator(".today-headline")).toBeVisible({ timeout: 5000 });
 
     // Sheet card should still be visible and render correctly
     const updatedCard = page.locator(".sheet-card").first();
@@ -125,8 +125,8 @@ test.describe("Data Persistence & Storage", () => {
     await page.locator(".sheet-card").first().click();
     await page.waitForURL(/.*sheet.*e201.*/);
 
-    // Switch to reference view
-    await page.locator("button:has-text('Full sheet')").click();
+    // Switch to reference view (use quickjump tab, not mode-row button)
+    await page.locator(".quickjump button:has-text('Full sheet')").click();
     await page.waitForLoadState("networkidle");
 
     // Add a note if possible

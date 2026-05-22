@@ -18,6 +18,9 @@ function parseParts(parts: string[]): Route | null {
   if (parts[0] === "medconditions") {
     return { view: "medconditions", medcondTab: parts[1] || "browse" };
   }
+  if (parts[0] === "blsmeds") {
+    return { view: "blsmeds", blsmedsTab: parts[1] || "reference" };
+  }
   if ((["home", "stats", "settings", "guide", "examday", "sources"] as string[]).includes(parts[0])) {
     return { view: parts[0] as RouteView };
   }
@@ -53,6 +56,7 @@ export function writePath(r: Route, method: "push" | "replace" = "push"): void {
     }
   }
   else if (r.view === "medconditions") path = r.medcondTab && r.medcondTab !== "browse" ? `medconditions/${r.medcondTab}` : "medconditions";
+  else if (r.view === "blsmeds") path = r.blsmedsTab && r.blsmedsTab !== "reference" ? `blsmeds/${r.blsmedsTab}` : "blsmeds";
   else if (r.view !== "home") path = r.view;
   const url = path ? `${BASE}/${path}` : `${BASE}/`;
   if (method === "push") {
