@@ -14,6 +14,7 @@ import { ChatView } from "./ChatView";
 import { NotFoundView } from "./NotFoundView";
 import { MasteryRing } from "./HomeView";
 import type { Sheet, SheetTab } from "../types";
+import { VideoCard } from "../components/VideoCard";
 
 const MASTERY_RUNS = 3;
 
@@ -347,6 +348,25 @@ function QuickJump({ sheet, current }: { sheet: Sheet; current: SheetTab }) {
   );
 }
 
+// ─── Videos section ───────────────────────────────────────────────────────────
+
+function VideosSection({ sheet }: { sheet: Sheet }) {
+  if (!sheet.videos || sheet.videos.length === 0) return null;
+  return (
+    <div class="videos-section">
+      <div class="videos-section-head">
+        <h3>Watch how it's done</h3>
+        <span class="videos-section-meta">External videos · opens YouTube</span>
+      </div>
+      <div class="videos-grid">
+        {sheet.videos.map((v) => (
+          <VideoCard key={v.videoId} video={v} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── SheetView ────────────────────────────────────────────────────────────────
 
 export function SheetView() {
@@ -376,6 +396,7 @@ export function SheetView() {
       <SheetHero sheet={sheet} tab={tab} />
       <ModeBuckets sheet={sheet} currentTab={tab} />
       <QuickJump sheet={sheet} current={tab} />
+      <VideosSection sheet={sheet} />
       <div class="tab-content">{tabContent}</div>
     </div>
   );

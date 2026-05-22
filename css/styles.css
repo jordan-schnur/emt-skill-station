@@ -4577,3 +4577,125 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
 .source-publisher { font-size: 13px; color: var(--text-dim); margin-bottom: 6px; }
 .source-note { font-size: 13px; color: var(--text-dim); font-style: italic; }
 .sources-copyright { font-size: 13px; color: var(--text-mute); margin-top: 8px; }
+
+/* ─── Video Cards ─────────────────────────────────────────────────────────── */
+.videos-section {
+  margin: 0 0 24px;
+  padding: 0 16px;
+}
+
+.videos-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.videos-section-head h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.videos-section-meta {
+  font-size: 11px;
+  color: var(--text-mute);
+}
+
+.videos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.video-card {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--text);
+  background: var(--bg-elev-1);
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.video-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.video-card-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--bg-elev-2);
+  overflow: hidden;
+}
+
+.video-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.video-card-thumb-fallback {
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--bg-elev-2),
+    var(--bg-elev-2) 10px,
+    var(--border) 10px,
+    var(--border) 11px
+  );
+}
+
+.video-card-play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 22px;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.video-card-body {
+  padding: 10px 12px 12px;
+}
+
+.video-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.video-card-meta {
+  font-size: 11px;
+  color: var(--text-mute);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.video-card-ext {
+  color: var(--accent);
+}
+
+@media (max-width: 500px) {
+  .videos-grid {
+    grid-template-columns: 1fr;
+  }
+}
