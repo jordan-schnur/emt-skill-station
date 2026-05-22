@@ -3929,3 +3929,13 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   .big-five-card { padding: 8px 10px; }
 }
 .guide-upcoming strong { color: var(--text); }
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+}
