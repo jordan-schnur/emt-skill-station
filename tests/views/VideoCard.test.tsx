@@ -66,13 +66,13 @@ const MOCK_VIDEO_WITH_DURATION: Video = {
 };
 
 describe("VideoCard", () => {
-  it("renders a link with correct href", () => {
+  it("renders a YouTube fallback link with correct href", () => {
     render(<VideoCard video={MOCK_VIDEO} />);
     const link = screen.getByRole("link");
     expect((link as HTMLAnchorElement).href).toContain("youtube.com/watch?v=abc123");
   });
 
-  it("opens in a new tab with rel=noopener noreferrer", () => {
+  it("fallback link opens in a new tab with rel=noopener noreferrer", () => {
     render(<VideoCard video={MOCK_VIDEO} />);
     const link = screen.getByRole("link") as HTMLAnchorElement;
     expect(link.target).toBe("_blank");
@@ -80,7 +80,7 @@ describe("VideoCard", () => {
     expect(link.rel).toContain("noreferrer");
   });
 
-  it("renders thumbnail with correct src", () => {
+  it("renders thumbnail with correct src before playing", () => {
     render(<VideoCard video={MOCK_VIDEO} />);
     const img = screen.getByRole("img") as HTMLImageElement;
     expect(img.src).toContain("img.youtube.com/vi/abc123/mqdefault.jpg");
@@ -101,9 +101,9 @@ describe("VideoCard", () => {
     expect(screen.getByText(/8:24/)).toBeTruthy();
   });
 
-  it("renders opens YouTube label", () => {
+  it("renders YouTube fallback link label", () => {
     render(<VideoCard video={MOCK_VIDEO} />);
-    expect(screen.getByText(/opens YouTube/)).toBeTruthy();
+    expect(screen.getByText(/↗ YouTube/)).toBeTruthy();
   });
 
   it("shows fallback div when image errors", () => {
@@ -111,6 +111,16 @@ describe("VideoCard", () => {
     const img = screen.getByRole("img");
     fireEvent.error(img);
     expect(document.querySelector(".video-card-thumb-fallback")).toBeTruthy();
+    expect(screen.queryByRole("img")).toBeNull();
+  });
+
+  it("clicking play button replaces thumbnail with iframe embed", () => {
+    render(<VideoCard video={MOCK_VIDEO} />);
+    const playBtn = screen.getByRole("button", { name: /Play EMT Skills/ });
+    fireEvent.click(playBtn);
+    const iframe = document.querySelector("iframe") as HTMLIFrameElement;
+    expect(iframe).toBeTruthy();
+    expect(iframe.src).toContain("youtube.com/embed/abc123");
     expect(screen.queryByRole("img")).toBeNull();
   });
 });
