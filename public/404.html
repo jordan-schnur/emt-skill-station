@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>NREMT Psychomotor Skill Trainer</title>
+  <script>
+    // GitHub Pages SPA redirect: preserve the requested path by encoding it
+    // as a query parameter and redirecting to the app root, where index.html
+    // restores it via history.replaceState before the app boots.
+    var base = '/emt-skill-station';
+    var path = window.location.pathname.slice(base.length) || '/';
+    var search = window.location.search;
+    var hash = window.location.hash;
+    window.location.replace(
+      base + '/?p=' + encodeURIComponent(path) +
+      (search ? '&s=' + encodeURIComponent(search.slice(1)) : '') +
+      (hash ? '&h=' + encodeURIComponent(hash) : '')
+    );
+  </script>
+</head>
+<body></body>
+</html>

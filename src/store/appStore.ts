@@ -1,11 +1,11 @@
 import { signal } from "@preact/signals";
 import { load, save as storageSave } from "../lib/storage";
 import { check as checkAchievements } from "../lib/achievements";
-import { parseHash, writeHash } from "../router/hashRouter";
+import { parseRoute, writePath } from "../router/router";
 import type { AppState, Route } from "../types";
 
 export const appState = signal<AppState>(load());
-export const route = signal<Route>(parseHash() ?? { view: "home" });
+export const route = signal<Route>(parseRoute() ?? { view: "home" });
 
 // ─── Toast system ──────────────────────────────────────────────────────────
 
@@ -74,5 +74,5 @@ export function navigate(next: Route): void {
   const cs = (window as unknown as Record<string, { flush?: () => void }>)["CloudSync"];
   if (cs?.flush) cs.flush();
   route.value = next;
-  writeHash(next);
+  writePath(next);
 }

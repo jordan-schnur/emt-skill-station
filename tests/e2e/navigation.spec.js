@@ -242,7 +242,7 @@ test.describe("Responsive Design", () => {
 
 test.describe("Exam Day View", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("./#examday");
+    await page.goto("./examday");
     await page.waitForLoadState("domcontentloaded");
   });
 

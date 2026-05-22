@@ -53,6 +53,20 @@
   <link rel="icon" type="image/png" sizes="16x16" href="images/hand-pulse-16.png" />
   <link rel="icon" type="image/svg+xml" href="images/hand-pulse.svg" />
   <link rel="apple-touch-icon" sizes="180x180" href="images/hand-pulse-180.png" />
+
+  <!-- Restore path after GitHub Pages 404 redirect -->
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var p = params.get('p');
+      if (p) {
+        var base = '/emt-skill-station';
+        var s = params.get('s') ? '?' + params.get('s') : '';
+        var h = params.get('h') || '';
+        window.history.replaceState(null, '', base + p + s + h);
+      }
+    })();
+  </script>
 </head>
 <body>
   <header class="topbar">

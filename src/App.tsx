@@ -1,7 +1,7 @@
 import type { JSX } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { route, appState, navigate, save } from "./store/appStore";
-import { parseHash } from "./router/hashRouter";
+import { parseHash, parseRoute, writePath } from "./router/router";
 import { Toast } from "./components/ui/Toast";
 import { Modal } from "./components/ui/Modal";
 import { UpdateBanner } from "./components/ui/UpdateBanner";
@@ -62,10 +62,24 @@ export function App() {
     }
   });
 
+  // On first load: if URL is still a hash bookmark with no path, rewrite to path URL
   useEffect(() => {
-    const onHash = () => { const parsed = parseHash(); if (parsed) route.value = parsed; };
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
+    const hash = parseHash();
+    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+    const atRoot = window.location.pathname === base || window.location.pathname === base + "/";
+    if (hash && atRoot && window.location.hash) {
+      writePath(hash, "replace");
+      route.value = hash;
+    }
+  }, []);
+
+  useEffect(() => {
+    const onPop = () => {
+      const parsed = parseRoute();
+      if (parsed) route.value = parsed;
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
   }, []);
 
   useEffect(() => {

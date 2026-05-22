@@ -17,7 +17,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
 
   // Browse-mode tests: navigate directly to #mnemonics
   test("mnemonics view shows category filter chips", async ({ page }) => {
-    await page.goto("./#mnemonics");
+    await page.goto("./mnemonics");
     // Wait for the view to be fully rendered before counting chips
     await expect(page.locator(".ems-mnemonics")).toBeVisible();
     const allChip = page.locator(".ems-filter-chip", { hasText: "All" });
@@ -29,7 +29,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   });
 
   test("mnemonic cards are visible on browse view", async ({ page }) => {
-    await page.goto("./#mnemonics");
+    await page.goto("./mnemonics");
     // Wait for at least one card before counting
     await expect(page.locator(".ems-card").first()).toBeVisible();
     const count = await page.locator(".ems-card").count();
@@ -37,7 +37,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   });
 
   test("SAMPLE card is visible with its acronym", async ({ page }) => {
-    await page.goto("./#mnemonics");
+    await page.goto("./mnemonics");
     // Wait for acronym elements to render before collecting text
     await expect(page.locator(".ems-acronym").first()).toBeVisible();
     const texts = await page.locator(".ems-acronym").allTextContents();
@@ -45,7 +45,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   });
 
   test("clicking a card expands to show letter rows", async ({ page }) => {
-    await page.goto("./#mnemonics");
+    await page.goto("./mnemonics");
     const firstCard = page.locator(".ems-card").first();
     const body = firstCard.locator(".ems-card-body");
     await expect(body).toBeHidden();
@@ -57,7 +57,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   });
 
   test("clicking expanded card collapses it", async ({ page }) => {
-    await page.goto("./#mnemonics");
+    await page.goto("./mnemonics");
     const firstCard = page.locator(".ems-card").first();
     await firstCard.click(); // expand
     await firstCard.click(); // collapse
@@ -66,7 +66,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   });
 
   test("category filter shows only matching cards", async ({ page }) => {
-    await page.goto("./#mnemonics");
+    await page.goto("./mnemonics");
     const strokeChip = page.locator(".ems-filter-chip", { hasText: "Stroke" });
     await strokeChip.click();
     const cards = page.locator(".ems-card");
@@ -79,7 +79,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   });
 
   test("Quiz button is visible and navigates to quiz mode", async ({ page }) => {
-    await page.goto("./#mnemonics");
+    await page.goto("./mnemonics");
     const quizBtn = page.locator(".ems-quiz-btn");
     await expect(quizBtn).toBeVisible();
     await quizBtn.click();
@@ -90,7 +90,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
 
   // Quiz-mode tests: navigate directly to #mnemonics/quiz
   test("quiz card shows acronym on front", async ({ page }) => {
-    await page.goto("./#mnemonics/quiz");
+    await page.goto("./mnemonics/quiz");
     const acronym = page.locator(".ems-quiz-acronym");
     await expect(acronym).toBeVisible();
     const text = await acronym.textContent();
@@ -98,7 +98,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   });
 
   test("back is hidden until Reveal is clicked", async ({ page }) => {
-    await page.goto("./#mnemonics/quiz");
+    await page.goto("./mnemonics/quiz");
     await expect(page.locator(".ems-quiz-card")).toBeVisible();
     const back = page.locator(".ems-quiz-back");
     await expect(back).toBeHidden();
@@ -107,7 +107,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   });
 
   test("clicking Reveal shows letter table and grade buttons", async ({ page }) => {
-    await page.goto("./#mnemonics/quiz");
+    await page.goto("./mnemonics/quiz");
     await page.locator(".ems-reveal-btn").click();
     const back = page.locator(".ems-quiz-back");
     await expect(back).toBeVisible();
@@ -118,7 +118,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   });
 
   test("grading Good advances to next card or shows session complete", async ({ page }) => {
-    await page.goto("./#mnemonics/quiz");
+    await page.goto("./mnemonics/quiz");
     await page.locator(".ems-reveal-btn").click();
     const goodBtn = page.locator(".ems-grade-row .btn", { hasText: "Good" });
     await goodBtn.click();
@@ -129,7 +129,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   });
 
   test("back link from quiz returns to browse view", async ({ page }) => {
-    await page.goto("./#mnemonics/quiz");
+    await page.goto("./mnemonics/quiz");
     // Wait for quiz to fully load before looking for the back button
     await expect(page.locator(".ems-quiz-card")).toBeVisible();
     const backLink = page.locator(".btn-link", { hasText: "← Back" });
@@ -140,7 +140,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   });
 
   test("Mnemonics nav button is active while on mnemonics view", async ({ page }) => {
-    await page.goto("./#mnemonics");
+    await page.goto("./mnemonics");
     // Wait for the view to render before checking nav state
     await expect(page.locator("h1")).toContainText("Mnemonics");
     const btn = page.locator(".topnav button", { hasText: "Mnemonics" });
