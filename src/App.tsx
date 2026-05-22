@@ -14,6 +14,7 @@ import { EmsMnemonicsView } from "./views/EmsMnemonicsView";
 import { MedConditionsView } from "./views/MedConditionsView";
 import { ChatView } from "./views/ChatView";
 import { ExamDayView } from "./views/ExamDayView";
+import { SourcesView } from "./views/SourcesView";
 import { NotFoundView } from "./views/NotFoundView";
 import { NREMT_DATA } from "./data/sheets";
 import type { Route } from "./types";
@@ -28,6 +29,7 @@ const VIEWS: Partial<Record<Route["view"], () => JSX.Element | null>> = {
   medconditions: () => <MedConditionsView />,
   chat:          () => <ChatView />,
   examday:       () => <ExamDayView />,
+  sources:       () => <SourcesView />,
 };
 
 export function App() {
@@ -68,7 +70,7 @@ export function App() {
 
   useEffect(() => {
     const entries: Array<[HTMLElement, () => void]> = [];
-    const navSel = ".topnav button, .topbar-menu-pop button, .brand";
+    const navSel = ".topnav button, .topbar-menu-pop button, .footer-link, .brand";
     for (const btn of document.querySelectorAll<HTMLElement>(navSel)) {
       const tgt = btn.dataset["nav"] as Route["view"] | undefined;
       if (!tgt) continue;

@@ -31,6 +31,7 @@
       <button data-nav="mnemonics" type="button">Mnemonics</button>
       <button data-nav="medconditions" type="button">Medical</button>
       <button data-nav="chat" type="button">AI Chat</button>
+      <button data-nav="examday" type="button">Exam Day</button>
     </nav>
     <div class="topbar-right">
       <span id="streak-pill" class="streak-pill" hidden>
@@ -43,7 +44,7 @@
           <button data-nav="stats" type="button">Stats</button>
           <button data-nav="settings" type="button">Backup &amp; sync</button>
           <button data-nav="guide" type="button">Guide</button>
-          <button data-nav="examday" type="button">Exam Day</button>
+          <button data-nav="sources" type="button">Sources &amp; Disclaimer</button>
         </div>
       </div>
     </div>
@@ -52,7 +53,12 @@
   <main id="root" class="root"></main>
 
   <footer class="footer">
-    <span id="footer-status">Loading…</span>
+    <div class="footer-left">
+      <span class="footer-copyright">© 2026 NREMT Skill Trainer</span>
+      <button class="footer-link" data-nav="sources" type="button">Sources</button>
+      <span class="footer-disclaimer">Not medical advice</span>
+    </div>
+    <span id="footer-status" class="footer-status">Loading…</span>
   </footer>
 
   <script type="module" src="/src/main.tsx"></script>

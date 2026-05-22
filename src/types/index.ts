@@ -193,10 +193,10 @@ export type RouteView =
   | "settings"
   | "guide"
   | "examday"
+  | "sources"
   | "chat"
   | "mnemonics"
   | "medconditions"
-  | "examday"
   | "notFound";
 
 export type SheetTab =
