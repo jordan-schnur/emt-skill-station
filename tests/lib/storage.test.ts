@@ -14,7 +14,7 @@ describe("Storage – localStorage wrapper", () => {
       localStorage.setItem("nremt.state.v1", JSON.stringify(saved));
 
       const loaded = load();
-      expect(loaded.version).toBe(1);
+      expect(loaded.version).toBe(2);
       expect(loaded.stats.totalReviews).toBe(10);
     });
 
@@ -23,7 +23,29 @@ describe("Storage – localStorage wrapper", () => {
       localStorage.setItem("nremt.state.v1", JSON.stringify(old));
 
       const loaded = load();
-      expect(loaded.drills).toEqual({ secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {} });
+      expect(loaded.drills).toEqual({ secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {}, critical: {} });
+    });
+
+    it("migrates v1 state: initializes drills.critical to {} and sets version to 2", () => {
+      const v1State = {
+        version: 1,
+        srs: {},
+        notes: { step: {}, sheet: {} },
+        stats: { totalReviews: 5, lastReviewedAt: null, dailyStreak: 0, longestStreak: 0, lastStreakDay: null },
+        drills: { secorder: { "e201": { mastered: true, streak: 3, attempts: 3 } }, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {} },
+        achievements: {},
+        mnemonics: {},
+        chats: {},
+        emsSrs: {},
+        medcondSrs: {},
+      };
+      localStorage.setItem("nremt.state.v1", JSON.stringify(v1State));
+
+      const loaded = load();
+
+      expect(loaded.version).toBe(2);
+      expect(loaded.drills.critical).toEqual({});
+      expect(loaded.drills.secorder["e201"].mastered).toBe(true);
     });
 
     it("handles parse errors gracefully and returns empty state", () => {

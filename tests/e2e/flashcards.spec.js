@@ -89,7 +89,7 @@ test.describe("What's Next? Drill Flow", () => {
     });
 
     expect(storageData).toBeTruthy();
-    expect(storageData.version).toBe(1);
+    expect(storageData.version).toBe(2);
     // whatnext drill record should exist for e201
     expect(storageData.drills?.whatnext?.e201).toBeTruthy();
     expect(storageData.drills.whatnext.e201.attempts).toBeGreaterThanOrEqual(1);

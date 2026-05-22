@@ -148,16 +148,17 @@ const MULTI_SECTION_SHEET: Sheet = {
 
 function emptyState(): AppState {
   return {
-    version: 1,
+    version: 2,
     srs: {},
     notes: { step: {}, sheet: {} },
     stats: { totalReviews: 0, lastReviewedAt: null, dailyStreak: 0, longestStreak: 0, lastStreakDay: null },
-    drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {} },
+    drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {}, critical: {} },
     achievements: {},
     mnemonics: {},
     chats: {},
     emsSrs: {},
     medcondSrs: {},
+    blsMedsSrs: {},
   };
 }
 
