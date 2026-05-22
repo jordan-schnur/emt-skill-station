@@ -20,6 +20,7 @@ export function createEmptyState(): AppState {
     chats: {},
     emsSrs: {},
     medcondSrs: {},
+    blsMedsSrs: {},
   };
 }
 
@@ -40,6 +41,7 @@ function mergeState(parsed: unknown): AppState {
     mnemonics: { ...((p["mnemonics"] as AppState["mnemonics"]) || {}) },
     chats: { ...((p["chats"] as AppState["chats"]) || {}) },
     emsSrs: { ...((p["emsSrs"] as AppState["emsSrs"]) || {}) },
+    blsMedsSrs: { ...((p["blsMedsSrs"] as AppState["blsMedsSrs"]) || {}) },
     drills: {
       ...fresh.drills,
       ...(parsedDrills as Partial<AppState["drills"]>),

@@ -104,6 +104,7 @@ export interface Drills {
   blankrecall: Record<string, BlankRecallRecord>;
   spokenscript: Record<string, SpokenScriptRecord>;
   medcondquiz?: MedCondQuizRecord;
+  blsmedsquiz?: BlsMedsQuizRecord;
 }
 
 export interface Notes {
@@ -146,6 +147,52 @@ export interface MedicalCondition {
   compareDimensions: Record<string, string>;
 }
 
+export interface BLSMedDose {
+  adult: string;
+  pediatric?: string;
+  notes?: string;
+}
+
+export interface BLSFollowUp {
+  question: string;
+  type: "dose" | "route" | "contraindication-check" | "reassessment";
+  answer: string;
+  options: string[]; // always 4 choices
+}
+
+export interface BLSScenario {
+  id: string;
+  vignette: string;
+  prompt: string;
+  format: "give-withhold" | "pick-drug";
+  answer: string; // "give" | "withhold" | medId
+  explanation: string;
+  followUps: BLSFollowUp[];
+}
+
+export interface BLSMedication {
+  id: string;
+  name: string;
+  genericName?: string;
+  brandName?: string;
+  category: string;
+  mechanism: string;
+  indications: string[];
+  contraindications: string[];
+  dose: BLSMedDose;
+  route: string[];
+  onset: string;
+  duration?: string;
+  sideEffects: string[];
+  clinicalPearls: string[];
+  scenarios: BLSScenario[];
+}
+
+export interface BlsMedsQuizRecord {
+  scenariosCompleted: number;
+  lastSessionAt: string | null;
+}
+
 export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
@@ -181,6 +228,7 @@ export interface AppState {
   chats: Record<string, Chat>;
   emsSrs: Record<string, SRSRecord>;
   medcondSrs: Record<string, SRSRecord>;
+  blsMedsSrs: Record<string, SRSRecord>;
   updatedAt?: string;
   lastSyncedAt?: string;
 }
@@ -196,6 +244,7 @@ export type RouteView =
   | "chat"
   | "mnemonics"
   | "medconditions"
+  | "blsmeds"
   | "notFound";
 
 export type SheetTab =
@@ -217,4 +266,5 @@ export interface Route {
   mnemonicsTab?: string;
   mnemonicsCardId?: string;
   medcondTab?: string;
+  blsmedsTab?: string;
 }
