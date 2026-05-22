@@ -56,6 +56,16 @@ test.describe("EMS Mnemonics & Acronyms", () => {
     expect(rowCount).toBeGreaterThan(0);
   });
 
+  test("expanded card shows sources citation when sources are present", async ({ page }) => {
+    await page.goto("./#mnemonics");
+    const firstCard = page.locator(".ems-card").first();
+    await firstCard.click();
+    const sources = firstCard.locator(".ems-card-sources");
+    await expect(sources).toBeVisible();
+    const text = await sources.textContent();
+    expect(text).toContain("Sources:");
+  });
+
   test("clicking expanded card collapses it", async ({ page }) => {
     await page.goto("./#mnemonics");
     const firstCard = page.locator(".ems-card").first();
@@ -89,40 +99,122 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   });
 
   // Quiz-mode tests: navigate directly to #mnemonics/quiz
-  test("quiz card shows acronym on front", async ({ page }) => {
+  test("quiz card shows acronym and Begin Quiz button on front", async ({ page }) => {
     await page.goto("./#mnemonics/quiz");
-    const acronym = page.locator(".ems-quiz-acronym");
+    const card = page.locator(".ems-quiz-card");
+    await expect(card).toBeVisible();
+    const acronym = card.locator(".ems-quiz-acronym");
     await expect(acronym).toBeVisible();
     const text = await acronym.textContent();
     expect(text.length).toBeGreaterThan(0);
+    await expect(card.locator("button", { hasText: "Begin Quiz" })).toBeVisible();
   });
 
-  test("back is hidden until Reveal is clicked", async ({ page }) => {
+  test("clicking Begin Quiz shows letter-by-letter prompt with input", async ({ page }) => {
     await page.goto("./#mnemonics/quiz");
-    await expect(page.locator(".ems-quiz-card")).toBeVisible();
-    const back = page.locator(".ems-quiz-back");
-    await expect(back).toBeHidden();
-    const gradeRow = page.locator(".ems-grade-row");
-    await expect(gradeRow).toBeHidden();
+    await page.locator("button", { hasText: "Begin Quiz" }).click();
+    await expect(page.locator(".ems-quiz-input")).toBeVisible();
+    await expect(page.locator(".ems-quiz-letter-prompt")).toBeVisible();
   });
 
-  test("clicking Reveal shows letter table and grade buttons", async ({ page }) => {
+  test("typing correct answer shows correct verdict", async ({ page }) => {
     await page.goto("./#mnemonics/quiz");
-    await page.locator(".ems-reveal-btn").click();
-    const back = page.locator(".ems-quiz-back");
-    await expect(back).toBeVisible();
-    const gradeRow = page.locator(".ems-grade-row");
-    await expect(gradeRow).toBeVisible();
-    const buttons = gradeRow.locator("button");
-    expect(await buttons.count()).toBe(4);
+    await page.locator("button", { hasText: "Begin Quiz" }).click();
+    // The first card is SAMPLE, first letter S = "Signs and Symptoms"
+    const input = page.locator(".ems-quiz-input");
+    await expect(input).toBeVisible();
+    await input.fill("Signs and Symptoms");
+    await page.locator(".ems-quiz-input-row button", { hasText: "Submit" }).click();
+    const verdict = page.locator(".ems-quiz-verdict.correct");
+    await expect(verdict).toBeVisible();
   });
 
-  test("grading Good advances to next card or shows session complete", async ({ page }) => {
+  test("typing clearly wrong answer shows incorrect verdict", async ({ page }) => {
     await page.goto("./#mnemonics/quiz");
-    await page.locator(".ems-reveal-btn").click();
-    const goodBtn = page.locator(".ems-grade-row .btn", { hasText: "Good" });
-    await goodBtn.click();
-    // Either next card or session complete screen should appear
+    await page.locator("button", { hasText: "Begin Quiz" }).click();
+    const input = page.locator(".ems-quiz-input");
+    await expect(input).toBeVisible();
+    await input.fill("zzzzz");
+    await page.locator(".ems-quiz-input-row button", { hasText: "Submit" }).click();
+    const verdict = page.locator(".ems-quiz-verdict.incorrect");
+    await expect(verdict).toBeVisible();
+  });
+
+  test("answering all letters correctly suggests Easy grade", async ({ page }) => {
+    await page.goto("./#mnemonics/quiz");
+    await page.locator("button", { hasText: "Begin Quiz" }).click();
+
+    // SAMPLE letters: S A M P L E
+    const answers = [
+      "Signs and Symptoms",
+      "Allergies",
+      "Medications",
+      "Pertinent Past Medical History",
+      "Last Oral Intake",
+      "Events Leading Up",
+    ];
+
+    for (let i = 0; i < answers.length; i++) {
+      const input = page.locator(".ems-quiz-input");
+      await expect(input).toBeVisible();
+      await input.fill(answers[i]);
+      await page.locator(".ems-quiz-input-row button", { hasText: "Submit" }).click();
+      await expect(page.locator(".ems-quiz-verdict")).toBeVisible();
+      const nextBtn = page.locator("button", { hasText: /Next|See Results/ });
+      await nextBtn.click();
+    }
+
+    // Summary screen — Easy or Good should be suggested (100% → Easy)
+    await expect(page.locator(".ems-quiz-summary-title")).toBeVisible();
+    const suggested = page.locator(".ems-quiz-grade-section .muted");
+    await expect(suggested).toContainText(/Easy/i);
+  });
+
+  test("answering all letters wrong suggests Again grade", async ({ page }) => {
+    await page.goto("./#mnemonics/quiz");
+    await page.locator("button", { hasText: "Begin Quiz" }).click();
+
+    for (let i = 0; i < 6; i++) {
+      const input = page.locator(".ems-quiz-input");
+      await expect(input).toBeVisible();
+      await input.fill("zzzzwrongzzz");
+      await page.locator(".ems-quiz-input-row button", { hasText: "Submit" }).click();
+      await expect(page.locator(".ems-quiz-verdict")).toBeVisible();
+      const nextBtn = page.locator("button", { hasText: /Next|See Results/ });
+      await nextBtn.click();
+    }
+
+    // Summary screen — Again should be suggested (0% correct)
+    await expect(page.locator(".ems-quiz-summary-title")).toBeVisible();
+    const suggested = page.locator(".ems-quiz-grade-section .muted");
+    await expect(suggested).toContainText(/Again/i);
+  });
+
+  test("confirming grade from summary advances to next card or session complete", async ({ page }) => {
+    await page.goto("./#mnemonics/quiz");
+    await page.locator("button", { hasText: "Begin Quiz" }).click();
+
+    // Submit one letter and advance through the whole card quickly
+    const answers = [
+      "Signs and Symptoms",
+      "Allergies",
+      "Medications",
+      "Pertinent Past Medical History",
+      "Last Oral Intake",
+      "Events Leading Up",
+    ];
+
+    for (const ans of answers) {
+      await page.locator(".ems-quiz-input").fill(ans);
+      await page.locator(".ems-quiz-input-row button", { hasText: "Submit" }).click();
+      await expect(page.locator(".ems-quiz-verdict")).toBeVisible();
+      await page.locator("button", { hasText: /Next|See Results/ }).click();
+    }
+
+    await expect(page.locator(".ems-quiz-summary-title")).toBeVisible();
+    await page.locator(".ems-quiz-grade-section button", { hasText: "Confirm →" }).click();
+
+    // Either another card's front or session complete
     const nextCard = page.locator(".ems-quiz-card");
     const complete = page.locator(".empty-state");
     await expect(nextCard.or(complete)).toBeVisible();
@@ -145,5 +237,89 @@ test.describe("EMS Mnemonics & Acronyms", () => {
     await expect(page.locator("h1")).toContainText("Mnemonics");
     const btn = page.locator(".topnav button", { hasText: "Mnemonics" });
     await expect(btn).toHaveClass(/active/);
+  });
+
+  // DMIST and START content tests (issue #20)
+  test("DMIST card is visible in browse view", async ({ page }) => {
+    await page.goto("./#mnemonics");
+    await expect(page.locator(".ems-acronym").first()).toBeVisible();
+    const texts = await page.locator(".ems-acronym").allTextContents();
+    expect(texts).toContain("DMIST");
+  });
+
+  test("START card is visible in browse view", async ({ page }) => {
+    await page.goto("./#mnemonics");
+    await expect(page.locator(".ems-acronym").first()).toBeVisible();
+    const texts = await page.locator(".ems-acronym").allTextContents();
+    expect(texts).toContain("START");
+  });
+
+  test("Communication filter shows DMIST", async ({ page }) => {
+    await page.goto("./#mnemonics");
+    await page.locator(".ems-filter-chip", { hasText: "Communication" }).click();
+    const acronyms = await page.locator(".ems-acronym").allTextContents();
+    expect(acronyms).toContain("DMIST");
+  });
+
+  test("Pediatric / MCI filter shows START", async ({ page }) => {
+    await page.goto("./#mnemonics");
+    await page.locator(".ems-filter-chip", { hasText: "Pediatric / MCI" }).click();
+    const acronyms = await page.locator(".ems-acronym").allTextContents();
+    expect(acronyms).toContain("START");
+  });
+
+  test("DMIST card expands and shows 5 letter rows", async ({ page }) => {
+    await page.goto("./#mnemonics");
+    const dmistCard = page.locator(".ems-card", { has: page.locator(".ems-acronym", { hasText: "DMIST" }) });
+    await dmistCard.click();
+    const rows = dmistCard.locator(".ems-letter-row");
+    expect(await rows.count()).toBe(5);
+  });
+
+  test("START card expands and shows 4 letter rows", async ({ page }) => {
+    await page.goto("./#mnemonics");
+    const startCard = page.locator(".ems-card", { has: page.locator(".ems-acronym").filter({ hasText: /^START$/ }) });
+    await startCard.click();
+    const rows = startCard.locator(".ems-letter-row");
+    expect(await rows.count()).toBe(4);
+  });
+
+  test("DMIST per-letter quiz works for all 5 letters", async ({ page }) => {
+    await page.goto("./#mnemonics/quiz");
+    // Navigate cards until we hit DMIST
+    let found = false;
+    for (let attempt = 0; attempt < 30 && !found; attempt++) {
+      const acronym = await page.locator(".ems-quiz-acronym").textContent();
+      if (acronym?.trim() === "DMIST") {
+        found = true;
+        break;
+      }
+      // Skip this card: begin quiz, type wrong for all letters, confirm Again
+      await page.locator("button", { hasText: "Begin Quiz" }).click();
+      for (let i = 0; i < 10; i++) {
+        const input = page.locator(".ems-quiz-input");
+        if (!(await input.isVisible())) break;
+        await input.fill("skip");
+        await page.locator(".ems-quiz-input-row button", { hasText: "Submit" }).click();
+        await expect(page.locator(".ems-quiz-verdict")).toBeVisible();
+        await page.locator("button", { hasText: /Next|See Results/ }).click();
+      }
+      if (await page.locator(".ems-quiz-summary-title").isVisible()) {
+        await page.locator(".ems-quiz-grade-section button", { hasText: "Confirm →" }).click();
+      }
+    }
+    if (!found) {
+      test.skip(true, "DMIST not reached in queue");
+      return;
+    }
+    await page.locator("button", { hasText: "Begin Quiz" }).click();
+    const answers = ["Demographics", "Mechanism", "Injuries", "Signs", "Treatment"];
+    for (const ans of answers) {
+      await page.locator(".ems-quiz-input").fill(ans);
+      await page.locator(".ems-quiz-input-row button", { hasText: "Submit" }).click();
+      await expect(page.locator(".ems-quiz-verdict")).toBeVisible();
+      await page.locator("button", { hasText: /Next|See Results/ }).click();
+    }
+    await expect(page.locator(".ems-quiz-summary-title")).toBeVisible();
   });
 });

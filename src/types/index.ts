@@ -129,6 +129,7 @@ export interface ClinicalMnemonic {
   category: string;
   note: string | null;
   letters: MnemonicLetter[];
+  sources?: string[];
 }
 
 export interface MedicalCondition {
