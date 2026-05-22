@@ -10,7 +10,7 @@ test.describe("BLS Medications", () => {
   test("clicking BLS Meds nav navigates to blsmeds view", async ({ page }) => {
     await page.goto(".");
     await page.locator(".topnav button", { hasText: "BLS Meds" }).click();
-    await expect(page).toHaveURL(/#blsmeds/);
+    await expect(page).toHaveURL(/\/blsmeds/);
     await expect(page.locator("h1")).toContainText("BLS Medications");
   });
 

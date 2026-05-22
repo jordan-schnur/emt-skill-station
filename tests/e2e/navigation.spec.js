@@ -12,9 +12,7 @@ test.describe("Navigation & Home View", () => {
 
   test("should load home page with title", async ({ page }) => {
     await expect(page).toHaveTitle(/.*NREMT.*|.*localhost.*/);
-    await expect(page.locator("h1")).toContainText(
-      "NREMT Skill Sheet Trainer"
-    );
+    await expect(page.locator(".today-headline")).toBeVisible();
   });
 
   test("should display all sheet cards", async ({ page }) => {
@@ -29,8 +27,7 @@ test.describe("Navigation & Home View", () => {
   test("should show sheet metadata on cards", async ({ page }) => {
     const firstCard = page.locator(".sheet-card").first();
 
-    await expect(firstCard).toContainText("Patient Assessment");
-    await expect(firstCard).toContainText("Trauma");
+    await expect(firstCard).toContainText("E201");
     await expect(firstCard).toContainText("pts");
   });
 
@@ -38,10 +35,10 @@ test.describe("Navigation & Home View", () => {
     const firstCard = page.locator(".sheet-card").first();
     await expect(firstCard).toBeVisible();
 
-    // The sheet-stats area renders either a category label or mastery badges
-    const stats = firstCard.locator(".sheet-stats");
-    await expect(stats).toBeVisible();
-    const text = await stats.textContent();
+    // sheet-card-badges renders mastery drill badges
+    const badges = firstCard.locator(".sheet-card-badges");
+    await expect(badges).toBeVisible();
+    const text = await badges.textContent();
     expect(text?.trim().length).toBeGreaterThan(0);
   });
 
@@ -54,11 +51,10 @@ test.describe("Navigation & Home View", () => {
     await expect(page.locator("h1")).toContainText("Patient Assessment");
   });
 
-  test("should display roadmap of upcoming features", async ({ page }) => {
-    const roadmap = page.locator(".roadmap");
-    await expect(roadmap).toBeVisible();
-    await expect(roadmap).toContainText("Coming next");
-    await expect(roadmap).toContainText("Section Order Drill");
+  test("should display today hero panel", async ({ page }) => {
+    const hero = page.locator(".today-card");
+    await expect(hero).toBeVisible();
+    await expect(hero).toContainText("Start now");
   });
 
   test("should navigate back from sheet to home", async ({ page }) => {
@@ -69,11 +65,8 @@ test.describe("Navigation & Home View", () => {
     // Click back button
     await page.locator("text=← All sheets").click();
 
-    // Should be back at home
-    await expect(page).toHaveURL(/#(?!.*sheet)/, { timeout: 5000 });
-    await expect(page.locator("h1")).toContainText(
-      "NREMT Skill Sheet Trainer"
-    );
+    // Should be back at home — today hero visible
+    await expect(page.locator(".today-headline")).toBeVisible({ timeout: 5000 });
   });
 
   test("should have functional top navigation buttons", async ({ page }) => {
@@ -101,37 +94,37 @@ test.describe("Sheet Detail View & Tabs", () => {
   });
 
   test("should display all sheet tabs", async ({ page }) => {
-    const tabs = page.locator(".tabs button");
+    const tabs = page.locator(".quickjump button");
     const count = await tabs.count();
 
-    expect(count).toBeGreaterThanOrEqual(3); // At least study, sheet, notes
+    expect(count).toBeGreaterThanOrEqual(3);
 
     // Check for expected tabs
-    const tabText = await page.locator(".tabs").textContent();
-    expect(tabText).toContain("Order Drill");
+    const tabText = await page.locator(".quickjump").textContent();
+    expect(tabText).toContain("Order");
     expect(tabText).toContain("Full sheet");
     expect(tabText).toContain("Notes");
   });
 
   test("should switch between tabs", async ({ page }) => {
     // Default tab when navigating from home is "Full sheet"
-    let currentTab = await page.locator(".tabs button.active").textContent();
+    let currentTab = await page.locator(".quickjump button.is-active").textContent();
     expect(currentTab).toContain("Full sheet");
 
     // Should see sheet content on Full sheet tab
     const title = page.locator(".ref-section");
     await expect(title.first()).toBeVisible();
 
-    // Click "Notes" tab
-    await page.locator("button:has-text('Notes')").click();
+    // Click "Notes" tab (use quickjump to avoid ambiguity with mode-row button)
+    await page.locator(".quickjump button:has-text('Notes')").click();
     await page.waitForLoadState("networkidle");
 
     // Should see notes editor
     const noteEditor = page.locator("textarea");
     await expect(noteEditor.first()).toBeVisible();
 
-    // Click "Order Drill" tab
-    await page.locator("button:has-text('Order Drill')").click();
+    // Click "Order" tab (label shortened in redesign)
+    await page.locator(".quickjump button:has-text('Order')").click();
     await page.waitForLoadState("networkidle");
 
     // Should see drill content
@@ -139,10 +132,9 @@ test.describe("Sheet Detail View & Tabs", () => {
   });
 
   test("should display sheet header with metadata", async ({ page }) => {
-    const header = page.locator(".sheet-header");
-    await expect(header).toContainText("Patient Assessment");
-    await expect(header).toContainText("Trauma");
-    await expect(header).toContainText("E201");
+    const hero = page.locator(".sheet-hero");
+    await expect(hero).toContainText("Patient Assessment");
+    await expect(hero).toContainText("E201");
   });
 });
 
@@ -219,20 +211,20 @@ test.describe("Responsive Design", () => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto(".");
 
-    // Should load fine
-    await expect(page.locator("h1")).toContainText("NREMT");
+    // Today hero should be visible
+    await expect(page.locator(".today-headline")).toBeVisible();
 
     // Navigation should work
     await page.locator(".sheet-card").first().click();
     await page.waitForURL(/.*sheet.*/);
-    await expect(page.locator("h1")).toContainText("Trauma");
+    await expect(page.locator(".sheet-hero-title")).toBeVisible();
   });
 
   test("should work on desktop size", async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto(".");
 
-    await expect(page.locator("h1")).toContainText("NREMT");
+    await expect(page.locator(".today-headline")).toBeVisible();
 
     const cards = page.locator(".sheet-card");
     const count = await cards.count();
@@ -286,10 +278,10 @@ test.describe("Accessibility", () => {
   test("should have proper heading hierarchy", async ({ page }) => {
     await page.goto(".");
 
-    // Should have h1
+    // Should have exactly one h1 (the today headline)
     const h1 = page.locator("h1");
     await expect(h1).toHaveCount(1);
-    await expect(h1).toContainText("NREMT");
+    await expect(h1).toBeVisible();
   });
 
   test("should support keyboard navigation", async ({ page }) => {

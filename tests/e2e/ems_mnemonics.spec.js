@@ -11,7 +11,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   test("clicking Mnemonics nav navigates to mnemonics view", async ({ page }) => {
     await page.goto(".");
     await page.locator(".topnav button", { hasText: "Mnemonics" }).click();
-    await expect(page).toHaveURL(/#mnemonics/);
+    await expect(page).toHaveURL(/\/mnemonics/);
     await expect(page.locator("h1")).toContainText("Mnemonics");
   });
 
@@ -93,7 +93,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
     const quizBtn = page.locator(".ems-quiz-btn");
     await expect(quizBtn).toBeVisible();
     await quizBtn.click();
-    await expect(page).toHaveURL(/#mnemonics\/quiz/);
+    await expect(page).toHaveURL(/\/mnemonics\/quiz/);
     const card = page.locator(".ems-quiz-card");
     await expect(card).toBeVisible();
   });
@@ -227,7 +227,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
     const backLink = page.locator(".btn-link", { hasText: "← Back" });
     await expect(backLink).toBeVisible();
     await backLink.click();
-    await expect(page).toHaveURL(/#mnemonics$/);
+    await expect(page).toHaveURL(/\/mnemonics$/);
     await expect(page.locator(".ems-mnemonic-grid")).toBeVisible();
   });
 
@@ -325,12 +325,12 @@ test.describe("EMS Mnemonics & Acronyms", () => {
 
   // Single-card quiz (issue: practice specific card)
   test("practice icon in card header navigates to single-card quiz URL", async ({ page }) => {
-    await page.goto("./#mnemonics");
+    await page.goto("./mnemonics");
     const firstCard = page.locator(".ems-card").first();
     const icon = firstCard.locator(".ems-practice-icon");
     await expect(icon).toBeVisible();
     await icon.click();
-    await expect(page).toHaveURL(/#mnemonics\/quiz\/.+/);
+    await expect(page).toHaveURL(/\/mnemonics\/quiz\/.+/);
   });
 
   test("practice icon click does not expand the card", async ({ page }) => {
@@ -351,11 +351,11 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   });
 
   test("practice body button navigates to single-card quiz URL", async ({ page }) => {
-    await page.goto("./#mnemonics");
+    await page.goto("./mnemonics");
     const firstCard = page.locator(".ems-card").first();
     await firstCard.click();
     await firstCard.locator(".ems-practice-body-btn").click();
-    await expect(page).toHaveURL(/#mnemonics\/quiz\/.+/);
+    await expect(page).toHaveURL(/\/mnemonics\/quiz\/.+/);
   });
 
   test("single-card quiz shows only 1 card remaining", async ({ page }) => {
@@ -380,7 +380,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   });
 
   test("Done screen back button returns to browse", async ({ page }) => {
-    await page.goto("./#mnemonics/quiz/cms");
+    await page.goto("./mnemonics/quiz/cms");
     await page.locator("button", { hasText: "Begin Quiz" }).click();
     // CMS has 3 letters — type correct answers so Good is suggested (avoids Again re-queue)
     const cmsAnswers = ["Circulation", "Motor Function", "Sensation"];
@@ -393,6 +393,6 @@ test.describe("EMS Mnemonics & Acronyms", () => {
     await page.locator(".ems-quiz-grade-section button", { hasText: "Confirm →" }).click();
     await expect(page.locator(".empty-state")).toContainText("Done!");
     await page.locator(".empty-state button").click();
-    await expect(page).toHaveURL(/#mnemonics$/);
+    await expect(page).toHaveURL(/\/mnemonics$/);
   });
 });
