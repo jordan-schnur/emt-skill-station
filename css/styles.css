@@ -3126,10 +3126,147 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   margin-top: 4px;
 }
 
+/* Per-letter quiz — new classes */
+.ems-quiz-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-align: center;
+  margin-bottom: 4px;
+}
+.ems-quiz-letter-prompt {
+  font-size: 17px;
+  text-align: center;
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+.ems-quiz-acronym-sm {
+  font-family: monospace;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 2px;
+}
+.ems-quiz-progress {
+  font-size: 12px;
+  text-align: center;
+  margin-bottom: 18px;
+}
+.ems-quiz-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.ems-quiz-input {
+  flex: 1;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 15px;
+  font-family: inherit;
+  min-width: 0;
+  transition: border-color 0.15s;
+}
+.ems-quiz-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+.ems-quiz-input::placeholder { color: var(--text-mute); }
+.ems-quiz-result {
+  text-align: center;
+  padding: 8px 0 4px;
+}
+.ems-quiz-verdict {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.ems-quiz-verdict.correct { color: var(--success, #4caf50); }
+.ems-quiz-verdict.incorrect { color: var(--danger, #f44336); }
+.ems-quiz-correct-ans {
+  font-size: 14px;
+  margin-bottom: 16px;
+  color: var(--text-dim);
+}
+.ems-quiz-summary-title {
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 6px;
+}
+.ems-quiz-score {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+.ems-quiz-result-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.ems-quiz-result-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+.ems-quiz-result-row.correct { background: color-mix(in srgb, var(--success, #4caf50) 12%, transparent); }
+.ems-quiz-result-row.incorrect { background: color-mix(in srgb, var(--danger, #f44336) 10%, transparent); }
+.ems-quiz-result-stand { flex: 1; font-weight: 500; }
+.ems-quiz-result-given { font-size: 12px; }
+.ems-quiz-grade-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+.ems-grade-selected {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.ems-card-sources {
+  font-size: 11px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  line-height: 1.5;
+}
+.ems-practice-icon {
+  background: none;
+  border: 1px solid var(--accent);
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  transition: color 0.15s, background 0.15s;
+  opacity: 0.8;
+}
+.ems-practice-icon:hover { opacity: 1; background: color-mix(in srgb, var(--accent) 15%, transparent); }
+.ems-practice-body-btn {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  text-align: center;
+}
+
 @media (max-width: 600px) {
   .ems-mnemonic-grid { grid-template-columns: 1fr; }
   .ems-card-right { flex-direction: column; align-items: flex-end; gap: 4px; }
   .ems-quiz-acronym { font-size: 28px; }
+  .ems-quiz-input { font-size: 16px; } /* prevent iOS zoom */
 }
 
 /* ── Medical Conditions ──────────────────────────────────────────────── */

@@ -103,12 +103,16 @@ Add the appropriate strings to the `sources` field when implementing issue #19.
 ### IMIST-AMBO
 - Iedema R et al. "Design and Trial of a New Ambulance-to-Emergency Department Handover Protocol: IMIST-AMBO." *BMJ Quality & Safety*, 2012.
 
-### B-SMAC
-- Standard NREMT curriculum / NAEMSP EMT scope of practice guidelines.
-
 ### DMIST (new — issue #20)
 - PA Trauma Systems Foundation. *DMIST: Standardizing the EMS to Trauma Team Patient Hand-off in Pennsylvania*, 2020.
 - Milwaukee County EMS. *Standards of Care: DMIST Trauma Verbal Handoff Format*, 2020.
+
+---
+
+## Scene Safety
+
+### B-SMAC
+- Standard NREMT curriculum / NAEMSP EMT scope of practice guidelines.
 
 ---
 

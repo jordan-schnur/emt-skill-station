@@ -129,6 +129,7 @@ export interface ClinicalMnemonic {
   category: string;
   note: string | null;
   letters: MnemonicLetter[];
+  sources?: string[];
 }
 
 export interface MedicalCondition {
@@ -216,5 +217,6 @@ export interface Route {
   tab?: SheetTab;
   chatId?: string;
   mnemonicsTab?: string;
+  mnemonicsCardId?: string;
   medcondTab?: string;
 }

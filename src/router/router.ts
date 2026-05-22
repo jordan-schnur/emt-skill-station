@@ -11,7 +11,9 @@ function parseParts(parts: string[]): Route | null {
     return { view: "chat", chatId: parts[1] || undefined };
   }
   if (parts[0] === "mnemonics") {
-    return { view: "mnemonics", mnemonicsTab: parts[1] || "browse" };
+    const tab = parts[1] || "browse";
+    const cardId = tab === "quiz" && parts[2] ? parts[2] : undefined;
+    return { view: "mnemonics", mnemonicsTab: tab, ...(cardId ? { mnemonicsCardId: cardId } : {}) };
   }
   if (parts[0] === "medconditions") {
     return { view: "medconditions", medcondTab: parts[1] || "browse" };
@@ -43,7 +45,13 @@ export function writePath(r: Route, method: "push" | "replace" = "push"): void {
   let path = "";
   if (r.view === "sheet") path = `sheet/${r.sheetId}/${r.tab || "sheet"}`;
   else if (r.view === "chat") path = r.chatId ? `chat/${r.chatId}` : "chat";
-  else if (r.view === "mnemonics") path = r.mnemonicsTab === "quiz" ? "mnemonics/quiz" : "mnemonics";
+  else if (r.view === "mnemonics") {
+    if (r.mnemonicsTab === "quiz") {
+      path = r.mnemonicsCardId ? `mnemonics/quiz/${r.mnemonicsCardId}` : "mnemonics/quiz";
+    } else {
+      path = "mnemonics";
+    }
+  }
   else if (r.view === "medconditions") path = r.medcondTab && r.medcondTab !== "browse" ? `medconditions/${r.medcondTab}` : "medconditions";
   else if (r.view !== "home") path = r.view;
   const url = path ? `${BASE}/${path}` : `${BASE}/`;
