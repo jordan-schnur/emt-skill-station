@@ -10,6 +10,7 @@ import { SpokenScriptView } from "./drills/SpokenScriptView";
 import { SectionOrderDrill } from "./drills/SectionOrderDrill";
 import { StepSeqDrill } from "./drills/StepSeqDrill";
 import { MnemonicsView } from "./drills/MnemonicsView";
+import { CriticalCriteriaDrill } from "./drills/CriticalCriteriaDrill";
 import { ChatView } from "./ChatView";
 import { NotFoundView } from "./NotFoundView";
 import { MasteryRing } from "./HomeView";
@@ -171,8 +172,25 @@ function ModeBuckets({ sheet, currentTab }: { sheet: Sheet; currentTab: SheetTab
     : ssRec && ssRec.streak > 0 ? "progress"
     : "empty";
 
+  const critRecs = state.drills?.critical?.[sheet.id] ?? {};
+  const critKnown = sheet.criticalCriteria.filter(
+    (_, i) => critRecs[String(i)]?.grade === "know"
+  ).length;
+  const critTotal = sheet.criticalCriteria.length;
+  const critBadge =
+    critTotal > 0
+      ? critKnown === critTotal
+        ? "✓"
+        : `${critKnown}/${critTotal}`
+      : undefined;
+  const critState: ModeRowState =
+    currentTab === "critical" ? "active"
+    : critKnown === critTotal && critTotal > 0 ? "done"
+    : critKnown > 0 ? "progress"
+    : "empty";
+
   const learnActive = ["sheet", "mnemonics", "script"].includes(currentTab);
-  const drillActive = ["order", "steps", "whatnext"].includes(currentTab);
+  const drillActive = ["order", "steps", "whatnext", "critical"].includes(currentTab);
   const proveActive = ["recall", "notes", "chat"].includes(currentTab);
 
   return (
@@ -248,11 +266,10 @@ function ModeBuckets({ sheet, currentTab }: { sheet: Sheet; currentTab: SheetTab
         <ModeRow
           label="Critical Criteria"
           desc="Auto-fail behaviors — must be reflexes"
-          tab="sheet"
-          rowState={currentTab === "sheet" ? "empty" : "empty"}
-          badge={sheet.criticalCriteria.length > 0 ? `${sheet.criticalCriteria.length} items` : undefined}
+          tab="critical"
+          rowState={critState}
+          badge={critBadge}
           critical
-          disabled
           sheetId={sheet.id}
         />
       </div>
@@ -320,6 +337,17 @@ function QuickJump({ sheet, current }: { sheet: Sheet; current: SheetTab }) {
     if (mastered > 0) return `Steps ${mastered}/${drillable.length}`;
     return "Steps";
   }
+  function criticalLabel(): string {
+    const critRecs = state.drills?.critical?.[sheet.id] ?? {};
+    const known = sheet.criticalCriteria.filter(
+      (_, i) => critRecs[String(i)]?.grade === "know"
+    ).length;
+    const total = sheet.criticalCriteria.length;
+    if (total === 0) return "Crit";
+    if (known === total) return "Crit ✓";
+    if (known > 0) return `Crit (${known}/${total})`;
+    return "Crit";
+  }
 
   const tabs: Array<{ id: SheetTab; label: string; cond?: boolean }> = [
     { id: "sheet", label: "Full sheet" },
@@ -327,6 +355,9 @@ function QuickJump({ sheet, current }: { sheet: Sheet; current: SheetTab }) {
     { id: "mnemonics", label: "Mnemonics" },
     ...(sheet.sections.length > 1 ? [{ id: "order" as SheetTab, label: orderLabel() }] : []),
     { id: "steps", label: stepLabel() },
+    ...(sheet.criticalCriteria.length > 0
+      ? [{ id: "critical" as SheetTab, label: criticalLabel() }]
+      : []),
     { id: "whatnext", label: "What's Next?" },
     { id: "recall", label: "Recall" },
     { id: "script", label: "Script" },
@@ -386,6 +417,7 @@ export function SheetView() {
   else if (tab === "steps")    tabContent = <StepSeqDrill key={`${sheet.id}:steps`} sheet={sheet} />;
   else if (tab === "mnemonics") tabContent = <MnemonicsView key={`${sheet.id}:mnemonics`} sheet={sheet} />;
   else if (tab === "chat")     tabContent = <ChatView key={`${sheet.id}:chat`} sheetCtx={sheet} />;
+  else if (tab === "critical")  tabContent = <CriticalCriteriaDrill key={`${sheet.id}:critical`} sheet={sheet} />;
   else tabContent = null;
 
   return (

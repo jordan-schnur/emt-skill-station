@@ -4699,3 +4699,172 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
     grid-template-columns: 1fr;
   }
 }
+
+/* ─── Critical Criteria Drill ──────────────────────────────────────────────── */
+.critical-known-tile {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(229, 83, 75, 0.12);
+  color: var(--again);
+}
+
+.critical-progress-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.critical-progress-fill {
+  height: 100%;
+  background: var(--again);
+  border-radius: 2px;
+  transition: width 0.2s ease;
+}
+
+.critical-card {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--again);
+  border-radius: 8px;
+  padding: 20px 20px 16px;
+  margin: 20px 0;
+  background: var(--bg-elev-1);
+}
+
+.critical-card-text {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.critical-pearl {
+  margin-top: 12px;
+}
+
+.critical-pearl-summary {
+  font-size: 12px;
+  color: var(--text-mute);
+  cursor: pointer;
+  user-select: none;
+}
+
+.critical-pearl-body {
+  font-size: 13px;
+  color: var(--text-mute);
+  margin: 8px 0 0;
+  line-height: 1.5;
+}
+
+.critical-buttons {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.critical-btn {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.critical-btn kbd {
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.7;
+  font-family: inherit;
+}
+
+.critical-btn-fail {
+  background: rgba(229, 83, 75, 0.12);
+  color: var(--again);
+  border-color: rgba(229, 83, 75, 0.3);
+}
+
+.critical-btn-fail:hover { background: rgba(229, 83, 75, 0.2); }
+
+.critical-btn-close {
+  background: rgba(210, 153, 34, 0.1);
+  color: var(--hard);
+  border-color: rgba(210, 153, 34, 0.3);
+}
+
+.critical-btn-close:hover { background: rgba(210, 153, 34, 0.18); }
+
+.critical-btn-know {
+  background: rgba(46, 160, 67, 0.1);
+  color: var(--good);
+  border-color: rgba(46, 160, 67, 0.3);
+}
+
+.critical-btn-know:hover { background: rgba(46, 160, 67, 0.18); }
+
+.critical-mini-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 24px;
+}
+
+.critical-chip {
+  font-size: 11px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  color: var(--text-mute);
+  background: var(--bg-elev-1);
+  line-height: 1.4;
+  transition: border-color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.critical-chip-fail   { border-color: var(--again); color: var(--again); background: rgba(229,83,75,0.06); }
+.critical-chip-close  { border-color: var(--hard);  color: var(--hard);  background: rgba(210,153,34,0.06); }
+.critical-chip-know   { border-color: var(--good);  color: var(--good);  background: rgba(46,160,67,0.06); }
+.critical-chip-current { border-color: var(--accent); color: var(--text); background: rgba(79,158,255,0.08); font-weight: 600; }
+
+.critical-state-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  gap: 12px;
+  text-align: center;
+}
+
+.critical-state-icon { font-size: 32px; }
+.critical-state-title { font-size: 20px; font-weight: 700; margin: 0; }
+.critical-state-sub   { font-size: 13px; color: var(--text-mute); margin: 0; }
+
+.critical-summary {
+  display: flex;
+  gap: 20px;
+  margin: 8px 0 16px;
+}
+
+.critical-summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--text-mute);
+}
+
+.critical-summary-count { font-size: 22px; font-weight: 700; }
+.critical-summary-know  .critical-summary-count { color: var(--good); }
+.critical-summary-close .critical-summary-count { color: var(--hard); }
+.critical-summary-fail  .critical-summary-count { color: var(--again); }
