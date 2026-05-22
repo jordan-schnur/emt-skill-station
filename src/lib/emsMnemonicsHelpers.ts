@@ -43,6 +43,30 @@ function allTokensArePrefixMatch(userTokens: string[], expectedTokens: string[])
   );
 }
 
+function levenshtein(a: string, b: string): number {
+  const m = a.length, n = b.length;
+  const dp: number[] = Array.from({ length: n + 1 }, (_, i) => i);
+  for (let i = 1; i <= m; i++) {
+    let prev = dp[0];
+    dp[0] = i;
+    for (let j = 1; j <= n; j++) {
+      const tmp = dp[j];
+      dp[j] = a[i - 1] === b[j - 1] ? prev : 1 + Math.min(prev, dp[j], dp[j - 1]);
+      prev = tmp;
+    }
+  }
+  return dp[n];
+}
+
+// Returns true if userToken is a fuzzy match for any expected token via edit distance
+function tokenFuzzyMatchesAny(userToken: string, expectedTokens: string[]): boolean {
+  if (userToken.length < 4) return false;
+  return expectedTokens.some(et => {
+    const maxLen = Math.max(userToken.length, et.length);
+    return levenshtein(userToken, et) / maxLen <= 0.3;
+  });
+}
+
 // Overlap coefficient: what fraction of user tokens appear in expected
 function overlapCoefficient(userTokens: string[], expectedTokens: string[]): number {
   if (userTokens.length === 0) return 0;
@@ -70,6 +94,9 @@ export function quizMatchesAnswer(userInput: string, expected: string): boolean 
 
   // High overlap: all user tokens are found in expected (keyword subset)
   if (overlapCoefficient(userTokens, expTokens) >= 1.0 && userTokens.length >= 1) return true;
+
+  // Misspelling tolerance: all user tokens fuzzy-match some expected token
+  if (userTokens.length > 0 && userTokens.every(ut => expTokens.includes(ut) || tokenFuzzyMatchesAny(ut, expTokens))) return true;
 
   return false;
 }

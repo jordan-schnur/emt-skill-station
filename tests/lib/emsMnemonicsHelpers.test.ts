@@ -114,6 +114,27 @@ describe("quizMatchesAnswer", () => {
     expect(quizMatchesAnswer("pertinent", "Pertinent past history")).toBe(true);
   });
 
+  // Misspellings (edit-distance tolerance)
+  it("accepts 'simtoms' for 'Signs and Symptoms'", () => {
+    expect(quizMatchesAnswer("simtoms", "Signs and Symptoms")).toBe(true);
+  });
+
+  it("accepts 'symptons' for 'Signs and Symptoms'", () => {
+    expect(quizMatchesAnswer("symptons", "Signs and Symptoms")).toBe(true);
+  });
+
+  it("accepts 'alergies' for 'Allergies'", () => {
+    expect(quizMatchesAnswer("alergies", "Allergies")).toBe(true);
+  });
+
+  it("accepts 'medicatons' for 'Medications'", () => {
+    expect(quizMatchesAnswer("medicatons", "Medications")).toBe(true);
+  });
+
+  it("accepts 'histroy' for 'History'", () => {
+    expect(quizMatchesAnswer("histroy", "History")).toBe(true);
+  });
+
   // Should still reject clearly wrong answers
   it("rejects completely unrelated answer", () => {
     expect(quizMatchesAnswer("banana", "Medications")).toBe(false);
