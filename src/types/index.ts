@@ -196,6 +196,7 @@ export type RouteView =
   | "chat"
   | "mnemonics"
   | "medconditions"
+  | "examday"
   | "notFound";
 
 export type SheetTab =
