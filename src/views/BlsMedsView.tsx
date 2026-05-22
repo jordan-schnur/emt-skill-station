@@ -240,26 +240,45 @@ function ScenariosTab() {
   );
 }
 
+type CardType = "dose" | "indications" | "contraindications" | "route";
+
+const CARD_TYPES: CardType[] = ["dose", "indications", "contraindications", "route"];
+
+const CARD_LABELS: Record<CardType, string> = {
+  dose: "Dose",
+  indications: "Indications",
+  contraindications: "Contraindications",
+  route: "Route",
+};
+
+const CARD_QUESTIONS: Record<CardType, string> = {
+  dose: "What is the adult dose?",
+  indications: "When is it indicated?",
+  contraindications: "When should you withhold it?",
+  route: "How is it administered?",
+};
+
+function buildDrillQueue(srsStore: Record<string, SRSRecord>) {
+  const now = Date.now();
+  const all: Array<{ med: BLSMedication; type: CardType; key: string; rec: SRSRecord }> = [];
+  for (const med of BLS_MEDICATIONS) {
+    for (const type of CARD_TYPES) {
+      const key = `blsmed::${med.id}::${type}`;
+      const rec = srsStore[key] ?? defaultRecord();
+      all.push({ med, type, key, rec });
+    }
+  }
+  const due = all.filter((x) => x.rec.due > 0 && x.rec.due <= now).sort((a, b) => a.rec.due - b.rec.due);
+  const fresh = all.filter((x) => !x.rec.due || x.rec.due === 0);
+  return [...due, ...fresh];
+}
+
 function DrillTab() {
   const srsStore = appState.value.blsMedsSrs ?? {};
-  const now = Date.now();
-  const [reverse, setReverse] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [done, setDone] = useState(false);
-
-  const due = BLS_MEDICATIONS
-    .filter((m) => { const r = srsStore[`blsmed::${m.id}`]; return r && r.due <= now; })
-    .sort((a, b) => (srsStore[`blsmed::${a.id}`]?.due ?? 0) - (srsStore[`blsmed::${b.id}`]?.due ?? 0));
-
-  const fresh = BLS_MEDICATIONS.filter((m) => !srsStore[`blsmed::${m.id}`]);
-  const initialQueue = [...due, ...fresh];
-  const [queue] = useState(initialQueue);
+  const [queue] = useState(() => buildDrillQueue(srsStore));
   const [idx, setIdx] = useState(0);
-
-  const dueCount = BLS_MEDICATIONS.filter((m) => {
-    const r = srsStore[`blsmed::${m.id}`];
-    return !r || r.due <= now;
-  }).length;
 
   if (done || queue.length === 0) {
     return (
@@ -272,15 +291,13 @@ function DrillTab() {
     );
   }
 
-  const med = queue[idx];
-  const recKey = `blsmed::${med.id}`;
-  const rec = srsStore[recKey] ?? defaultRecord();
+  const { med, type, key, rec } = queue[idx];
 
   function applyGrade(g: "again" | "hard" | "good" | "easy") {
     const updated = grade(rec, g);
     mutateState((draft) => {
       if (!draft.blsMedsSrs) draft.blsMedsSrs = {};
-      draft.blsMedsSrs[recKey] = updated;
+      draft.blsMedsSrs[key] = updated;
     });
     save();
     if (idx + 1 >= queue.length) setDone(true);
@@ -290,61 +307,35 @@ function DrillTab() {
     }
   }
 
-  const reverseClue = med.indications[0] ?? med.contraindications[0];
+  const answerItems =
+    type === "indications" ? med.indications :
+    type === "contraindications" ? med.contraindications :
+    type === "route" ? med.route :
+    null;
+  const answerText =
+    type === "dose"
+      ? med.dose.adult + (med.dose.pediatric ? ` · Peds: ${med.dose.pediatric}` : "")
+      : null;
 
   return (
     <div class="blsmed-drill">
       <div class="blsmed-drill-header">
         <span class="blsmed-drill-counter">{queue.length - idx} card{queue.length - idx === 1 ? "" : "s"} remaining</span>
-        <span class="blsmed-due-count muted">{dueCount} due</span>
-        <button
-          class={`blsmed-reverse-btn btn${reverse ? " active" : ""}`}
-          type="button"
-          onClick={() => { setReverse((r) => !r); setRevealed(false); }}
-        >Reverse</button>
       </div>
       <div class="blsmed-drill-card">
         <div class="blsmed-drill-card-front">
-          {!reverse ? (
-            <>
-              <div class="blsmed-drill-name">{med.name}</div>
-              <div class="blsmed-drill-cat muted">{med.category}</div>
-            </>
-          ) : (
-            <>
-              <div class="blsmed-drill-reverse-prompt muted">Which drug?</div>
-              <div class="blsmed-drill-clue">{reverseClue}</div>
-            </>
-          )}
+          <div class="blsmed-drill-cat">{CARD_LABELS[type]}</div>
+          <div class="blsmed-drill-name">{med.name}</div>
+          <div class="blsmed-drill-question">{CARD_QUESTIONS[type]}</div>
         </div>
         {revealed && (
           <div class="blsmed-drill-card-back">
-            {!reverse ? (
-              <>
-                <div class="blsmed-section">
-                  <div class="blsmed-section-label">Indications</div>
-                  <ul class="blsmed-list">{med.indications.map((i, n) => <li key={n}>{i}</li>)}</ul>
-                </div>
-                <div class="blsmed-section">
-                  <div class="blsmed-section-label">Contraindications</div>
-                  <ul class="blsmed-list">{med.contraindications.map((c, n) => <li key={n}>{c}</li>)}</ul>
-                </div>
-                <div class="blsmed-section">
-                  <strong>Dose:</strong> {med.dose.adult}
-                </div>
-                <div class="blsmed-section">
-                  <strong>Route:</strong> {med.route.join(", ")}
-                </div>
-                <div class="blsmed-section blsmed-pearls">
-                  <div class="blsmed-section-label">Clinical Pearls</div>
-                  <ul class="blsmed-list">{med.clinicalPearls.map((p, n) => <li key={n}>{p}</li>)}</ul>
-                </div>
-              </>
+            {answerItems ? (
+              <ul class="blsmed-list">
+                {answerItems.map((item, i) => <li key={i}>{item}</li>)}
+              </ul>
             ) : (
-              <div class="blsmed-drill-answer">
-                <strong>{med.name}</strong>
-                <div class="muted">{med.category}</div>
-              </div>
+              <div class="blsmed-drill-text-answer">{answerText}</div>
             )}
           </div>
         )}
@@ -380,10 +371,11 @@ export function BlsMedsView() {
   const tab = (r.blsmedsTab as BlsTab) ?? "reference";
   const srsStore = appState.value.blsMedsSrs ?? {};
   const now = Date.now();
-  const drillDue = BLS_MEDICATIONS.filter((m) => {
-    const rec = srsStore[`blsmed::${m.id}`];
-    return !rec || rec.due <= now;
-  }).length;
+  const drillDue = CARD_TYPES.reduce((count, type) =>
+    count + BLS_MEDICATIONS.filter((m) => {
+      const rec = srsStore[`blsmed::${m.id}::${type}`];
+      return rec && rec.due > 0 && rec.due <= now;
+    }).length, 0);
 
   return (
     <div class="blsmed-wrap">

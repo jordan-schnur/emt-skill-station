@@ -241,7 +241,7 @@ describe("Achievements", () => {
       const state = createEmptyState();
       const ids = ["oxygen", "aspirin", "nitroglycerin", "oral-glucose", "activated-charcoal", "epinephrine-auto-injector", "albuterol", "naloxone", "isopropyl-alcohol"];
       for (const id of ids) {
-        state.blsMedsSrs[`blsmed::${id}`] = { ease: 2.5, interval: 1, reps: 1, due: Date.now() + 86400000, lastGrade: "good", lapses: 0, lastReviewed: new Date().toISOString() };
+        state.blsMedsSrs[`blsmed::${id}::dose`] = { ease: 2.5, interval: 1, reps: 1, due: Date.now() + 86400000, lastGrade: "good", lapses: 0, lastReviewed: new Date().toISOString() };
       }
       expect(check(state).some((a) => a.id === "blsmeds_all_drilled")).toBe(true);
     });
@@ -250,7 +250,7 @@ describe("Achievements", () => {
       const state = createEmptyState();
       const ids = ["oxygen", "aspirin", "nitroglycerin", "oral-glucose", "activated-charcoal", "epinephrine-auto-injector", "albuterol", "naloxone"];
       for (const id of ids) {
-        state.blsMedsSrs[`blsmed::${id}`] = { ease: 2.5, interval: 1, reps: 1, due: Date.now() + 86400000, lastGrade: "good", lapses: 0, lastReviewed: new Date().toISOString() };
+        state.blsMedsSrs[`blsmed::${id}::dose`] = { ease: 2.5, interval: 1, reps: 1, due: Date.now() + 86400000, lastGrade: "good", lapses: 0, lastReviewed: new Date().toISOString() };
       }
       expect(check(state).some((a) => a.id === "blsmeds_all_drilled")).toBe(false);
     });

@@ -223,18 +223,16 @@ describe("BlsMedsView — Drill tab", () => {
     expect(screen.getByText("Good")).toBeTruthy();
   });
 
-  it("shows medication indications on card back", () => {
+  it("shows focused answer on card back after reveal", () => {
     render(<BlsMedsView />);
     fireEvent.click(screen.getByText(/Drill/));
     fireEvent.click(screen.getByText("Reveal"));
-    expect(screen.getByText("Suspected ACS")).toBeTruthy();
+    expect(screen.getByText("324 mg chewed")).toBeTruthy();
   });
 
-  it("reverse mode toggle changes card front to show indication", () => {
+  it("shows card type label on card front", () => {
     render(<BlsMedsView />);
     fireEvent.click(screen.getByText(/Drill/));
-    fireEvent.click(screen.getByText("Reverse"));
-    const card = document.querySelector(".blsmed-drill-card-front");
-    expect(card).toBeTruthy();
+    expect(screen.getByText("Dose")).toBeTruthy();
   });
 });

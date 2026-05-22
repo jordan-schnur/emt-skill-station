@@ -137,7 +137,7 @@ const DEFS: AchievementDef[] = [
     check: (s) => {
       const ids = ["oxygen", "aspirin", "nitroglycerin", "oral-glucose", "activated-charcoal", "epinephrine-auto-injector", "albuterol", "naloxone", "isopropyl-alcohol"];
       return ids.every((id) => {
-        const rec = (s.blsMedsSrs ?? {})[`blsmed::${id}`];
+        const rec = (s.blsMedsSrs ?? {})[`blsmed::${id}::dose`];
         return rec && rec.reps >= 1;
       });
     },
