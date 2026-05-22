@@ -110,7 +110,7 @@ export function ExamDayView() {
               tabIndex={s.sheetId ? 0 : undefined}
               onClick={s.sheetId ? () => navigate({ view: "sheet", sheetId: s.sheetId!, tab: "sheet" }) : undefined}
               onKeyDown={s.sheetId ? (e) => {
-                if (e.key === "Enter" || e.key === " ") navigate({ view: "sheet", sheetId: s.sheetId!, tab: "sheet" });
+                if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate({ view: "sheet", sheetId: s.sheetId!, tab: "sheet" }); }
               } : undefined}
             >
               <div class="scenario-name">{s.name}</div>
