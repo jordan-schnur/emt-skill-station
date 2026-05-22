@@ -235,7 +235,7 @@ test.describe("Local Storage Inspection", () => {
     });
 
     expect(storageData).toBeTruthy();
-    expect(storageData.version).toBe(1);
+    expect(storageData.version).toBe(2);
     expect(storageData.srs).toBeTruthy();
     expect(storageData.notes).toBeTruthy();
     expect(storageData.stats).toBeTruthy();
@@ -247,7 +247,7 @@ test.describe("Local Storage Inspection", () => {
     // Check state structure
     const state = await page.evaluate(() => {
       const data = localStorage.getItem("nremt.state.v1");
-      return data ? JSON.parse(data) : { version: 1, srs: {}, notes: {}, stats: {} };
+      return data ? JSON.parse(data) : { version: 2, srs: {}, notes: {}, stats: {} };
     });
 
     // Verify structure

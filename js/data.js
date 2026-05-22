@@ -1,4 +1,4 @@
-{
+window.NREMT_DATA = {
   "version": 1,
   "totalCards": 172,
   "sheets": [
@@ -3344,4 +3344,4 @@
       ]
     }
   ]
-}
+};

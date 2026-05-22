@@ -4,7 +4,7 @@ const KEY = "nremt.state.v1";
 
 export function createEmptyState(): AppState {
   return {
-    version: 1,
+    version: 2,
     srs: {},
     notes: { step: {}, sheet: {} },
     stats: {
@@ -14,7 +14,7 @@ export function createEmptyState(): AppState {
       longestStreak: 0,
       lastStreakDay: null,
     },
-    drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {} },
+    drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {}, critical: {} },
     achievements: {},
     mnemonics: {},
     chats: {},
@@ -31,9 +31,11 @@ function mergeState(parsed: unknown): AppState {
   const p = parsed as Record<string, unknown>;
   const fresh = createEmptyState();
   const parsedDrills = (p["drills"] as Record<string, unknown>) || {};
+  const isV1 = !p["version"] || (p["version"] as number) < 2;
   return {
     ...fresh,
     ...(p as Partial<AppState>),
+    version: 2,
     notes: { ...fresh.notes, ...((p["notes"] as Partial<AppState["notes"]>) || {}) },
     stats: { ...fresh.stats, ...((p["stats"] as Partial<AppState["stats"]>) || {}) },
     srs: (p["srs"] as AppState["srs"]) || {},
@@ -41,6 +43,7 @@ function mergeState(parsed: unknown): AppState {
     mnemonics: { ...((p["mnemonics"] as AppState["mnemonics"]) || {}) },
     chats: { ...((p["chats"] as AppState["chats"]) || {}) },
     emsSrs: { ...((p["emsSrs"] as AppState["emsSrs"]) || {}) },
+    medcondSrs: { ...((p["medcondSrs"] as AppState["medcondSrs"]) || {}) },
     blsMedsSrs: { ...((p["blsMedsSrs"] as AppState["blsMedsSrs"]) || {}) },
     drills: {
       ...fresh.drills,
@@ -50,6 +53,7 @@ function mergeState(parsed: unknown): AppState {
       whatnext:     parsedDrills["whatnext"]     ? { ...(parsedDrills["whatnext"]     as AppState["drills"]["whatnext"]) }     : {},
       blankrecall:  parsedDrills["blankrecall"]  ? { ...(parsedDrills["blankrecall"]  as AppState["drills"]["blankrecall"]) }  : {},
       spokenscript: parsedDrills["spokenscript"] ? { ...(parsedDrills["spokenscript"] as AppState["drills"]["spokenscript"]) } : {},
+      critical:     isV1 ? {} : (parsedDrills["critical"] ? { ...(parsedDrills["critical"] as AppState["drills"]["critical"]) } : {}),
     },
   };
 }

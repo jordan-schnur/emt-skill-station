@@ -38,12 +38,22 @@ export interface Sheet {
   sections: Section[];
   criticalCriteria: string[];
   cards: Card[];
+  videos?: Video[];
 }
 
 export interface NremtData {
   version?: number;
   totalCards: number;
   sheets: Sheet[];
+}
+
+export interface Video {
+  videoId: string;
+  title: string;
+  channel: string;
+  duration?: string;
+  url: string;
+  note?: string;
 }
 
 // ─── App state (stored in localStorage "nremt.state.v1") ─────────────────────
@@ -89,6 +99,15 @@ export interface SpokenScriptRecord {
   lastScore: SpokenScriptScore | null;
 }
 
+export type CriticalGrade = 'fail' | 'close' | 'know' | null;
+
+export interface CriticalRecord {
+  grade: CriticalGrade;
+  lastSeenAt: number;
+  streakKnown: number;
+  attempts: number;
+}
+
 export interface MedCondQuizRecord {
   sessionCount: number;
   bestScore: number;
@@ -103,6 +122,7 @@ export interface Drills {
   whatnext: Record<string, DrillRecord>;
   blankrecall: Record<string, BlankRecallRecord>;
   spokenscript: Record<string, SpokenScriptRecord>;
+  critical: Record<string, Record<string, CriticalRecord>>;
   medcondquiz?: MedCondQuizRecord;
   blsmedsquiz?: BlsMedsQuizRecord;
 }
@@ -218,7 +238,7 @@ export interface SRSRecord {
 }
 
 export interface AppState {
-  version: 1;
+  version: 2;
   srs: Record<string, SRSRecord>;
   notes: Notes;
   stats: Stats;
