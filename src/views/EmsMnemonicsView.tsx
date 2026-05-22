@@ -181,6 +181,10 @@ function PerLetterQuiz({ mnemonic, rec, remaining, onGrade }: {
               type="text"
               value={answer}
               placeholder="Type your answer…"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck={false}
               onInput={e => setAnswer((e.target as HTMLInputElement).value)}
               onKeyDown={e => { if (e.key === "Enter" && answer.trim()) submitAnswer(); }}
             />
