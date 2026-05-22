@@ -16,7 +16,7 @@ export function parseHash(): Route | null {
   if (parts[0] === "medconditions") {
     return { view: "medconditions", medcondTab: parts[1] || "browse" };
   }
-  if ((["home", "stats", "settings", "guide"] as string[]).includes(parts[0])) {
+  if ((["home", "stats", "settings", "guide", "examday"] as string[]).includes(parts[0])) {
     return { view: parts[0] as RouteView };
   }
   return null;
