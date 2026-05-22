@@ -24,7 +24,7 @@ The examiner chat mode also starts unrealistically — no dispatch, no equipment
 ## Goals
 
 1. Add a dedicated **Exam Day** page that surfaces examiner-sourced strategy tips.
-2. Turn that page into a **scenario hub** that maps each of the 9 PA scenarios to its practice sheet (or a "coming soon" placeholder).
+2. Turn that page into a **scenario hub** that maps each of the 10 PA scenarios to its practice sheet (or a "coming soon" placeholder).
 3. **Enhance the examiner chat system prompt** to simulate a realistic exam opening: vague dispatch, equipment hint, Big 5 gate, and hospital question at the end.
 4. **File GitHub issues** for the four missing scenario sheets (CPAP, 12-lead, Suction, Vitals).
 
@@ -44,7 +44,7 @@ The examiner chat mode also starts unrealistically — no dispatch, no equipment
 
 - Add `"examday"` to the `Route["view"]` union in `src/types/index.ts`.
 - Add `ExamDayView` to the `VIEWS` map in `src/App.tsx`.
-- Add a nav link in whatever component renders the top nav.
+- Add a `<button data-nav="examday">Exam Day</button>` to the `.topbar-menu-pop` dropdown in `index.html` (alongside the existing Guide and Stats entries).
 
 ### 2. `src/views/ExamDayView.tsx`
 
@@ -139,7 +139,7 @@ const SHEET_DISPATCH: Record<string, string> = {
 If no sheet is selected, a generic dispatch is used.
 
 #### b) Equipment hint
-After the dispatch, the AI describes what's visible in the station room. Sourced from the same `SHEET_DISPATCH` constant (or a separate `SHEET_EQUIPMENT` map).
+After the dispatch, the AI describes what's visible in the station room. A separate `SHEET_EQUIPMENT` constant in `chat.ts` maps each sheet ID to a one-sentence room description (e.g., `e204: "You notice a non-rebreather mask and O2 cylinder set up in the room."`). The examiner AI is instructed to open with both the dispatch and the equipment hint before waiting for the candidate.
 
 #### c) Big 5 gate
 The system prompt instructs the examiner AI: before evaluating any skill steps, confirm the candidate has addressed the Big 5 (scene safety, BSI, patient count, MOI/NOI, additional resources). If the candidate skips them and jumps to treatment, the examiner responds:
@@ -177,7 +177,7 @@ Each issue references this spec and the `ExamDayView` "Coming soon" cards.
 | `src/views/ExamDayView.tsx` | New file |
 | `src/App.tsx` | Add `ExamDayView` to `VIEWS` map |
 | `src/types/index.ts` | Add `"examday"` to route view union |
-| Navigation component | Add "Exam Day" nav link |
+| `index.html` | Add "Exam Day" button to `.topbar-menu-pop` dropdown |
 | `src/lib/chat.ts` | Add dispatch map, update `buildSystemPrompt` for examiner mode |
 | `src/views/GuideView.tsx` | Add link to new Exam Day page |
 | GitHub | File 4 issues |
