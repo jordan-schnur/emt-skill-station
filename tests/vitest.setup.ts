@@ -8,9 +8,9 @@ import { vi, beforeEach } from "vitest";
 global.URL.createObjectURL = vi.fn(() => "blob:mock-url");
 global.URL.revokeObjectURL = vi.fn();
 
-// Mock window.location.hash for router tests
+// Mock window.location for router tests
 Object.defineProperty(window, "location", {
-  value: { hash: "", href: "http://localhost/" },
+  value: { hash: "", href: "http://localhost/", pathname: "/", search: "" },
   writable: true,
 });
 

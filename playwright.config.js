@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173";
+const BASE_URL = process.env.BASE_URL ?? "http://localhost:5173/emt-skill-station/";
 const isRemote = !!process.env.BASE_URL;
 
 export default defineConfig({

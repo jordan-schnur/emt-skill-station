@@ -1695,20 +1695,53 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 8px 12px;
+  padding: 8px 16px;
   font-size: 11px;
   color: var(--text-mute);
   background: var(--bg);
   border-top: 1px solid var(--border);
-  text-align: right;
   z-index: 49;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.footer-copyright { white-space: nowrap; }
+.footer-disclaimer {
+  white-space: nowrap;
+  color: var(--text-mute);
+  font-style: italic;
+}
+.footer-link {
+  background: none;
+  border: 0;
+  color: var(--accent);
+  font-size: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+.footer-link:hover { color: var(--text); }
+.footer-status { text-align: right; }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .footer {
-    padding: 6px 10px;
+    padding: 6px 12px;
     font-size: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
   }
+  .footer-disclaimer { display: none; }
+  .footer-status { align-self: flex-end; }
 }
 
 /* -- Section Order Drill ------------------------------------------- */
@@ -4352,4 +4385,195 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   color: var(--text-dim);
 }
 .guide-upcoming li { margin: 8px 0; }
+
+/* ─── Exam Day view ──────────────────────────────────────────────────────── */
+.examday-view { max-width: 760px; }
+.examday-intro {
+  color: var(--text-dim);
+  margin-bottom: 28px;
+  max-width: 640px;
+  line-height: 1.6;
+}
+.examday-section {
+  margin-bottom: 32px;
+}
+.examday-section h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 10px;
+}
+.examday-callout {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+.examday-section-desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+.examday-list {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.examday-list li { margin: 3px 0; }
+.examday-list strong { color: var(--text); }
+.examday-list em { color: var(--text); }
+
+.big-five-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.big-five-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+}
+.big-five-num {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.big-five-body { flex: 1; }
+.big-five-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.big-five-script {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+.scenario-card {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.scenario-card--linked {
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+}
+.scenario-card--linked:hover { border-color: var(--accent); transform: translateY(-1px); }
+.scenario-card--linked:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.scenario-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.scenario-equipment {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+.scenario-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+  align-self: flex-start;
+  margin-top: auto;
+}
+.scenario-badge--go {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+}
+.scenario-badge--soon {
+  background: var(--bg-elev-2);
+  color: var(--text-mute);
+}
+
+@media (max-width: 600px) {
+  .scenario-grid { grid-template-columns: 1fr 1fr; }
+  .big-five-card { padding: 8px 10px; }
+}
 .guide-upcoming strong { color: var(--text); }
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+}
+
+/* -- Sources view --------------------------------------------------- */
+.sources-view {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px 4px 40px;
+}
+.sources-section { margin-bottom: 40px; }
+.disclaimer-box {
+  background: var(--bg-elev);
+  border: 1px solid var(--hard);
+  border-left: 4px solid var(--hard);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+}
+.disclaimer-heading {
+  display: block;
+  font-size: 15px;
+  margin-bottom: 8px;
+  color: var(--hard);
+}
+.disclaimer-box p { margin: 6px 0; font-size: 14px; }
+.sources-intro { color: var(--text-dim); font-size: 14px; margin-bottom: 16px; }
+.sources-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.source-item {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.source-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+.source-link { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.source-link:hover { color: var(--text); }
+.source-publisher { font-size: 13px; color: var(--text-dim); margin-bottom: 6px; }
+.source-note { font-size: 13px; color: var(--text-dim); font-style: italic; }
+.sources-copyright { font-size: 13px; color: var(--text-mute); margin-top: 8px; }
