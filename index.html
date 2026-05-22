@@ -60,7 +60,8 @@
       var params = new URLSearchParams(window.location.search);
       var p = params.get('p');
       if (p) {
-        var base = '/emt-skill-station';
+        // Base is whatever path led here (e.g. /emt-skill-station/ or /emt-skill-station/staging/)
+        var base = window.location.pathname.replace(/\/$/, '');
         var s = params.get('s') ? '?' + params.get('s') : '';
         var h = params.get('h') || '';
         window.history.replaceState(null, '', base + p + s + h);
