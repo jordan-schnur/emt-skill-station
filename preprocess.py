@@ -37,6 +37,12 @@ except ImportError:
     sys.stderr.write("pdfplumber is required. Install: pip install pdfplumber\n")
     sys.exit(1)
 
+try:
+    import yaml
+except ImportError:
+    sys.stderr.write("pyyaml is required. Install: pip install pyyaml\n")
+    sys.exit(1)
+
 
 HERE = Path(__file__).parent.resolve()
 SCRIPTS_CACHE_FILE = HERE / "spoken_scripts_cache.json"
@@ -642,6 +648,15 @@ def _collect_step_texts(sheets: list[dict]) -> list[str]:
     return texts
 
 
+def load_videos(sheet_id: str) -> list[dict] | None:
+    path = HERE / f"{sheet_id.upper()}_videos.yaml"
+    if not path.exists():
+        return None
+    with open(path) as f:
+        data = yaml.safe_load(f)
+    return data if isinstance(data, list) else None
+
+
 def generate_spoken_scripts(sheets: list[dict], service) -> None:
     """Generate spokenScript fields on all steps via LLM; updates sheets in-place."""
     cache = _load_scripts_cache()
@@ -727,11 +742,15 @@ def main() -> int:
         cards = build_cards(sheet)
         total_cards += len(cards)
 
-        out_sheets.append({
+        videos = load_videos(sheet_id)
+        sheet_entry: dict = {
             **sheet,
             "criticalCriteria": criteria,
             "cards": cards,
-        })
+        }
+        if videos is not None:
+            sheet_entry["videos"] = videos
+        out_sheets.append(sheet_entry)
         print(f"✓ {sheet_id}  steps={len(cards):3d}  critical={len(criteria):2d}  total_pts={sheet['totalPoints']}")
 
     if problems:
