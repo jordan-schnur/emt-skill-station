@@ -322,4 +322,77 @@ test.describe("EMS Mnemonics & Acronyms", () => {
     }
     await expect(page.locator(".ems-quiz-summary-title")).toBeVisible();
   });
+
+  // Single-card quiz (issue: practice specific card)
+  test("practice icon in card header navigates to single-card quiz URL", async ({ page }) => {
+    await page.goto("./#mnemonics");
+    const firstCard = page.locator(".ems-card").first();
+    const icon = firstCard.locator(".ems-practice-icon");
+    await expect(icon).toBeVisible();
+    await icon.click();
+    await expect(page).toHaveURL(/#mnemonics\/quiz\/.+/);
+  });
+
+  test("practice icon click does not expand the card", async ({ page }) => {
+    await page.goto("./#mnemonics");
+    const firstCard = page.locator(".ems-card").first();
+    await firstCard.locator(".ems-practice-icon").click();
+    // Navigate back and check card is not expanded
+    await page.goto("./#mnemonics");
+    const body = page.locator(".ems-card").first().locator(".ems-card-body");
+    await expect(body).toBeHidden();
+  });
+
+  test("practice body button appears when card is expanded", async ({ page }) => {
+    await page.goto("./#mnemonics");
+    const firstCard = page.locator(".ems-card").first();
+    await firstCard.click();
+    await expect(firstCard.locator(".ems-practice-body-btn")).toBeVisible();
+  });
+
+  test("practice body button navigates to single-card quiz URL", async ({ page }) => {
+    await page.goto("./#mnemonics");
+    const firstCard = page.locator(".ems-card").first();
+    await firstCard.click();
+    await firstCard.locator(".ems-practice-body-btn").click();
+    await expect(page).toHaveURL(/#mnemonics\/quiz\/.+/);
+  });
+
+  test("single-card quiz shows only 1 card remaining", async ({ page }) => {
+    await page.goto("./#mnemonics/quiz/sample");
+    await expect(page.locator(".ems-quiz-card")).toBeVisible();
+    const counter = page.locator(".ems-quiz-counter");
+    await expect(counter).toContainText("1 card");
+  });
+
+  test("single-card quiz shows Done! after grading", async ({ page }) => {
+    await page.goto("./#mnemonics/quiz/sample");
+    await page.locator("button", { hasText: "Begin Quiz" }).click();
+    const answers = ["Signs and Symptoms", "Allergies", "Medications", "Pertinent Past Medical History", "Last Oral Intake", "Events Leading Up"];
+    for (const ans of answers) {
+      await page.locator(".ems-quiz-input").fill(ans);
+      await page.locator(".ems-quiz-input-row button", { hasText: "Submit" }).click();
+      await expect(page.locator(".ems-quiz-verdict")).toBeVisible();
+      await page.locator("button", { hasText: /Next|See Results/ }).click();
+    }
+    await page.locator(".ems-quiz-grade-section button", { hasText: "Confirm →" }).click();
+    await expect(page.locator(".empty-state")).toContainText("Done!");
+  });
+
+  test("Done screen back button returns to browse", async ({ page }) => {
+    await page.goto("./#mnemonics/quiz/cms");
+    await page.locator("button", { hasText: "Begin Quiz" }).click();
+    // CMS has 3 letters — type correct answers so Good is suggested (avoids Again re-queue)
+    const cmsAnswers = ["Circulation", "Motor Function", "Sensation"];
+    for (const ans of cmsAnswers) {
+      await page.locator(".ems-quiz-input").fill(ans);
+      await page.locator(".ems-quiz-input-row button", { hasText: "Submit" }).click();
+      await expect(page.locator(".ems-quiz-verdict")).toBeVisible();
+      await page.locator("button", { hasText: /Next|See Results/ }).click();
+    }
+    await page.locator(".ems-quiz-grade-section button", { hasText: "Confirm →" }).click();
+    await expect(page.locator(".empty-state")).toContainText("Done!");
+    await page.locator(".empty-state button").click();
+    await expect(page).toHaveURL(/#mnemonics$/);
+  });
 });

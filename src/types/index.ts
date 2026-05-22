@@ -215,5 +215,6 @@ export interface Route {
   tab?: SheetTab;
   chatId?: string;
   mnemonicsTab?: string;
+  mnemonicsCardId?: string;
   medcondTab?: string;
 }

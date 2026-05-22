@@ -14,6 +14,12 @@ type Grade = "again" | "hard" | "good" | "easy";
 function EmsCard({ mnemonic, srsRec }: { mnemonic: ClinicalMnemonic; srsRec: SRSRecord | undefined }) {
   const [open, setOpen] = useState(false);
   const due = describeDue(srsRec);
+
+  function practiceCard(e: Event) {
+    e.stopPropagation();
+    navigate({ view: "mnemonics", mnemonicsTab: "quiz", mnemonicsCardId: mnemonic.id });
+  }
+
   return (
     <div class={`ems-card${open ? " expanded" : ""}`} onClick={() => setOpen(o => !o)}>
       <div class="ems-card-header">
@@ -24,6 +30,7 @@ function EmsCard({ mnemonic, srsRec }: { mnemonic: ClinicalMnemonic; srsRec: SRS
         <div class="ems-card-right">
           <span class="ems-category-tag">{mnemonic.category}</span>
           <span class={`ems-due-badge${!srsRec || srsRec.due <= Date.now() ? " due" : ""}`}>{due}</span>
+          <button class="ems-practice-icon" title="Practice this card" onClick={practiceCard}>▶</button>
           <span class="ems-expand-icon">▾</span>
         </div>
       </div>
@@ -46,6 +53,7 @@ function EmsCard({ mnemonic, srsRec }: { mnemonic: ClinicalMnemonic; srsRec: SRS
               Sources: {mnemonic.sources.join(" · ")}
             </div>
           )}
+          <button class="btn ems-practice-body-btn" onClick={practiceCard}>Practice this card</button>
         </div>
       )}
     </div>
@@ -253,6 +261,7 @@ function PerLetterQuiz({ mnemonic, rec, remaining, onGrade }: {
 function QuizMode() {
   const srsStore = appState.value.emsSrs ?? {};
   const now = Date.now();
+  const pinnedId = route.value.mnemonicsCardId;
 
   const due = EMS_CLINICAL_MNEMONICS
     .filter(m => { const r = srsStore["ems::" + m.id]; return r && r.due <= now; })
@@ -263,7 +272,15 @@ function QuizMode() {
     .filter(m => !srsStore["ems::" + m.id])
     .map(m => ({ m, rec: defaultRecord() }));
 
-  const initialQueue = [...due, ...fresh];
+  const fullQueue = [...due, ...fresh];
+
+  const initialQueue = pinnedId
+    ? (() => {
+        const found = EMS_CLINICAL_MNEMONICS.find(m => m.id === pinnedId);
+        if (!found) return fullQueue;
+        return [{ m: found, rec: srsStore["ems::" + found.id] ?? defaultRecord() }];
+      })()
+    : fullQueue;
 
   const [queue, setQueue] = useState(initialQueue);
   const [idx, setIdx] = useState(0);
@@ -273,8 +290,8 @@ function QuizMode() {
     return (
       <div class="empty-state">
         <div class="big">✓</div>
-        <p>{queue.length === 0 ? "All caught up! Come back later." : "Session complete!"}</p>
-        <button class="btn" onClick={() => navigate({ view: "mnemonics", mnemonicsTab: "browse" })}>← Browse mnemonics</button>
+        <p>{pinnedId ? "Done!" : queue.length === 0 ? "All caught up! Come back later." : "Session complete!"}</p>
+        <button class="btn" onClick={() => navigate({ view: "mnemonics", mnemonicsTab: "browse" })}>← Back to mnemonics</button>
       </div>
     );
   }
