@@ -44,7 +44,7 @@ sources?: string[];  // e.g. ["NAEMSP, EMS Clinical Practice Guidelines, 2023"]
 3. Letter-by-letter loop:
    - Prompt: *"SAMPLE — what does **S** stand for?"*
    - Text input (Enter or Submit button)
-   - Fuzzy match: Jaccard similarity ≥ 0.45 (reuse logic from `BlankRecallView`)
+   - Fuzzy match: Jaccard similarity ≥ 0.45 (reuse `jaccardSimilarity` from `src/lib/drillHelpers.ts`)
    - Connector letters (stand === "(connector)") are skipped automatically
    - Show ✓ / ✗ with the correct answer revealed
    - "Next →" advances to the next letter
@@ -94,7 +94,7 @@ Add `sources` to all 20 existing `EMS_CLINICAL_MNEMONICS` entries. Priority sour
 
 ## Testing
 
-- Unit tests for the Jaccard matching logic (already exists in blank recall tests; verify it works for short phrases)
+- Unit tests for the Jaccard matching logic (`jaccardSimilarity` is already in `drillHelpers.ts` and tested; verify the 0.45 threshold works for short phrases like "Signs and Symptoms")
 - Unit test: connector letters are skipped
 - Unit test: grade suggestion thresholds (< 50%, 50–79%, 80–99%, 100%)
 - E2E: quiz a card, type correct answers for all letters → verify "Good"/"Easy" suggested
