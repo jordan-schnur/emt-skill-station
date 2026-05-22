@@ -387,6 +387,7 @@ export function BlsMedsView() {
 
   return (
     <div class="blsmed-wrap">
+      <h1 class="blsmed-title">BLS Medications</h1>
       <div class="blsmed-tab-strip">
         {TABS.map((t) => (
           <button
