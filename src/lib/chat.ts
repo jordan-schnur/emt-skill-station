@@ -135,22 +135,56 @@ function buildCriticalList(sheet: Sheet): string {
   return sheet.criticalCriteria.map((c, i) => `${i + 1}. ${c}`).join("\n");
 }
 
+const SHEET_DISPATCH: Record<string, string> = {
+  e201: "You are responding to a 28-year-old male — reported fall from a ladder.",
+  e202: "You are responding to a 67-year-old female — difficulty breathing.",
+  e203: "You are responding to an unresponsive adult — bystander CPR in progress.",
+  e204: "You are responding to a 72-year-old male — shortness of breath.",
+  e211: "You are responding to a 45-year-old female — MVC, ambulatory at scene.",
+  e212: "You are responding to a 33-year-old male — MVC, found supine.",
+  e213: "You are responding to a 19-year-old male — laceration to the thigh.",
+  e215: "You are responding to a 58-year-old male — found unresponsive.",
+  e216: "You are responding to a 40-year-old female — twisted ankle.",
+  e217: "You are responding to a 25-year-old male — reported arm injury.",
+};
+
+const SHEET_EQUIPMENT: Record<string, string> = {
+  e201: "You notice a cervical collar, long spine board, and trauma dressings set up in the room.",
+  e202: "You notice a stethoscope, pulse oximeter, and blood pressure cuff set up in the room.",
+  e203: "You notice a bag-valve mask, OPA set, and O2 source set up in the room.",
+  e204: "You notice a non-rebreather mask and O2 cylinder with regulator set up in the room.",
+  e211: "You notice a cervical collar and short spine board (KED) set up in the room.",
+  e212: "You notice a cervical collar, long spine board, and straps set up in the room.",
+  e213: "You notice a tourniquet, trauma dressings, and gloves set up in the room.",
+  e215: "You notice an AED, CPR barrier device, and gloves set up in the room.",
+  e216: "You notice SAM splints, padding, and bandaging material set up in the room.",
+  e217: "You notice board splints and padding set up in the room.",
+};
+
 export function buildSystemPrompt(mode: string, sheet: Sheet | null, userNotes: string): string {
   if (mode === "examiner") {
     const sheetName = sheet ? sheet.title : "the skill station";
     const steps = sheet ? buildStepList(sheet) : "";
     const critical = sheet ? buildCriticalList(sheet) : "";
+    const dispatch = sheet
+      ? (SHEET_DISPATCH[sheet.id] ?? "You are responding to a patient who needs assistance.")
+      : "You are responding to a patient who needs assistance.";
+    const equipment = sheet ? (SHEET_EQUIPMENT[sheet.id] ?? "") : "";
     return [
       `You are an NREMT psychomotor examiner conducting a skill assessment at the EMT-Basic level.`,
       sheet ? `You are evaluating the candidate on: ${sheetName}` : "",
       steps ? `\nComplete skill sheet (what the candidate must perform):\n${steps}` : "",
       critical ? `\nCritical Criteria (automatic failure if any are missed):\n${critical}` : "",
       `\nInstructions:`,
-      `- Begin by saying "Begin the ${sheetName} station."`,
+      `- Open with this exact dispatch followed by the equipment hint: "Dispatch: ${dispatch} Scene is secure. Begin when ready."`,
+      equipment ? `- Immediately after the dispatch line, add: "${equipment}"` : "",
+      `- BEFORE evaluating any skill steps, the candidate must verbalize the Big 5: (1) scene safety, (2) BSI precautions, (3) number of patients, (4) mechanism of injury or nature of illness, (5) whether additional resources are needed. If the candidate skips these and jumps directly to treatment, respond: "You've entered the scene — what do you want to establish first?"`,
       `- As the candidate narrates each action they would take, check it against the skill sheet.`,
       `- Respond with brief evaluative feedback: "Good.", "Continue.", or ask a clarifying question if something is unclear.`,
       `- If the candidate skips a step, you may give a subtle cue but do not give away the answer.`,
       `- After the candidate says they are done, or after all steps are addressed, provide a debrief: list steps performed correctly, steps missed, and whether any Critical Criteria were missed.`,
+      `- After the debrief, ask: "Where would you transport this patient, and why?" Accept any answer that names an appropriate facility type with a brief justification.`,
+      `- If any Critical Criteria were missed, end with: "You may request a re-attempt from the testing coordinator."`,
       `- Maintain examiner character throughout — be professional and neutral.`,
     ].filter(Boolean).join("\n");
   }
