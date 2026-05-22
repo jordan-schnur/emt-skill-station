@@ -22,10 +22,10 @@ const SCENARIOS: Scenario[] = [
   { name: "Joint Immobilization", equipment: "SAM splints, padding, bandaging", sheetId: "e216", issueUrl: null },
   { name: "Long Bone Immobilization", equipment: "Traction splint or board splints", sheetId: "e217", issueUrl: null },
   { name: "OPA / BVM Ventilation", equipment: "BVM, OPA set, O2 source", sheetId: "e203", issueUrl: null },
-  { name: "CPAP", equipment: "CPAP mask, manometer, O2 source", sheetId: null, issueUrl: null },
-  { name: "12-Lead ECG", equipment: "12-lead monitor, leads, electrodes", sheetId: null, issueUrl: null },
-  { name: "Suction", equipment: "Suction unit, yankauer catheter", sheetId: null, issueUrl: null },
-  { name: "Vitals (Pulse, BP, RR)", equipment: "BP cuff, stethoscope, watch", sheetId: null, issueUrl: null },
+  { name: "CPAP", equipment: "CPAP mask, manometer, O2 source", sheetId: null, issueUrl: "https://github.com/jordan-schnur/emt-skill-station/issues/31" },
+  { name: "12-Lead ECG", equipment: "12-lead monitor, leads, electrodes", sheetId: null, issueUrl: "https://github.com/jordan-schnur/emt-skill-station/issues/32" },
+  { name: "Suction", equipment: "Suction unit, yankauer catheter", sheetId: null, issueUrl: "https://github.com/jordan-schnur/emt-skill-station/issues/33" },
+  { name: "Vitals (Pulse, BP, RR)", equipment: "BP cuff, stethoscope, watch", sheetId: null, issueUrl: "https://github.com/jordan-schnur/emt-skill-station/issues/34" },
 ];
 
 export function ExamDayView() {
@@ -106,17 +106,33 @@ export function ExamDayView() {
             <div
               key={s.name}
               class={`scenario-card${s.sheetId ? " scenario-card--linked" : " scenario-card--soon"}`}
-              role={s.sheetId ? "button" : undefined}
-              tabIndex={s.sheetId ? 0 : undefined}
-              onClick={s.sheetId ? () => navigate({ view: "sheet", sheetId: s.sheetId!, tab: "sheet" }) : undefined}
-              onKeyDown={s.sheetId ? (e) => {
-                if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate({ view: "sheet", sheetId: s.sheetId!, tab: "sheet" }); }
-              } : undefined}
+              role={s.sheetId || s.issueUrl ? "button" : undefined}
+              tabIndex={s.sheetId || s.issueUrl ? 0 : undefined}
+              onClick={
+                s.sheetId
+                  ? () => navigate({ view: "sheet", sheetId: s.sheetId!, tab: "sheet" })
+                  : s.issueUrl
+                  ? () => window.open(s.issueUrl!, "_blank", "noopener,noreferrer")
+                  : undefined
+              }
+              onKeyDown={
+                s.sheetId || s.issueUrl
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        if (s.sheetId) navigate({ view: "sheet", sheetId: s.sheetId, tab: "sheet" });
+                        else if (s.issueUrl) window.open(s.issueUrl, "_blank", "noopener,noreferrer");
+                      }
+                    }
+                  : undefined
+              }
             >
               <div class="scenario-name">{s.name}</div>
               <div class="scenario-equipment">{s.equipment}</div>
               {s.sheetId
                 ? <span class="scenario-badge scenario-badge--go">Practice →</span>
+                : s.issueUrl
+                ? <span class="scenario-badge scenario-badge--soon">Coming soon ↗</span>
                 : <span class="scenario-badge scenario-badge--soon">Coming soon</span>
               }
             </div>
