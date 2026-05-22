@@ -12,12 +12,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>NREMT Skill Sheet Trainer</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="/emt-skill-station/staging/assets/hand-pulse-32-4jHGppTt.png?v=269ce7dc" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/emt-skill-station/staging/assets/hand-pulse-16-dEUHQ3KO.png?v=269ce7dc" />
-  <link rel="icon" type="image/svg+xml" href="/emt-skill-station/staging/assets/hand-pulse-DSjzhLMY.svg?v=269ce7dc" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/emt-skill-station/staging/assets/hand-pulse-180-BIKIb4x9.png?v=269ce7dc" />
-  <script type="module" crossorigin src="/emt-skill-station/staging/assets/index-D9TZHTW0.js"></script>
-  <link rel="stylesheet" crossorigin href="/emt-skill-station/staging/assets/index-CTwx_XXL.css">
+  <link rel="icon" type="image/png" sizes="32x32" href="/emt-skill-station/staging/assets/hand-pulse-32-4jHGppTt.png?v=1d145169" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/emt-skill-station/staging/assets/hand-pulse-16-dEUHQ3KO.png?v=1d145169" />
+  <link rel="icon" type="image/svg+xml" href="/emt-skill-station/staging/assets/hand-pulse-DSjzhLMY.svg?v=1d145169" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/emt-skill-station/staging/assets/hand-pulse-180-BIKIb4x9.png?v=1d145169" />
+  <script type="module" crossorigin src="/emt-skill-station/staging/assets/index-BHTzuUc_.js"></script>
+  <link rel="stylesheet" crossorigin href="/emt-skill-station/staging/assets/index-Dy_yKaBK.css">
 </head>
 <body>
   <header class="topbar">
@@ -29,14 +29,25 @@
       </span>
     </button>
     <nav class="topnav">
-      <button data-nav="home" type="button">Home</button>
+      <button data-nav="home" type="button">Today</button>
       <button data-nav="mnemonics" type="button">Mnemonics</button>
       <button data-nav="medconditions" type="button">Medical</button>
-      <button data-nav="stats" type="button">Stats</button>
-      <button data-nav="settings" type="button">Backup</button>
-      <button data-nav="guide" type="button">Guide</button>
       <button data-nav="chat" type="button">AI Chat</button>
     </nav>
+    <div class="topbar-right">
+      <span id="streak-pill" class="streak-pill" hidden>
+        <span class="streak-emoji">🔥</span>
+        <span class="streak-text"></span>
+      </span>
+      <div class="topbar-menu" id="topbar-menu">
+        <button class="topbar-menu-btn" type="button" aria-label="More options" id="topbar-menu-btn">⚙</button>
+        <div class="topbar-menu-pop" role="menu">
+          <button data-nav="stats" type="button">Stats</button>
+          <button data-nav="settings" type="button">Backup &amp; sync</button>
+          <button data-nav="guide" type="button">Guide</button>
+        </div>
+      </div>
+    </div>
   </header>
 
   <main id="root" class="root"></main>
