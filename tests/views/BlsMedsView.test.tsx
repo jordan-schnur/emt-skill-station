@@ -4,10 +4,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("../../src/store/appStore", async () => {
   const storage = await import("../../src/lib/storage");
+  const { signal: sig } = await import("@preact/signals");
+  const routeSignal = sig({ view: "blsmeds", blsmedsTab: "reference" } as Record<string, string>);
   return {
-    appState: signal(storage.createEmptyState()),
-    route: signal({ view: "blsmeds", blsmedsTab: "reference" }),
-    navigate: vi.fn(),
+    appState: sig(storage.createEmptyState()),
+    route: routeSignal,
+    navigate: vi.fn((r: Record<string, string>) => { routeSignal.value = r; }),
     save: vi.fn(),
     mutateState: vi.fn((fn: (s: ReturnType<typeof storage.createEmptyState>) => void) => {
       const s = storage.createEmptyState();
@@ -120,7 +122,7 @@ describe("BlsMedsView — Reference tab", () => {
     render(<BlsMedsView />);
     expect(screen.getByText("Reference")).toBeTruthy();
     expect(screen.getByText("Scenarios")).toBeTruthy();
-    expect(screen.getByText("Drill")).toBeTruthy();
+    expect(screen.getByText(/Drill/)).toBeTruthy();
   });
 
   it("shows medication cards in reference tab", () => {
@@ -149,5 +151,90 @@ describe("BlsMedsView — Reference tab", () => {
     expect(screen.getByText("Suspected ACS")).toBeTruthy();
     expect(screen.getByText("True aspirin allergy")).toBeTruthy();
     expect(screen.getByText("324 mg chewed")).toBeTruthy();
+  });
+});
+
+describe("BlsMedsView — Scenarios tab", () => {
+  it("shows vignette text in scenario session", () => {
+    render(<BlsMedsView />);
+    fireEvent.click(screen.getByText("Scenarios"));
+    expect(screen.getByText(/58yo male, chest pain/)).toBeTruthy();
+  });
+
+  it("shows Give and Withhold buttons for give-withhold format", () => {
+    render(<BlsMedsView />);
+    fireEvent.click(screen.getByText("Scenarios"));
+    expect(screen.getByText("Give")).toBeTruthy();
+    expect(screen.getByText("Withhold")).toBeTruthy();
+  });
+
+  it("shows explanation after answering", () => {
+    render(<BlsMedsView />);
+    fireEvent.click(screen.getByText("Scenarios"));
+    fireEvent.click(screen.getByText("Give"));
+    expect(screen.getByText("No contraindications.")).toBeTruthy();
+  });
+
+  it("shows correct/incorrect feedback after answering", () => {
+    render(<BlsMedsView />);
+    fireEvent.click(screen.getByText("Scenarios"));
+    fireEvent.click(screen.getByText("Withhold")); // wrong answer
+    expect(screen.getByText(/Incorrect/i)).toBeTruthy();
+  });
+
+  it("shows Go Deeper button after answering when followUps exist", () => {
+    render(<BlsMedsView />);
+    fireEvent.click(screen.getByText("Scenarios"));
+    fireEvent.click(screen.getByText("Give")); // answer first scenario (asa-test-1)
+    fireEvent.click(screen.getByText("Next →")); // advance to next
+    fireEvent.click(screen.getByText("Withhold")); // answer asa-test-2 (has followUps)
+    expect(screen.getByText("Go Deeper →")).toBeTruthy();
+  });
+
+  it("shows followUp question in deep mode", () => {
+    render(<BlsMedsView />);
+    fireEvent.click(screen.getByText("Scenarios"));
+    fireEvent.click(screen.getByText("Give")); // asa-test-1
+    fireEvent.click(screen.getByText("Next →"));
+    fireEvent.click(screen.getByText("Withhold")); // asa-test-2 (has followUps)
+    fireEvent.click(screen.getByText("Go Deeper →"));
+    expect(screen.getByText("Why is aspirin contraindicated here?")).toBeTruthy();
+  });
+});
+
+describe("BlsMedsView — Drill tab", () => {
+  it("shows drug name on card front in drill tab", () => {
+    render(<BlsMedsView />);
+    fireEvent.click(screen.getByText(/Drill/));
+    expect(screen.getByText("Aspirin")).toBeTruthy();
+  });
+
+  it("shows Reveal button on card front", () => {
+    render(<BlsMedsView />);
+    fireEvent.click(screen.getByText(/Drill/));
+    expect(screen.getByText("Reveal")).toBeTruthy();
+  });
+
+  it("shows grade buttons after reveal", () => {
+    render(<BlsMedsView />);
+    fireEvent.click(screen.getByText(/Drill/));
+    fireEvent.click(screen.getByText("Reveal"));
+    expect(screen.getByText("Again")).toBeTruthy();
+    expect(screen.getByText("Good")).toBeTruthy();
+  });
+
+  it("shows medication indications on card back", () => {
+    render(<BlsMedsView />);
+    fireEvent.click(screen.getByText(/Drill/));
+    fireEvent.click(screen.getByText("Reveal"));
+    expect(screen.getByText("Suspected ACS")).toBeTruthy();
+  });
+
+  it("reverse mode toggle changes card front to show indication", () => {
+    render(<BlsMedsView />);
+    fireEvent.click(screen.getByText(/Drill/));
+    fireEvent.click(screen.getByText("Reverse"));
+    const card = document.querySelector(".blsmed-drill-card-front");
+    expect(card).toBeTruthy();
   });
 });
