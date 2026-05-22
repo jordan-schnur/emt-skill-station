@@ -7,6 +7,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Medical History",
     "category": "Patient Assessment",
     "note": null,
+    "sources": ["Mistovich JJ & Karren KJ. Prehospital Emergency Care, 11th ed. Pearson, 2017."],
     "letters": [
       {
         "letter": "S",
@@ -46,6 +47,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Pain / Symptom Characterization",
     "category": "Patient Assessment",
     "note": null,
+    "sources": ["Mistovich JJ & Karren KJ. Prehospital Emergency Care, 11th ed. Pearson, 2017."],
     "letters": [
       {
         "letter": "O",
@@ -85,6 +87,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Level of Responsiveness",
     "category": "Patient Assessment",
     "note": null,
+    "sources": ["Teasdale G & Jennett B. Assessment of coma and impaired consciousness. Lancet, 1974.", "Mistovich JJ & Karren KJ. Prehospital Emergency Care, 11th ed. Pearson, 2017."],
     "letters": [
       {
         "letter": "A",
@@ -114,6 +117,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Physical Trauma Assessment",
     "category": "Patient Assessment",
     "note": null,
+    "sources": ["NREMT Psychomotor Exam Skills Sheets.", "Mistovich JJ & Karren KJ. Prehospital Emergency Care, 11th ed. Pearson, 2017."],
     "letters": [
       {
         "letter": "D",
@@ -163,6 +167,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Pupillary Assessment",
     "category": "Patient Assessment",
     "note": null,
+    "sources": ["Bickley LS. Bates' Guide to Physical Examination and History Taking, 13th ed. Wolters Kluwer, 2021."],
     "letters": [
       {
         "letter": "P",
@@ -197,6 +202,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Extremity Neurovascular Assessment",
     "category": "Patient Assessment",
     "note": "Assess CMS distal to any injury or splint. Reassess after every intervention.",
+    "sources": ["Bickley LS. Bates' Guide to Physical Examination and History Taking, 13th ed. Wolters Kluwer, 2021."],
     "letters": [
       {
         "letter": "C",
@@ -221,6 +227,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Pediatric Appearance Assessment",
     "category": "Patient Assessment",
     "note": "Also called 'Tickles.' Part of the Pediatric Assessment Triangle (PAT). A normal TICLS means the child is likely compensating well.",
+    "sources": ["Dieckmann RA, Brownstein D, Gausche-Hill M. The Pediatric Assessment Triangle: A Novel Approach for the Rapid Evaluation of Children. Pediatric Emergency Care, 2010."],
     "letters": [
       {
         "letter": "T",
@@ -255,6 +262,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Pediatric Assessment Triangle",
     "category": "Patient Assessment",
     "note": "The PAT is a rapid (<30 second) visual and auditory assessment. No touching required. It tells you if the child is sick or not sick before you approach.",
+    "sources": ["Dieckmann RA, Brownstein D, Gausche-Hill M. The Pediatric Assessment Triangle. Pediatric Emergency Care, 2010.", "Gausche-Hill M et al. Pediatric Emergencies, NAEMSP, 2014."],
     "letters": [
       {
         "letter": "P",
@@ -279,6 +287,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Causes of Altered Mental Status",
     "category": "Altered Mental Status",
     "note": null,
+    "sources": ["Marx JA et al. Rosen's Emergency Medicine, 9th ed. Elsevier, 2017."],
     "letters": [
       {
         "letter": "A",
@@ -333,6 +342,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Difficult Airway Prediction",
     "category": "Airway",
     "note": "Use before any intubation attempt. Two or more positive findings = plan for a difficult airway and have backup devices ready.",
+    "sources": ["Reed MJ et al. The LEMON Approach to Assessment of Difficult Airways. Emergency Medicine Journal, 2005.", "Walls RM, Murphy MF (eds). The Walls Manual of Emergency Airway Management, 5th ed. Wolters Kluwer, 2018."],
     "letters": [
       {
         "letter": "L",
@@ -367,6 +377,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Difficult BVM Ventilation",
     "category": "Airway",
     "note": "Predict before you intubate — if BVM will be difficult, RSI failure is catastrophic. Plan a supraglottic device backup.",
+    "sources": ["Walls RM, Murphy MF (eds). The Walls Manual of Emergency Airway Management, 5th ed. Wolters Kluwer, 2018."],
     "letters": [
       {
         "letter": "M",
@@ -401,6 +412,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Difficult Supraglottic Airway (SGA)",
     "category": "Airway",
     "note": "Predicts difficulty placing a King LT, LMA, or i-gel. Plan for surgical airway if all options fail.",
+    "sources": ["Walls RM, Murphy MF (eds). The Walls Manual of Emergency Airway Management, 5th ed. Wolters Kluwer, 2018."],
     "letters": [
       {
         "letter": "R",
@@ -430,6 +442,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Intubated Patient Deterioration",
     "category": "Airway",
     "note": "When a ventilated patient suddenly deteriorates, run through DOPE before anything else.",
+    "sources": ["Walls RM, Murphy MF (eds). The Walls Manual of Emergency Airway Management, 5th ed. Wolters Kluwer, 2018."],
     "letters": [
       {
         "letter": "D",
@@ -459,6 +472,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Reversible Causes of Cardiac Arrest",
     "category": "Cardiac / Arrest",
     "note": "Search for and treat these during every cardiac arrest resuscitation. Addressing a reversible cause is the only way to restore ROSC in many arrests.",
+    "sources": ["American Heart Association. Advanced Cardiovascular Life Support Provider Manual, 2020."],
     "letters": [
       {
         "letter": "H",
@@ -513,6 +527,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "ACS Treatment (Historical)",
     "category": "Cardiac / Arrest",
     "note": "MONA is outdated. Modern evidence shows morphine increases mortality in MI (use fentanyl for pain). Oxygen is only indicated if SpO₂ < 90%. Nitroglycerin and aspirin remain appropriate. Current focus is rapid transport for PCI.",
+    "sources": ["American Heart Association. Advanced Cardiovascular Life Support Provider Manual, 2020.", "O'Connor RE et al. 2015 AHA Guidelines Update for CPR and ECC: Acute Coronary Syndromes. Circulation, 2015."],
     "letters": [
       {
         "letter": "M",
@@ -542,6 +557,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Stroke Recognition",
     "category": "Stroke",
     "note": "Based on the Cincinnati Prehospital Stroke Scale. One positive finding = high suspicion for stroke. Activate stroke alert and transport immediately — time is brain.",
+    "sources": ["Kothari RU et al. Cincinnati Prehospital Stroke Scale: Reproducibility and Validity. Annals of Emergency Medicine, 1999."],
     "letters": [
       {
         "letter": "F",
@@ -571,6 +587,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Enhanced Stroke Recognition",
     "category": "Stroke",
     "note": "Adds Balance and Eyes to capture posterior circulation (vertebrobasilar) strokes that FAST misses. Detects ~14% more strokes than FAST alone.",
+    "sources": ["Aroor S et al. BE-FAST (Balance, Eyes, Face, Arm, Speech, Time): Reducing the Proportion of Strokes Missed Using the FAST Mnemonic. Stroke, 2017."],
     "letters": [
       {
         "letter": "B",
@@ -610,6 +627,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Pediatric MCI Triage",
     "category": "Pediatric / MCI",
     "note": "Designed for ages 1–8. Parallel to START triage but accounts for pediatric physiology (e.g., children can have respiratory arrest with a perfusing rhythm — a brief rescue breath is given before tagging black).",
+    "sources": ["Romig LE. Pediatric Triage: A System to JumpSTART Your Triage of Young Patients at MCIs. JEMS, 2002."],
     "letters": [
       {
         "letter": "J",
@@ -664,6 +682,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Patient Priority / Urgency",
     "category": "Pediatric / MCI",
     "note": "A simple field triage tool for determining transport urgency. Most useful when START/JumpSTART is not yet indicated.",
+    "sources": ["NAEMSP. EMS Clinical Practice and Systems Oversight, 2nd ed. Wiley, 2015."],
     "letters": [
       {
         "letter": "C",
@@ -693,6 +712,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Patient Handoff Communication",
     "category": "Communication",
     "note": "Originally developed by the U.S. military and adopted by Kaiser Permanente in 2003. Now a standard handoff framework across healthcare. A clear, concise SBAR reduces handoff errors and prevents miscommunication.",
+    "sources": ["Institute for Healthcare Improvement (IHI). SBAR Technique for Communication. Originally developed by the US Navy, adapted for healthcare by Kaiser Permanente, 2002."],
     "letters": [
       {
         "letter": "S",
@@ -722,6 +742,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Paramedic Handover (Gold Standard)",
     "category": "Communication",
     "note": "Australian/international standard that consolidates OPQRST, SAMPLE, vitals, and DCAP-BTLS into a single structured handoff. Reduces handover duration and missed information.",
+    "sources": ["Iedema R et al. Design and Trial of a New Ambulance-to-Emergency Department Handover Protocol: IMIST-AMBO. BMJ Quality & Safety, 2012."],
     "letters": [
       {
         "letter": "I",
@@ -776,6 +797,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Scene Approach Assessment",
     "category": "Scene Safety",
     "note": null,
+    "sources": ["Standard NREMT curriculum / NAEMSP EMT scope of practice guidelines."],
     "letters": [
       {
         "letter": "B",
@@ -801,6 +823,78 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
         "letter": "C",
         "stand": "C-Spine Precautions?",
         "detail": "Does MOI suggest possible spinal injury? If yes, maintain in-line stabilization from first contact."
+      }
+    ]
+  },
+  {
+    "id": "dmist",
+    "acronym": "DMIST",
+    "title": "Trauma Verbal Handoff",
+    "category": "Communication",
+    "note": "Designed for a 15–30 second trauma handoff from EMS to the receiving team. Standardized by the PA Trauma Systems Foundation. Complements SBAR (general) and IMIST-AMBO (international). Give DMIST immediately on arrival for stable patients; after patient transfer and primary survey for critical patients.",
+    "sources": [
+      "PA Trauma Systems Foundation. DMIST: Standardizing the EMS to Trauma Team Patient Hand-off in Pennsylvania, 2020.",
+      "Milwaukee County EMS. Standards of Care: DMIST Trauma Verbal Handoff Format, 2020."
+    ],
+    "letters": [
+      {
+        "letter": "D",
+        "stand": "Demographics",
+        "detail": "Patient name (if known), age, sex, and weight if clinically relevant (e.g., pediatric dosing, crush injury)."
+      },
+      {
+        "letter": "M",
+        "stand": "Mechanism / Medical Complaint",
+        "detail": "For trauma: type of event (MVC, fall, assault, penetrating), speed, height of fall, weapon type, safety device use (seatbelt, airbag, helmet). For medical: the nature of illness in one sentence."
+      },
+      {
+        "letter": "I",
+        "stand": "Injuries / Illness Findings",
+        "detail": "Trauma: list injuries head-to-toe using DCAP-BTLS language. Medical: key exam findings (e.g., unequal pupils, absent breath sounds, ECG findings, stroke scale result)."
+      },
+      {
+        "letter": "S",
+        "stand": "Signs",
+        "detail": "Full vital signs: GCS, HR, RR, BP, SpO₂, BGL, skin signs (color, temperature, moisture). Note trends — improving or deteriorating."
+      },
+      {
+        "letter": "T",
+        "stand": "Treatment",
+        "detail": "All prehospital interventions: airway management, C-spine, hemorrhage control, IVs, medications given (drug, dose, route, time), and the patient's response to each treatment."
+      }
+    ]
+  },
+  {
+    "id": "start",
+    "acronym": "START",
+    "title": "Adult MCI Triage (30-2-Can Do)",
+    "category": "Pediatric / MCI",
+    "note": "Simple Triage And Rapid Treatment. Adult counterpart to JumpSTART. Each patient assessed in under 60 seconds. The only prehospital treatment allowed during the triage pass is airway repositioning — no IVs, no medications. Use the 30-2-Can Do rule in sequence: Walk → 30 → 2 → Can Do.",
+    "sources": [
+      "Benson M et al. START: Simple Triage And Rapid Treatment. Hoag Memorial Hospital Presbyterian, 1983.",
+      "FEMA / CHEMTREC START Triage Reference Card.",
+      "AHA/NAEMSP MCI Triage Guidelines."
+    ],
+    "letters": [
+      {
+        "letter": "Walk",
+        "stand": "Can the patient walk?",
+        "detail": "GREEN (Minor): Redirect walking wounded to a designated collection point. Tag green and move on immediately."
+      },
+      {
+        "letter": "30",
+        "stand": "Respirations (threshold: 30/min)",
+        "detail": "If apneic: reposition airway. Still no breathing → BLACK (Expectant/Deceased). If respirations > 30/min → RED (Immediate). If 10–29/min → continue to perfusion check."
+      },
+      {
+        "letter": "2",
+        "stand": "Perfusion (CRT > 2 sec or no radial pulse)",
+        "detail": "Absent radial pulse OR capillary refill > 2 seconds → RED (Immediate). Control major bleeding if present. CRT ≤ 2 sec with palpable pulse → continue to mental status."
+      },
+      {
+        "letter": "Can Do",
+        "stand": "Mental status (can follow simple commands?)",
+        "detail": "Ask: 'Open your hand' or 'close your eyes.' Cannot follow → RED (Immediate). Can follow simple commands → YELLOW (Delayed)."
       }
     ]
   }

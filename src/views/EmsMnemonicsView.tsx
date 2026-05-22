@@ -1,7 +1,8 @@
-import { useState } from "preact/hooks";
+import { useState, useRef } from "preact/hooks";
 import { appState, mutateState, save, navigate } from "../store/appStore";
 import { EMS_CLINICAL_MNEMONICS } from "../data/ems_clinical_mnemonics";
 import { defaultRecord, grade, describeDue } from "../lib/emsSrs";
+import { suggestGrade, getNonConnectorLetters, quizMatchesAnswer } from "../lib/emsMnemonicsHelpers";
 import { route } from "../store/appStore";
 import type { ClinicalMnemonic, SRSRecord } from "../types";
 
@@ -12,6 +13,12 @@ type Grade = "again" | "hard" | "good" | "easy";
 function EmsCard({ mnemonic, srsRec }: { mnemonic: ClinicalMnemonic; srsRec: SRSRecord | undefined }) {
   const [open, setOpen] = useState(false);
   const due = describeDue(srsRec);
+
+  function practiceCard(e: Event) {
+    e.stopPropagation();
+    navigate({ view: "mnemonics", mnemonicsTab: "quiz", mnemonicsCardId: mnemonic.id });
+  }
+
   return (
     <div class={`ems-card${open ? " expanded" : ""}`} onClick={() => setOpen(o => !o)}>
       <div class="ems-card-header">
@@ -22,6 +29,7 @@ function EmsCard({ mnemonic, srsRec }: { mnemonic: ClinicalMnemonic; srsRec: SRS
         <div class="ems-card-right">
           <span class="ems-category-tag">{mnemonic.category}</span>
           <span class={`ems-due-badge${!srsRec || srsRec.due <= Date.now() ? " due" : ""}`}>{due}</span>
+          <button class="ems-practice-icon" title="Practice this card" onClick={practiceCard}>▶</button>
           <span class="ems-expand-icon">▾</span>
         </div>
       </div>
@@ -39,6 +47,12 @@ function EmsCard({ mnemonic, srsRec }: { mnemonic: ClinicalMnemonic; srsRec: SRS
               </div>
             ))}
           </div>
+          {mnemonic.sources && mnemonic.sources.length > 0 && (
+            <div class="ems-card-sources muted">
+              Sources: {mnemonic.sources.join(" · ")}
+            </div>
+          )}
+          <button class="btn ems-practice-body-btn" onClick={practiceCard}>Practice this card</button>
         </div>
       )}
     </div>
@@ -91,11 +105,162 @@ function BrowseMode() {
   );
 }
 
+// ─── Per-letter quiz card ─────────────────────────────────────────────────────
+
+interface LetterResult {
+  letter: string;
+  stand: string;
+  correct: boolean;
+  given: string;
+}
+
+type QuizPhase = "front" | "quizzing" | "summary";
+
+function PerLetterQuiz({ mnemonic, rec, remaining, onGrade }: {
+  mnemonic: ClinicalMnemonic;
+  rec: SRSRecord;
+  remaining: number;
+  onGrade: (g: Grade) => void;
+}) {
+  const letters = getNonConnectorLetters(mnemonic.letters);
+  const [phase, setPhase] = useState<QuizPhase>("front");
+  const [letterIdx, setLetterIdx] = useState(0);
+  const [answer, setAnswer] = useState("");
+  const [letterResult, setLetterResult] = useState<{ correct: boolean; stand: string } | null>(null);
+  const [results, setResults] = useState<LetterResult[]>([]);
+  const [chosenGrade, setChosenGrade] = useState<Grade | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const suggested = suggestGrade(results.filter(r => r.correct).length, results.length);
+
+  function submitAnswer() {
+    const current = letters[letterIdx];
+    const correct = quizMatchesAnswer(answer.trim(), current.stand);
+    const result: LetterResult = { letter: current.letter, stand: current.stand, correct, given: answer.trim() };
+    setLetterResult({ correct, stand: current.stand });
+    setResults(prev => [...prev, result]);
+  }
+
+  function advance() {
+    const next = letterIdx + 1;
+    if (next >= letters.length) {
+      setPhase("summary");
+    } else {
+      setLetterIdx(next);
+      setAnswer("");
+      setLetterResult(null);
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
+  }
+
+  if (phase === "front") {
+    return (
+      <div class="ems-quiz-card">
+        <div class="ems-quiz-front">
+          <div class="ems-quiz-acronym">{mnemonic.acronym}</div>
+          <div class="ems-quiz-title">{mnemonic.title}</div>
+          <div class="ems-quiz-category">{mnemonic.category}</div>
+        </div>
+        <button class="btn btn-primary ems-reveal-btn" onClick={() => {
+          setPhase("quizzing");
+          setTimeout(() => inputRef.current?.focus(), 0);
+        }}>Begin Quiz</button>
+      </div>
+    );
+  }
+
+  if (phase === "quizzing") {
+    const current = letters[letterIdx];
+    return (
+      <div class="ems-quiz-card">
+        <div class="ems-quiz-letter-prompt">
+          <span class="ems-quiz-acronym-sm">{mnemonic.acronym}</span>
+          {" — what does "}
+          <strong>{current.letter}</strong>
+          {" stand for?"}
+        </div>
+        <div class="ems-quiz-progress muted">{letterIdx + 1} / {letters.length}</div>
+        {letterResult === null ? (
+          <div class="ems-quiz-input-row">
+            <input
+              ref={inputRef}
+              class="ems-quiz-input"
+              type="text"
+              value={answer}
+              placeholder="Type your answer…"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck={false}
+              onInput={e => setAnswer((e.target as HTMLInputElement).value)}
+              onKeyDown={e => { if (e.key === "Enter" && answer.trim()) submitAnswer(); }}
+            />
+            <button
+              class="btn btn-primary"
+              disabled={!answer.trim()}
+              onClick={submitAnswer}
+            >Submit</button>
+          </div>
+        ) : (
+          <div class="ems-quiz-result">
+            <div class={`ems-quiz-verdict ${letterResult.correct ? "correct" : "incorrect"}`}>
+              {letterResult.correct ? "✓ Correct" : "✗ Incorrect"}
+            </div>
+            <div class="ems-quiz-correct-ans">
+              <strong>{current.letter}</strong> = {letterResult.stand}
+            </div>
+            <button class="btn btn-primary" onClick={advance}>
+              {letterIdx + 1 < letters.length ? "Next →" : "See Results"}
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // summary phase
+  const correctCount = results.filter(r => r.correct).length;
+  const finalGrade = chosenGrade ?? suggested;
+  const gradeLabels: Record<Grade, string> = { again: "Again", hard: "Hard", good: "Good", easy: "Easy" };
+
+  return (
+    <div class="ems-quiz-card">
+      <div class="ems-quiz-summary-title">{mnemonic.acronym} — Results</div>
+      <div class="ems-quiz-score">{correctCount} / {results.length} correct</div>
+      <div class="ems-quiz-result-list">
+        {results.map((r, i) => (
+          <div key={i} class={`ems-quiz-result-row ${r.correct ? "correct" : "incorrect"}`}>
+            <span class="ems-letter-badge">{r.letter}</span>
+            <span class="ems-quiz-result-stand">{r.stand}</span>
+            {!r.correct && r.given && <span class="ems-quiz-result-given muted">you wrote: {r.given}</span>}
+          </div>
+        ))}
+      </div>
+      <div class="ems-quiz-grade-section">
+        <div class="muted">Suggested: <strong>{gradeLabels[suggested]}</strong></div>
+        <div class="ems-grade-row">
+          {(["again", "hard", "good", "easy"] as Grade[]).map((g, i) => (
+            <button
+              key={g}
+              class={`btn ${g === finalGrade ? (i === 0 ? "btn-danger" : i === 2 || i === 3 ? "btn-primary" : "") + " ems-grade-selected" : ""}`}
+              onClick={() => setChosenGrade(g)}
+            >
+              {gradeLabels[g]}
+            </button>
+          ))}
+        </div>
+        <button class="btn btn-primary" onClick={() => onGrade(finalGrade)}>Confirm →</button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Quiz mode ────────────────────────────────────────────────────────────────
 
 function QuizMode() {
   const srsStore = appState.value.emsSrs ?? {};
   const now = Date.now();
+  const pinnedId = route.value.mnemonicsCardId;
 
   const due = EMS_CLINICAL_MNEMONICS
     .filter(m => { const r = srsStore["ems::" + m.id]; return r && r.due <= now; })
@@ -106,19 +271,26 @@ function QuizMode() {
     .filter(m => !srsStore["ems::" + m.id])
     .map(m => ({ m, rec: defaultRecord() }));
 
-  const initialQueue = [...due, ...fresh];
+  const fullQueue = [...due, ...fresh];
+
+  const initialQueue = pinnedId
+    ? (() => {
+        const found = EMS_CLINICAL_MNEMONICS.find(m => m.id === pinnedId);
+        if (!found) return fullQueue;
+        return [{ m: found, rec: srsStore["ems::" + found.id] ?? defaultRecord() }];
+      })()
+    : fullQueue;
 
   const [queue, setQueue] = useState(initialQueue);
   const [idx, setIdx] = useState(0);
-  const [revealed, setRevealed] = useState(false);
   const [done, setDone] = useState(false);
 
   if (done || queue.length === 0) {
     return (
       <div class="empty-state">
         <div class="big">✓</div>
-        <p>{queue.length === 0 ? "All caught up! Come back later." : "Session complete!"}</p>
-        <button class="btn" onClick={() => navigate({ view: "mnemonics", mnemonicsTab: "browse" })}>← Browse mnemonics</button>
+        <p>{pinnedId ? "Done!" : queue.length === 0 ? "All caught up! Come back later." : "Session complete!"}</p>
+        <button class="btn" onClick={() => navigate({ view: "mnemonics", mnemonicsTab: "browse" })}>← Back to mnemonics</button>
       </div>
     );
   }
@@ -142,7 +314,6 @@ function QuizMode() {
       setDone(true);
     } else {
       setIdx(i => i + 1);
-      setRevealed(false);
     }
   }
 
@@ -154,44 +325,13 @@ function QuizMode() {
       <div class="ems-quiz-header">
         <span class="ems-quiz-counter">{remaining} card{remaining === 1 ? "" : "s"} remaining</span>
       </div>
-      <div class="ems-quiz-card">
-        <div class="ems-quiz-front">
-          <div class="ems-quiz-acronym">{m.acronym}</div>
-          <div class="ems-quiz-category">{m.category}</div>
-          <div class="ems-quiz-prompt muted">What does each letter stand for?</div>
-        </div>
-        {revealed && (
-          <div class="ems-quiz-back">
-            {m.note && <div class="ems-card-note">{m.note}</div>}
-            <div class="ems-letter-table">
-              {m.letters.filter(l => l.stand !== "(connector)").map((l, i) => (
-                <div class="ems-letter-row" key={i}>
-                  <span class="ems-letter-badge">{l.letter}</span>
-                  <div class="ems-letter-content">
-                    <strong>{l.stand}</strong>
-                    {l.detail && <div class="ems-letter-detail muted">{l.detail}</div>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        {!revealed ? (
-          <button class="btn btn-primary ems-reveal-btn" onClick={() => setRevealed(true)}>Reveal</button>
-        ) : (
-          <div class="ems-grade-row">
-            {(["again", "hard", "good", "easy"] as Grade[]).map((g, i) => (
-              <button
-                key={g}
-                class={`btn ${i === 0 ? "btn-danger" : i === 2 ? "btn-primary" : ""}`}
-                onClick={() => applyGrade(g)}
-              >
-                {g.charAt(0).toUpperCase() + g.slice(1)}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      <PerLetterQuiz
+        key={m.id + "-" + idx}
+        mnemonic={m}
+        rec={rec}
+        remaining={remaining}
+        onGrade={applyGrade}
+      />
     </>
   );
 }
