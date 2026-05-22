@@ -6,27 +6,27 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://jordanschnur.com/emt-skill-station/#examday</loc>
+    <loc>https://jordanschnur.com/emt-skill-station/examday</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://jordanschnur.com/emt-skill-station/#mnemonics</loc>
+    <loc>https://jordanschnur.com/emt-skill-station/mnemonics</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://jordanschnur.com/emt-skill-station/#medconditions</loc>
+    <loc>https://jordanschnur.com/emt-skill-station/medconditions</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://jordanschnur.com/emt-skill-station/#guide</loc>
+    <loc>https://jordanschnur.com/emt-skill-station/guide</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://jordanschnur.com/emt-skill-station/#sources</loc>
+    <loc>https://jordanschnur.com/emt-skill-station/sources</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
