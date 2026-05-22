@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { suggestGrade, getNonConnectorLetters } from "../../src/lib/emsMnemonicsHelpers";
+import { suggestGrade, getNonConnectorLetters, quizMatchesAnswer } from "../../src/lib/emsMnemonicsHelpers";
 import type { MnemonicLetter } from "../../src/types";
 
 describe("suggestGrade", () => {
@@ -67,5 +67,63 @@ describe("getNonConnectorLetters", () => {
 
   it("returns empty array for empty input", () => {
     expect(getNonConnectorLetters([])).toHaveLength(0);
+  });
+});
+
+describe("quizMatchesAnswer", () => {
+  // Exact and near-exact matches
+  it("accepts exact match", () => {
+    expect(quizMatchesAnswer("Medications", "Medications")).toBe(true);
+  });
+
+  it("accepts case-insensitive match", () => {
+    expect(quizMatchesAnswer("medications", "Medications")).toBe(true);
+  });
+
+  it("accepts close Jaccard match", () => {
+    expect(quizMatchesAnswer("Signs Symptoms", "Signs and Symptoms")).toBe(true);
+  });
+
+  // Medical abbreviation prefix matches
+  it("accepts 'meds' for 'Medications'", () => {
+    expect(quizMatchesAnswer("meds", "Medications")).toBe(true);
+  });
+
+  it("accepts 'hx' for 'History'", () => {
+    expect(quizMatchesAnswer("hx", "History")).toBe(true);
+  });
+
+  it("accepts 'sx' for 'Signs and Symptoms'", () => {
+    expect(quizMatchesAnswer("sx", "Signs and Symptoms")).toBe(true);
+  });
+
+  it("accepts 'px' for 'Pertinent past history'", () => {
+    expect(quizMatchesAnswer("px", "Pertinent past history")).toBe(true);
+  });
+
+  // Subset / keyword matches
+  it("accepts single keyword that matches first word", () => {
+    expect(quizMatchesAnswer("signs", "Signs and Symptoms")).toBe(true);
+  });
+
+  it("accepts 'allergies' for 'Allergies'", () => {
+    expect(quizMatchesAnswer("allergies", "Allergies")).toBe(true);
+  });
+
+  it("accepts 'pertinent' for 'Pertinent past history'", () => {
+    expect(quizMatchesAnswer("pertinent", "Pertinent past history")).toBe(true);
+  });
+
+  // Should still reject clearly wrong answers
+  it("rejects completely unrelated answer", () => {
+    expect(quizMatchesAnswer("banana", "Medications")).toBe(false);
+  });
+
+  it("rejects empty answer", () => {
+    expect(quizMatchesAnswer("", "Medications")).toBe(false);
+  });
+
+  it("rejects short nonsense prefix", () => {
+    expect(quizMatchesAnswer("xyz", "Medications")).toBe(false);
   });
 });

@@ -3211,16 +3211,17 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
 }
 .ems-practice-icon {
   background: none;
-  border: none;
+  border: 1px solid var(--accent);
   cursor: pointer;
-  color: var(--text-mute);
+  color: var(--accent);
   font-size: 11px;
-  padding: 2px 4px;
+  padding: 2px 6px;
   border-radius: var(--radius-sm);
   line-height: 1;
   transition: color 0.15s, background 0.15s;
+  opacity: 0.8;
 }
-.ems-practice-icon:hover { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.ems-practice-icon:hover { opacity: 1; background: color-mix(in srgb, var(--accent) 15%, transparent); }
 .ems-practice-body-btn {
   display: block;
   width: 100%;

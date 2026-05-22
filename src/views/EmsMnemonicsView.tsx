@@ -2,8 +2,7 @@ import { useState, useRef } from "preact/hooks";
 import { appState, mutateState, save, navigate } from "../store/appStore";
 import { EMS_CLINICAL_MNEMONICS } from "../data/ems_clinical_mnemonics";
 import { defaultRecord, grade, describeDue } from "../lib/emsSrs";
-import { jaccardSimilarity } from "../lib/drillHelpers";
-import { suggestGrade, getNonConnectorLetters } from "../lib/emsMnemonicsHelpers";
+import { suggestGrade, getNonConnectorLetters, quizMatchesAnswer } from "../lib/emsMnemonicsHelpers";
 import { route } from "../store/appStore";
 import type { ClinicalMnemonic, SRSRecord } from "../types";
 
@@ -136,7 +135,7 @@ function PerLetterQuiz({ mnemonic, rec, remaining, onGrade }: {
 
   function submitAnswer() {
     const current = letters[letterIdx];
-    const correct = jaccardSimilarity(answer.trim(), current.stand) >= 0.45;
+    const correct = quizMatchesAnswer(answer.trim(), current.stand);
     const result: LetterResult = { letter: current.letter, stand: current.stand, correct, given: answer.trim() };
     setLetterResult({ correct, stand: current.stand });
     setResults(prev => [...prev, result]);
