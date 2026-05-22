@@ -176,3 +176,5 @@ A task is **not done** until:
 - Coverage thresholds are not regressed
 
 When tests fail: fix the code or the test — never skip, comment out, or lower thresholds.
+
+When creating a PR: after pushing the branch and opening the PR, always ask the user whether they want to push to stage (deploy the branch).

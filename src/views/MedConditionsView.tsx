@@ -300,8 +300,8 @@ const TABS: { id: MedTab; label: string }[] = [
 ];
 
 export function MedConditionsView() {
-  const r = route.value as { tab?: string };
-  const tab = (r.tab as MedTab) ?? "browse";
+  const r = route.value as { medcondTab?: string };
+  const tab = (r.medcondTab as MedTab) ?? "browse";
 
   return (
     <div class="medcond-wrap">
