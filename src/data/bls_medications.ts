@@ -627,7 +627,7 @@ export const BLS_MEDICATIONS: BLSMedication[] = [
           },
           {
             question: "Which ingestion IS an appropriate indication for activated charcoal?",
-            type: "dose",
+            type: "contraindication-check",
             answer: "Prescription opioid tablets ingested 30 minutes ago",
             options: ["Iron supplement overdose", "Battery acid ingestion", "Prescription opioid tablets ingested 30 minutes ago", "Ethanol (alcohol) intoxication"],
           },
@@ -649,7 +649,7 @@ export const BLS_MEDICATIONS: BLSMedication[] = [
           },
           {
             question: "What is the time window within which activated charcoal is most effective?",
-            type: "dose",
+            type: "contraindication-check",
             answer: "Within 30–60 minutes of ingestion",
             options: ["Within 15 minutes", "Within 30–60 minutes of ingestion", "Within 2 hours", "Within 4 hours"],
           },
@@ -845,7 +845,7 @@ export const BLS_MEDICATIONS: BLSMedication[] = [
         followUps: [
           {
             question: "What must be done to the MDI immediately before use?",
-            type: "dose",
+            type: "route",
             answer: "Shake it vigorously",
             options: ["Warm it in your hands", "Shake it vigorously", "Prime it with 3 test sprays", "Attach directly to a BVM"],
           },
@@ -1003,7 +1003,7 @@ export const BLS_MEDICATIONS: BLSMedication[] = [
           },
           {
             question: "What is the typical duration of naloxone?",
-            type: "dose",
+            type: "reassessment",
             answer: "30–90 minutes",
             options: ["5–10 minutes", "30–90 minutes", "4–6 hours", "12–24 hours"],
           },

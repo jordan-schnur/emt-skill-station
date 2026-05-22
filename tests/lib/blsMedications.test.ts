@@ -97,6 +97,9 @@ describe("BLS_MEDICATIONS data integrity", () => {
         for (const fu of s.followUps) {
           expect(fu.options.length).toBe(4);
           expect(fu.options).toContain(fu.answer);
+          expect(["dose", "route", "contraindication-check", "reassessment"]).toContain(fu.type);
+          expect(typeof fu.question).toBe("string");
+          expect(fu.question.length).toBeGreaterThan(0);
         }
       }
     }
