@@ -3,37 +3,13 @@ import { appState, navigate, save, showToast, mutateState } from "../store/appSt
 import { reset, exportToFile, importFromFile, createEmptyState } from "../lib/storage";
 import { getConfig, saveConfig, clearConfig, fetchModels } from "../lib/chat";
 import { openConfirmModal, openConflictModal } from "../components/ui/Modal";
-
-// ─── CloudSync type (optional global) ───────────────────────────────────────
-
-interface CloudUser {
-  displayName: string | null;
-  email: string | null;
-  photoURL: string | null;
-}
-
-interface CloudSyncAPI {
-  init: () => void;
-  isAuthReady: () => boolean;
-  getUser: () => CloudUser | null;
-  signIn: () => Promise<void>;
-  signOut: () => Promise<void>;
-  upload: (state: unknown) => Promise<void>;
-  download: () => Promise<{ state: { updatedAt?: string } } | null>;
-  downloadWithMeta: () => Promise<{ state: { updatedAt?: string } } | null>;
-  clearCloud: () => Promise<void>;
-  onAuthChange: (cb: (user: CloudUser | null) => void) => () => void;
-}
-
-function getCloudSync(): CloudSyncAPI | undefined {
-  return (window as unknown as Record<string, unknown>)["CloudSync"] as CloudSyncAPI | undefined;
-}
+import { CloudSync, isFirebaseConfigured } from "../lib/firebase";
 
 // ─── Cloud section ──────────────────────────────────────────────────────────
 
 function CloudSection() {
-  const CS = getCloudSync();
-  const [user, setUser] = useState<CloudUser | null>(CS?.getUser?.() ?? null);
+  const CS = isFirebaseConfigured ? CloudSync : undefined;
+  const [user, setUser] = useState(CS?.getUser?.() ?? null);
   const [authReady, setAuthReady] = useState(CS?.isAuthReady?.() ?? false);
   const [syncing, setSyncing] = useState(false);
 
@@ -47,7 +23,7 @@ function CloudSection() {
   }, []);
 
   async function handleSync() {
-    const cs = getCloudSync();
+    const cs = isFirebaseConfigured ? CloudSync : undefined;
     if (!cs) return;
     setSyncing(true);
     try {
@@ -90,7 +66,7 @@ function CloudSection() {
   }
 
   async function handleSignIn() {
-    const cs = getCloudSync();
+    const cs = isFirebaseConfigured ? CloudSync : undefined;
     if (!cs) return;
     try {
       await cs.signIn();
@@ -103,7 +79,7 @@ function CloudSection() {
   }
 
   async function handleSignOut() {
-    const cs = getCloudSync();
+    const cs = isFirebaseConfigured ? CloudSync : undefined;
     if (!cs) return;
     await cs.signOut();
     showToast("Signed out");
@@ -115,7 +91,7 @@ function CloudSection() {
       body: "This permanently deletes all your SRS progress, notes, and drill history — both locally and from the cloud. This cannot be undone.",
       confirmLabel: "Delete everything",
       onConfirm: async () => {
-        const cs = getCloudSync();
+        const cs = isFirebaseConfigured ? CloudSync : undefined;
         try { if (cs) await cs.clearCloud(); } catch (err) { console.error("Failed to clear cloud data", err); }
         reset();
         mutateState((draft) => { Object.assign(draft, createEmptyState()); });

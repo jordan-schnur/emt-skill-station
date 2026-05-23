@@ -114,7 +114,7 @@ export const CloudSync = {
     return CloudSync.downloadWithMeta();
   },
 
-  downloadWithMeta: async (): Promise<{ state: Record<string, unknown> } | null> => {
+  downloadWithMeta: async (): Promise<{ state: Record<string, unknown> & { updatedAt?: string } } | null> => {
     if (!_user || !db) return null;
     const snap = await getDoc(doc(db, "users", _user.uid));
     if (!snap.exists()) return null;

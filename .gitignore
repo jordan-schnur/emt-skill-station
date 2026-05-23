@@ -17,11 +17,10 @@ yarn-error.log
 dist/
 build/
 
-# Environment (Firebase keys — add secrets to GitHub Actions instead)
+# .env contains the Anthropic API key — keep gitignored
+# .env.production and .env.staging hold only public Firebase identifiers and are committed
 .env
 .env.local
-.env.production
-.env.staging
 
 # Test & coverage files
 coverage/

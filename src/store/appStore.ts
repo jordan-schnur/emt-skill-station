@@ -2,6 +2,7 @@ import { signal } from "@preact/signals";
 import { load, save as storageSave } from "../lib/storage";
 import { check as checkAchievements } from "../lib/achievements";
 import { parseRoute, writePath } from "../router/router";
+import { CloudSync, isFirebaseConfigured } from "../lib/firebase";
 import type { AppState, Route } from "../types";
 
 export const appState = signal<AppState>(load());
@@ -58,9 +59,7 @@ export function save(): void {
     storageSave(state);
     newOnes.forEach((ach, i) => setTimeout(() => showAchievementToast(ach), i * 600));
   }
-  // Cloud sync (CloudSync may not be defined during migration)
-  const cs = (window as unknown as Record<string, { uploadDebounced?: (s: AppState) => void }>)["CloudSync"];
-  if (cs?.uploadDebounced) cs.uploadDebounced(state);
+  if (isFirebaseConfigured) CloudSync.uploadDebounced(state);
 }
 
 export function mutateState(fn: (draft: AppState) => void): void {
@@ -70,9 +69,7 @@ export function mutateState(fn: (draft: AppState) => void): void {
 }
 
 export function navigate(next: Route): void {
-  // Flush cloud sync if available
-  const cs = (window as unknown as Record<string, { flush?: () => void }>)["CloudSync"];
-  if (cs?.flush) cs.flush();
+  if (isFirebaseConfigured) CloudSync.flush();
   route.value = next;
   writePath(next);
 }
