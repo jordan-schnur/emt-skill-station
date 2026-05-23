@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { check, getAll } from "../../src/lib/achievements";
 import { createEmptyState, setupMockNREMTData } from "../vitest.fixtures";
+import { NREMT_DATA } from "../../src/data/sheets";
 
 describe("Achievements", () => {
   beforeEach(() => {
@@ -254,6 +255,31 @@ describe("Achievements", () => {
       }
       expect(check(state).some((a) => a.id === "blsmeds_all_drilled")).toBe(false);
     });
+
+    it("does not unlock auto_fail_auditor when no critical drills attempted", () => {
+      const state = createEmptyState();
+      expect(check(state).some((a) => a.id === "auto_fail_auditor")).toBe(false);
+    });
+
+    it("does not unlock auto_fail_auditor when some criteria graded but not all know", () => {
+      const state = createEmptyState();
+      state.drills.critical["e201"] = {
+        "0": { grade: "know", lastSeenAt: Date.now(), streakKnown: 1, attempts: 1 },
+        "1": { grade: "fail", lastSeenAt: Date.now(), streakKnown: 0, attempts: 1 },
+      };
+      expect(check(state).some((a) => a.id === "auto_fail_auditor")).toBe(false);
+    });
+
+    it("unlocks auto_fail_auditor when all criteria for one sheet are graded know", () => {
+      const state = createEmptyState();
+      const sheet = NREMT_DATA.sheets.find(s => s.criticalCriteria?.length > 0)!;
+      const records: Record<string, { grade: "know"; lastSeenAt: number; streakKnown: number; attempts: number }> = {};
+      sheet.criticalCriteria.forEach((_, i) => {
+        records[String(i)] = { grade: "know", lastSeenAt: Date.now(), streakKnown: 1, attempts: 1 };
+      });
+      state.drills.critical[sheet.id] = records;
+      expect(check(state).some((a) => a.id === "auto_fail_auditor")).toBe(true);
+    });
   });
 
   describe("getAll()", () => {
@@ -282,6 +308,12 @@ describe("Achievements", () => {
       const all = getAll(state);
       const firstReview = all.find((a) => a.id === "first_review");
       expect(firstReview?.unlockedAt).toBeNull();
+    });
+
+    it("includes auto_fail_auditor in all achievement definitions", () => {
+      const state = createEmptyState();
+      const all = getAll(state);
+      expect(all.some((a) => a.id === "auto_fail_auditor")).toBe(true);
     });
   });
 });

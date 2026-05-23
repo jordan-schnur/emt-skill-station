@@ -1,23 +1,6 @@
 import { appState, navigate } from "../store/appStore";
 import { NREMT_DATA } from "../data/sheets";
-import { sheetMasteryPct } from "../lib/drillHelpers";
-import type { AppState, Sheet, SheetTab } from "../types";
-
-// ─── Next-mode suggestion ─────────────────────────────────────────────────────
-
-function suggestNextModeForSheet(state: AppState, sheet: Sheet): { tab: SheetTab; label: string } {
-  const drillable = sheet.sections.filter((s) => s.steps.length >= 2);
-  const seqRecs = state.drills?.stepseq?.[sheet.id] ?? {};
-  if (sheet.sections.length > 1 && !state.drills?.secorder?.[sheet.id]?.mastered) {
-    return { tab: "order", label: "Section Order Drill" };
-  }
-  const nextSec = drillable.find((s) => !seqRecs[s.name]?.mastered);
-  if (nextSec) return { tab: "steps", label: `Step Drill — ${nextSec.name}` };
-  if ((state.drills?.blankrecall?.[sheet.id]?.bestPct ?? 0) < 90) {
-    return { tab: "recall", label: "Blank Recall" };
-  }
-  return { tab: "sheet", label: "Full sheet review" };
-}
+import { suggestNextMode, computeTodayContext, reviewsThisWeek } from "../lib/todayContext";
 
 // ─── MasteryRing ──────────────────────────────────────────────────────────────
 
@@ -54,30 +37,17 @@ function TodayHero() {
   const state = appState.value;
   const sheets = NREMT_DATA.sheets;
 
-  let target = sheets[0];
-  let targetPct = 101;
-  for (const s of sheets) {
-    const p = sheetMasteryPct(state, s);
-    if (p < targetPct) { targetPct = p; target = s; }
-  }
-  const nextMode = suggestNextModeForSheet(state, target);
+  const ctx = computeTodayContext(state, sheets);
+  const target = ctx.lowestMasterySheet;
+  const nextMode = suggestNextMode(state, target);
+  const weekBars = reviewsThisWeek(state.stats.dailyReviewLog);
 
-  const overallPct = Math.round(sheets.reduce((a, s) => a + sheetMasteryPct(state, s), 0) / sheets.length);
-  const masteredCount = sheets.filter((s) => sheetMasteryPct(state, s) >= 80).length;
+  const overallPct = ctx.overallMasteryPct;
+  const masteredCount = ctx.sheetsAbove80;
 
   const dateLabel = new Date().toLocaleDateString("en-US", {
     weekday: "long", month: "short", day: "numeric",
   }).toUpperCase();
-
-  const rawLog = (state.stats as unknown as Record<string, unknown> & { dailyReviewLog?: Record<string, number> }).dailyReviewLog;
-  const weekBars: number[] = (() => {
-    if (!rawLog) return Array(7).fill(0) as number[];
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(today); d.setDate(d.getDate() - (6 - i));
-      return rawLog[d.toISOString().slice(0, 10)] ?? 0;
-    });
-  })();
   const weekMax = Math.max(...weekBars, 1);
   const weekTotal = weekBars.reduce((a, b) => a + b, 0);
   const dayLetters = ["M", "T", "W", "T", "F", "S", "S"];
@@ -111,6 +81,17 @@ function TodayHero() {
             Browse sheets
           </button>
         </div>
+        {ctx.criticalAlertSheets.length > 0 && (
+          <div class="today-critical">
+            ⚠ {ctx.criticalAlertSheets.length} sheet{ctx.criticalAlertSheets.length > 1 ? "s" : ""} have critical criteria not yet mastered.
+            <button
+              class="btn btn-ghost btn-sm"
+              onClick={() => navigate({ view: "sheet", sheetId: ctx.criticalAlertSheets[0].id, tab: "critical" })}
+            >
+              Drill now
+            </button>
+          </div>
+        )}
       </div>
 
       <div class="today-stats">

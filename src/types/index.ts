@@ -64,6 +64,7 @@ export interface Stats {
   dailyStreak: number;
   longestStreak: number;
   lastStreakDay: string | null;
+  dailyReviewLog?: Record<string, number>;
 }
 
 export interface DrillRecord {
