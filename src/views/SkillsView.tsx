@@ -4,7 +4,7 @@ import { NREMT_DATA } from "../data/sheets";
 import { countSheetNotes } from "../lib/notes";
 import { sheetMasteryPct } from "../lib/drillHelpers";
 import { MasteryRing } from "./HomeView";
-import type { AppState, Sheet } from "../types";
+import type { Sheet } from "../types";
 
 const MASTERY_RUNS = 3;
 

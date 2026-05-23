@@ -165,7 +165,7 @@ Ordered by dependency and impact. Update status as work progresses.
 | # | Issue | Status | Notes |
 |---|-------|--------|-------|
 | 1 | [T-012 #48] Promote Critical Criteria to first-class mode on SheetView | ✅ done | Wired in commit 4d9b733 alongside T-017 |
-| 2 | [T-002 #38] Add /skills route + SkillsView (extract sheet grid from Home) | ⬜ todo | Prerequisite for all nav IA work (T-001 epic) |
+| 2 | [T-002 #38] Add /skills route + SkillsView (extract sheet grid from Home) | ✅ done | |
 | 3 | [T-003 #39] Convert HomeView into Today dashboard | ⬜ todo | Requires T-002 first |
 | 4 | [T-019 #55] Achievement: "Auto-Fail Auditor" — master all critical criteria | ⬜ todo | Small addition to achievements.ts; independent |
 | 5 | [T-031 #67] Curate initial video list (3-5 physical-skill sheets) | ⬜ todo | Content-only; finalizes video epic |
