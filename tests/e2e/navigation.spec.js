@@ -16,6 +16,7 @@ test.describe("Navigation & Home View", () => {
   });
 
   test("should display all sheet cards", async ({ page }) => {
+    await page.goto("./skills");
     const cards = page.locator(".sheet-card");
     const count = await cards.count();
 
@@ -25,6 +26,7 @@ test.describe("Navigation & Home View", () => {
   });
 
   test("should show sheet metadata on cards", async ({ page }) => {
+    await page.goto("./skills");
     const firstCard = page.locator(".sheet-card").first();
 
     await expect(firstCard).toContainText("E201");
@@ -32,6 +34,7 @@ test.describe("Navigation & Home View", () => {
   });
 
   test("should display drill progress area on cards", async ({ page }) => {
+    await page.goto("./skills");
     const firstCard = page.locator(".sheet-card").first();
     await expect(firstCard).toBeVisible();
 
@@ -43,6 +46,7 @@ test.describe("Navigation & Home View", () => {
   });
 
   test("should navigate to sheet on card click", async ({ page }) => {
+    await page.goto("./skills");
     const firstCard = page.locator(".sheet-card").first();
     await firstCard.click();
 
@@ -58,7 +62,8 @@ test.describe("Navigation & Home View", () => {
   });
 
   test("should navigate back from sheet to home", async ({ page }) => {
-    // Go to sheet
+    // Go to skills to find a sheet card
+    await page.goto("./skills");
     await page.locator(".sheet-card").first().click();
     await page.waitForURL(/.*sheet.*/);
 
@@ -87,7 +92,7 @@ test.describe("Navigation & Home View", () => {
 
 test.describe("Sheet Detail View & Tabs", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto(".");
+    await page.goto("./skills");
     // Navigate to first sheet (E201)
     await page.locator(".sheet-card").first().click();
     await page.waitForURL(/.*sheet.*e201.*/);
@@ -157,7 +162,8 @@ test.describe("Footer & Status Display", () => {
     const footer = page.locator("#footer-status");
     const initialText = await footer.textContent();
 
-    // Navigate to sheet and study
+    // Navigate to skills then to a sheet
+    await page.goto("./skills");
     await page.locator(".sheet-card").first().click();
     await page.waitForURL(/.*sheet.*e201.*/);
 
@@ -193,7 +199,7 @@ test.describe("Responsive Design", () => {
   test("should be mobile-responsive", async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
-    await page.goto(".");
+    await page.goto("./skills");
 
     // Page should load without horizontal scroll
     const body = page.locator("body");
@@ -215,6 +221,7 @@ test.describe("Responsive Design", () => {
     await expect(page.locator(".today-headline")).toBeVisible();
 
     // Navigation should work
+    await page.goto("./skills");
     await page.locator(".sheet-card").first().click();
     await page.waitForURL(/.*sheet.*/);
     await expect(page.locator(".sheet-hero-title")).toBeVisible();
@@ -223,9 +230,9 @@ test.describe("Responsive Design", () => {
   test("should work on desktop size", async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto(".");
-
     await expect(page.locator(".today-headline")).toBeVisible();
 
+    await page.goto("./skills");
     const cards = page.locator(".sheet-card");
     const count = await cards.count();
     expect(count).toBeGreaterThan(0);
@@ -285,7 +292,7 @@ test.describe("Accessibility", () => {
   });
 
   test("should support keyboard navigation", async ({ page }) => {
-    await page.goto(".");
+    await page.goto("./skills");
 
     // Tab to first sheet card
     await page.keyboard.press("Tab");
