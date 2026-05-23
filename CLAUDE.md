@@ -158,6 +158,30 @@ Tests use **Vitest** + `@testing-library/preact` in jsdom.
 
 `README.md` tracks what's shipped (✅) and what's planned. Check it before starting any new feature.
 
+## Issue Queue
+
+Ordered by dependency and impact. Update status as work progresses.
+
+| # | Issue | Status | Notes |
+|---|-------|--------|-------|
+| 1 | [T-012 #48] Promote Critical Criteria to first-class mode on SheetView | ⬜ todo | Drill already built (T-017 done); just add mode card to SheetView.tsx |
+| 2 | [T-002 #38] Add /skills route + SkillsView (extract sheet grid from Home) | ⬜ todo | Prerequisite for all nav IA work (T-001 epic) |
+| 3 | [T-003 #39] Convert HomeView into Today dashboard | ⬜ todo | Requires T-002 first |
+| 4 | [T-019 #55] Achievement: "Auto-Fail Auditor" — master all critical criteria | ⬜ todo | Small addition to achievements.ts; independent |
+| 5 | [T-031 #67] Curate initial video list (3-5 physical-skill sheets) | ⬜ todo | Content-only; finalizes video epic |
+| 6 | [Exam Day #34] Vitals (Pulse, BP, RR) station skill sheet | ⬜ todo | Independent content addition |
+| 7 | [Exam Day #33] Suction station skill sheet | ⬜ todo | Independent content addition |
+| 8 | [Exam Day #32] 12-Lead ECG station skill sheet | ⬜ todo | Independent content addition |
+| 9 | [Exam Day #31] CPAP station skill sheet | ⬜ todo | Independent content addition |
+| 10 | [T-008 #44] Top nav rebuild: 4 tabs + settings icon | ⬜ todo | Requires T-002 + T-003 |
+| 11 | [T-010 #46] Build Learn mode (rebrand SRS flashcards) | ⬜ todo | Simple rebrand on SheetView |
+| 12 | [T-011 #47] Build adaptive Drill mode (rotate secorder/stepseq/whatnext) | ⬜ todo | New DrillView.tsx + pickNextDrill.ts |
+| 13 | [T-021 #57] Hero "next best action" card + recommendation engine | ⬜ todo | Requires T-003 |
+| 14 | [T-022 #58] 14-day activity strip component | ⬜ todo | Requires T-003 |
+| 15 | [T-023 #59] Inline streak + mastery + weekly reviews on Today | ⬜ todo | Requires T-003 |
+
+**Status key:** ⬜ todo · 🔄 in progress · ✅ done · ⏭ skipped
+
 ## Workflow
 
 For every task:
