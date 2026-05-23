@@ -21,7 +21,7 @@ function parseParts(parts: string[]): Route | null {
   if (parts[0] === "blsmeds") {
     return { view: "blsmeds", blsmedsTab: parts[1] || "reference" };
   }
-  if ((["home", "stats", "settings", "guide", "examday", "sources"] as string[]).includes(parts[0])) {
+  if ((["home", "stats", "settings", "guide", "examday", "sources", "skills"] as string[]).includes(parts[0])) {
     return { view: parts[0] as RouteView };
   }
   return null;

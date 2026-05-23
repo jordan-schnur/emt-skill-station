@@ -267,6 +267,7 @@ export type RouteView =
   | "mnemonics"
   | "medconditions"
   | "blsmeds"
+  | "skills"
   | "notFound";
 
 export type SheetTab =
