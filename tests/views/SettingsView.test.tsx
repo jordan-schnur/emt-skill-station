@@ -19,6 +19,11 @@ vi.mock("../../src/lib/chat", () => ({
   fetchModels: vi.fn().mockResolvedValue([{ id: "gpt-4o", label: "gpt-4o" }]),
 }));
 
+vi.mock("../../src/lib/firebase", () => ({
+  isFirebaseConfigured: false,
+  CloudSync: undefined,
+}));
+
 vi.mock("../../src/lib/storage", async () => {
   const actual = await vi.importActual<typeof import("../../src/lib/storage")>("../../src/lib/storage");
   return {
