@@ -58,7 +58,7 @@ test.describe("Navigation & Home View", () => {
   test("should display today hero panel", async ({ page }) => {
     const hero = page.locator(".today-card");
     await expect(hero).toBeVisible();
-    await expect(hero).toContainText("Start now");
+    await expect(hero).toContainText("Browse sheets");
   });
 
   test("should navigate back from sheet to home", async ({ page }) => {
@@ -270,13 +270,10 @@ test.describe("Exam Day View", () => {
     await expect(page).toHaveURL(/.*sheet.*/, { timeout: 5000 });
   });
 
-  test("should navigate to exam day from cog menu", async ({ page }) => {
+  test("should navigate to exam day from topnav", async ({ page }) => {
     await page.goto(".");
     await page.waitForLoadState("domcontentloaded");
-    const menuBtn = page.locator("#topbar-menu-btn");
-    await menuBtn.click();
-    const examDayBtn = page.locator("[data-nav='examday']");
-    await examDayBtn.click();
+    await page.locator(".topnav button", { hasText: "Exam Day" }).click();
     await expect(page.locator("h1")).toContainText("Exam Day");
   });
 });
