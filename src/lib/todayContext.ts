@@ -41,9 +41,10 @@ export function computeTodayContext(state: AppState, sheets: Sheet[]) {
 }
 
 export function reviewsThisWeek(log: Record<string, number> | undefined): number[] {
-  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const todayStr = new Date().toISOString().slice(0, 10);
   return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today); d.setDate(d.getDate() - (6 - i));
+    const d = new Date(todayStr);
+    d.setUTCDate(d.getUTCDate() - (6 - i));
     return (log ?? {})[d.toISOString().slice(0, 10)] ?? 0;
   });
 }
