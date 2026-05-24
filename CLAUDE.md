@@ -166,19 +166,20 @@ Ordered by dependency and impact. Update status as work progresses.
 |---|-------|--------|-------|
 | 1 | [T-012 #48] Promote Critical Criteria to first-class mode on SheetView | ✅ done | Wired in commit 4d9b733 alongside T-017 |
 | 2 | [T-002 #38] Add /skills route + SkillsView (extract sheet grid from Home) | ✅ done | |
-| 3 | [T-003 #39] Convert HomeView into Today dashboard | ⬜ todo | Requires T-002 first |
-| 4 | [T-019 #55] Achievement: "Auto-Fail Auditor" — master all critical criteria | ⬜ todo | Small addition to achievements.ts; independent |
-| 5 | [T-031 #67] Curate initial video list (3-5 physical-skill sheets) | ⬜ todo | Content-only; finalizes video epic |
-| 6 | [Exam Day #34] Vitals (Pulse, BP, RR) station skill sheet | ⬜ todo | Independent content addition |
-| 7 | [Exam Day #33] Suction station skill sheet | ⬜ todo | Independent content addition |
-| 8 | [Exam Day #32] 12-Lead ECG station skill sheet | ⬜ todo | Independent content addition |
-| 9 | [Exam Day #31] CPAP station skill sheet | ⬜ todo | Independent content addition |
-| 10 | [T-008 #44] Top nav rebuild: 4 tabs + settings icon | ⬜ todo | Requires T-002 + T-003 |
-| 11 | [T-010 #46] Build Learn mode (rebrand SRS flashcards) | ⬜ todo | Simple rebrand on SheetView |
-| 12 | [T-011 #47] Build adaptive Drill mode (rotate secorder/stepseq/whatnext) | ⬜ todo | New DrillView.tsx + pickNextDrill.ts |
-| 13 | [T-021 #57] Hero "next best action" card + recommendation engine | ⬜ todo | Requires T-003 |
-| 14 | [T-022 #58] 14-day activity strip component | ⬜ todo | Requires T-003 |
-| 15 | [T-023 #59] Inline streak + mastery + weekly reviews on Today | ⬜ todo | Requires T-003 |
+| 3 | [T-003 #39] Convert HomeView into Today dashboard | ✅ done | recommendNext engine, hero card, 14-day strip |
+| 4 | [T-019 #55] Achievement: "Auto-Fail Auditor" — master all critical criteria | ✅ done | |
+| 5 | [T-008 #44] Top nav rebuild: 4 tabs + settings icon | ✅ done | Note: mnemonics/blsmeds orphaned until T-024 lands |
+| 6 | [T-021 #57] Hero "next best action" card + recommendation engine | ✅ done | recommendNext.ts |
+| 7 | [T-022 #58] 14-day activity strip component | ✅ done | ActivityStrip.tsx |
+| 8 | [T-023 #59] Inline streak + mastery + weekly reviews on Today | ✅ done | |
+| 9 | [T-031 #67] Curate initial video list (3-5 physical-skill sheets) | ⬜ todo | Content-only; finalizes video epic |
+| 10 | [Exam Day #34] Vitals (Pulse, BP, RR) station skill sheet | ⬜ todo | Independent content addition |
+| 11 | [Exam Day #33] Suction station skill sheet | ⬜ todo | Independent content addition |
+| 12 | [Exam Day #32] 12-Lead ECG station skill sheet | ⬜ todo | Independent content addition |
+| 13 | [Exam Day #31] CPAP station skill sheet | ⬜ todo | Independent content addition |
+| 14 | [T-024 #60] Merged Reference view (Conditions / Mnemonics / Meds) | ⬜ todo | Restores mnemonics + blsmeds to nav under Reference tab |
+| 15 | [T-010 #46] Build Learn mode (rebrand SRS flashcards) | ⬜ todo | Simple rebrand on SheetView |
+| 16 | [T-011 #47] Build adaptive Drill mode (rotate secorder/stepseq/whatnext) | ⬜ todo | New DrillView.tsx + pickNextDrill.ts |
 
 **Status key:** ⬜ todo · 🔄 in progress · ✅ done · ⏭ skipped
 
