@@ -70,10 +70,11 @@ describe("HomeView", () => {
     expect(navigate).toHaveBeenCalledWith({ view: "skills" });
   });
 
-  it("'Start now' button navigates to a sheet", async () => {
+  it("'Start' button navigates to a sheet", async () => {
     const { navigate } = await import("../../src/store/appStore");
     render(<HomeView />);
-    fireEvent.click(screen.getByText("▶ Start now"));
+    const startBtn = screen.getByRole("button", { name: /▶ Start/i });
+    fireEvent.click(startBtn);
     expect(navigate).toHaveBeenCalledWith(
       expect.objectContaining({ view: "sheet", sheetId: "trauma-assessment" })
     );
@@ -92,6 +93,7 @@ describe("HomeView", () => {
   it("critical alert strip present when a sheet has criticalCriteria and mastery < 50%", () => {
     NREMT_DATA.sheets = [mockSheetWithCritical];
     render(<HomeView />);
-    expect(screen.getByText(/critical criteria/i)).toBeTruthy();
+    const matches = screen.getAllByText(/critical criteria/i);
+    expect(matches.length).toBeGreaterThan(0);
   });
 });

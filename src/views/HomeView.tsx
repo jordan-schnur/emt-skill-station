@@ -1,8 +1,9 @@
 import { appState, navigate } from "../store/appStore";
 import { NREMT_DATA } from "../data/sheets";
-import { suggestNextMode, computeTodayContext, reviewsThisWeek } from "../lib/todayContext";
-
-// ─── MasteryRing ──────────────────────────────────────────────────────────────
+import { computeTodayContext } from "../lib/todayContext";
+import { recommendNext } from "../lib/recommendNext";
+import { reviewsLast14Days } from "../lib/activity";
+import { ActivityStrip } from "../components/ActivityStrip";
 
 export function MasteryRing({ pct, size = 52, stroke = 5 }: { pct: number; size?: number; stroke?: number }) {
   const r = (size - stroke) / 2;
@@ -31,16 +32,14 @@ export function MasteryRing({ pct, size = 52, stroke = 5 }: { pct: number; size?
   );
 }
 
-// ─── Today hero ───────────────────────────────────────────────────────────────
-
 function TodayHero() {
   const state = appState.value;
   const sheets = NREMT_DATA.sheets;
 
   const ctx = computeTodayContext(state, sheets);
-  const target = ctx.lowestMasterySheet;
-  const nextMode = suggestNextMode(state, target);
-  const weekBars = reviewsThisWeek(state.stats.dailyReviewLog);
+  const rec = recommendNext(state, sheets);
+  const bars14 = reviewsLast14Days(state.stats.dailyReviewLog);
+  const total14 = bars14.reduce((a, b) => a + b, 0);
 
   const overallPct = ctx.overallMasteryPct;
   const masteredCount = ctx.sheetsAbove80;
@@ -48,31 +47,25 @@ function TodayHero() {
   const dateLabel = new Date().toLocaleDateString("en-US", {
     weekday: "long", month: "short", day: "numeric",
   }).toUpperCase();
-  const weekMax = Math.max(...weekBars, 1);
-  const weekTotal = weekBars.reduce((a, b) => a + b, 0);
-  const dayLetters = ["M", "T", "W", "T", "F", "S", "S"];
-  const todayDow = (new Date().getDay() + 6) % 7;
 
   const headline = masteredCount === sheets.length
     ? "All sheets mastered. Keep practicing to stay sharp."
     : masteredCount === 0
-    ? <>Let's get started. Begin with <strong>{target.shortTitle || target.title}</strong>.</>
-    : <>{masteredCount} of {sheets.length} sheets at 80%+. Next: <strong>{target.shortTitle || target.title}</strong>.</>;
+    ? <>Let's get started. Begin with <strong>{rec.sheet.shortTitle || rec.sheet.title}</strong>.</>
+    : <>{masteredCount} of {sheets.length} sheets at 80%+. Next: <strong>{rec.sheet.shortTitle || rec.sheet.title}</strong>.</>;
 
   return (
     <div class="today-row">
       <div class="today-card">
         <div class="today-eyebrow">{dateLabel}</div>
         <h1 class="today-headline">{headline}</h1>
-        <p class="today-suggestion">
-          Suggested: <strong>{nextMode.label}</strong>.
-        </p>
+        <p class="today-suggestion">{rec.justification}</p>
         <div class="today-actions">
           <button
             class="btn btn-primary btn-large"
-            onClick={() => navigate({ view: "sheet", sheetId: target.id, tab: nextMode.tab })}
+            onClick={() => navigate({ view: "sheet", sheetId: rec.sheet.id, tab: rec.tab })}
           >
-            ▶ Start now
+            ▶ Start {rec.label}
           </button>
           <button
             class="btn btn-ghost"
@@ -81,6 +74,7 @@ function TodayHero() {
             Browse sheets
           </button>
         </div>
+        <div class="today-meta">About {rec.durationMin} minutes.</div>
         {ctx.criticalAlertSheets.length > 0 && (
           <div class="today-critical">
             ⚠ {ctx.criticalAlertSheets.length} sheet{ctx.criticalAlertSheets.length > 1 ? "s" : ""} have critical criteria not yet mastered.
@@ -103,31 +97,16 @@ function TodayHero() {
           </div>
         </div>
         <div class="today-stats-card today-stats-week">
-          <div class="today-stats-label">THIS WEEK</div>
-          <div class="today-week-bars">
-            {weekBars.map((n, i) => {
-              const dow = (todayDow - (6 - i) + 7) % 7;
-              return (
-                <div class="today-week-col" key={i}>
-                  <div
-                    class={`today-week-bar${i === 6 ? " is-today" : ""}`}
-                    style={{ height: `${Math.max(3, Math.round(n / weekMax * 56))}px` }}
-                  />
-                  <div class="today-week-label">{dayLetters[dow]}</div>
-                </div>
-              );
-            })}
-          </div>
+          <div class="today-stats-label">LAST 14 DAYS</div>
+          <ActivityStrip log={state.stats.dailyReviewLog} />
           <div class="today-stats-value">
-            {weekTotal > 0 ? `${weekTotal} reviews this week` : `${state.stats.totalReviews} total reviews`}
+            {total14 > 0 ? `${total14} reviews in the last 14 days` : `${state.stats.totalReviews} total reviews`}
           </div>
         </div>
       </div>
     </div>
   );
 }
-
-// ─── HomeView ─────────────────────────────────────────────────────────────────
 
 export function HomeView() {
   return (
