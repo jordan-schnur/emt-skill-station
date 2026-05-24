@@ -107,28 +107,35 @@ html, body {
 .topnav {
   display: flex;
   gap: 2px;
-  margin-left: auto;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
 }
+.topnav::-webkit-scrollbar { display: none; }
 .topnav button {
   background: none;
   border: 0;
+  border-bottom: 2px solid transparent;
   color: var(--text-dim);
   padding: 10px 14px;
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   cursor: pointer;
   font: inherit;
   min-height: 44px;
   display: flex;
   align-items: center;
   touch-action: manipulation;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.1s, border-color 0.1s;
 }
-.topnav button:hover { background: var(--bg-elev-2); color: var(--text); }
+.topnav button:hover { color: var(--text); }
+.topnav button.active { color: var(--accent); border-bottom-color: var(--accent); }
 
 @media (max-width: 480px) {
   .topbar {
     padding: 10px 12px;
+    flex-wrap: nowrap;
   }
 
   .brand-mark {
@@ -136,16 +143,14 @@ html, body {
   }
 
   .topnav {
-    width: 100%;
-    order: 3;
-    gap: 4px;
+    flex: 1;
+    min-width: 0;
+    gap: 0;
   }
 
   .topnav button {
     padding: 8px 12px;
     font-size: 13px;
-    flex: 1;
-    text-align: center;
     min-height: 40px;
   }
 }
@@ -4112,12 +4117,12 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
 }
 .update-banner-dismiss:hover { opacity: 1; }
 
-/* -- topbar right: streak pill + cog menu ---------------------------- */
+/* -- topbar right: streak pill + settings button --------------------- */
 .topbar-right {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .streak-pill {
@@ -4133,8 +4138,7 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   white-space: nowrap;
 }
 
-.topbar-menu { position: relative; }
-.topbar-menu-btn {
+.topbar-settings-btn {
   width: 32px;
   height: 32px;
   border-radius: 999px;
@@ -4147,37 +4151,10 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   align-items: center;
   justify-content: center;
   transition: color 0.1s, border-color 0.1s;
+  flex-shrink: 0;
 }
-.topbar-menu-btn:hover { color: var(--text); border-color: var(--text-dim); }
-
-.topbar-menu-pop {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  background: var(--bg-elev);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 4px;
-  min-width: 180px;
-  box-shadow: var(--shadow);
-  display: none;
-  z-index: 60;
-}
-.topbar-menu.is-open .topbar-menu-pop { display: block; }
-.topbar-menu-pop button {
-  display: block;
-  width: 100%;
-  text-align: left;
-  background: transparent;
-  border: 0;
-  color: var(--text);
-  padding: 9px 12px;
-  border-radius: 6px;
-  font: inherit;
-  font-size: 14px;
-  cursor: pointer;
-}
-.topbar-menu-pop button:hover { background: var(--bg-elev-2); }
+.topbar-settings-btn:hover { color: var(--text); border-color: var(--text-dim); }
+.topbar-settings-btn.active { color: var(--accent); border-color: var(--accent); }
 
 @media (max-width: 480px) {
   .topbar-right { gap: 6px; }

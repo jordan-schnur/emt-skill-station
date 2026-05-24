@@ -1,6 +1,6 @@
 import type { JSX } from "preact";
 import { useEffect, useState } from "preact/hooks";
-import { route, appState, navigate, save } from "./store/appStore";
+import { route, appState, navigate } from "./store/appStore";
 import { parseHash, parseRoute, writePath } from "./router/router";
 import { Toast } from "./components/ui/Toast";
 import { Modal } from "./components/ui/Modal";
@@ -49,7 +49,7 @@ export function App() {
     if (footer) {
       footer.textContent = `${NREMT_DATA.sheets.length} sheets · ${NREMT_DATA.totalCards} cards · ${appState.value.stats.totalReviews} reviews logged`;
     }
-    for (const btn of document.querySelectorAll<HTMLElement>(".topnav button, .brand")) {
+    for (const btn of document.querySelectorAll<HTMLElement>(".topnav button, .brand, .topbar-settings-btn")) {
       btn.classList.toggle("active", btn.dataset["nav"] === r.view);
     }
     // Streak pill
@@ -88,34 +88,17 @@ export function App() {
 
   useEffect(() => {
     const entries: Array<[HTMLElement, () => void]> = [];
-    const navSel = ".topnav button, .topbar-menu-pop button, .footer-link, .brand";
+    const navSel = ".topnav button, .footer-link, .brand, .topbar-settings-btn";
     for (const btn of document.querySelectorAll<HTMLElement>(navSel)) {
       const tgt = btn.dataset["nav"] as Route["view"] | undefined;
       if (!tgt) continue;
-      const handler = () => {
-        navigate({ view: tgt });
-        // Close cog menu after navigation
-        document.getElementById("topbar-menu")?.classList.remove("is-open");
-      };
+      const handler = () => navigate({ view: tgt });
       btn.addEventListener("click", handler);
       entries.push([btn, handler]);
     }
 
-    // Cog menu toggle
-    const menuBtn = document.getElementById("topbar-menu-btn");
-    const menuEl = document.getElementById("topbar-menu");
-    const toggleMenu = (e: Event) => {
-      e.stopPropagation();
-      menuEl?.classList.toggle("is-open");
-    };
-    const closeMenu = () => menuEl?.classList.remove("is-open");
-    menuBtn?.addEventListener("click", toggleMenu);
-    document.addEventListener("click", closeMenu);
-
     return () => {
       entries.forEach(([btn, h]) => btn.removeEventListener("click", h));
-      menuBtn?.removeEventListener("click", toggleMenu);
-      document.removeEventListener("click", closeMenu);
     };
   }, []);
 
