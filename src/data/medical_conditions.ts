@@ -44,7 +44,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "respirations": "Normal to rapid",
       "keySign": "Diaphoresis (sweating)",
       "history": "Missed meal, too much insulin, excess exertion"
-    }
+    },
+    "compareWith": ["hyperglycemia"]
   },
   {
     "id": "hyperglycemia",
@@ -90,7 +91,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "respirations": "Kussmaul (rapid, deep) in DKA; otherwise normal",
       "keySign": "Fruity breath / dry skin / polydipsia",
       "history": "Missed insulin, illness, dietary excess"
-    }
+    },
+    "compareWith": ["hypoglycemia"]
   },
   {
     "id": "ami",
@@ -140,7 +142,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "edema": "Not present (unless concurrent CHF)",
       "keySign": "Chest pressure + diaphoresis + radiation",
       "history": "Cardiac risk factors; symptoms unrelieved by rest"
-    }
+    },
+    "compareWith": ["chf"]
   },
   {
     "id": "chf",
@@ -190,7 +193,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "edema": "Bilateral peripheral edema (ankles, shins)",
       "keySign": "Crackles + JVD + leg edema triad",
       "smokingHistory": "Not required; linked to hypertension/MI"
-    }
+    },
+    "compareWith": ["ami"]
   },
   {
     "id": "copd",
@@ -241,7 +245,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "keySign": "Barrel chest + smoking history + chronic productive cough",
       "smokingHistory": "Almost always present",
       "reversibility": "Limited — does not fully resolve with bronchodilators"
-    }
+    },
+    "compareWith": ["asthma"]
   },
   {
     "id": "asthma",
@@ -293,7 +298,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "keySign": "Bilateral wheeze + trigger + reverses with bronchodilators",
       "smokingHistory": "Not required; usually absent",
       "reversibility": "REVERSIBLE — clears significantly with bronchodilators"
-    }
+    },
+    "compareWith": ["copd"]
   },
   {
     "id": "pulmonary_embolism",
@@ -341,7 +347,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "cough": "Dry; possible hemoptysis",
       "keySign": "Sudden dyspnea + tachycardia, no fever, DVT risk",
       "breathSoundsSymmetry": "Equal (bilateral)"
-    }
+    },
+    "compareWith": ["pneumothorax", "pneumonia"]
   },
   {
     "id": "pneumothorax",
@@ -385,7 +392,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "cough": "Dry",
       "keySign": "Unilateral absent breath sounds + chest pain",
       "breathSoundsSymmetry": "UNEQUAL — defines pneumothorax"
-    }
+    },
+    "compareWith": ["pulmonary_embolism", "pneumonia"]
   },
   {
     "id": "pneumonia",
@@ -433,7 +441,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "cough": "Productive (purulent/colored sputum)",
       "keySign": "Fever + productive cough + crackles",
       "breathSoundsSymmetry": "May be unilateral or bilateral crackles"
-    }
+    },
+    "compareWith": ["pulmonary_embolism", "pneumothorax"]
   },
   {
     "id": "stroke",
@@ -483,7 +492,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "headache": "Possible (severe = hemorrhagic)",
       "keySign": "Persistent focal neuro deficit — FAST positive",
       "urgency": "Immediate — stroke center transport"
-    }
+    },
+    "compareWith": ["tia", "seizure"]
   },
   {
     "id": "tia",
@@ -527,7 +537,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "headache": "Usually absent",
       "keySign": "Stroke symptoms that resolved — still treat as emergency",
       "urgency": "Urgent — high near-term stroke risk"
-    }
+    },
+    "compareWith": ["stroke", "seizure"]
   },
   {
     "id": "seizure",
@@ -579,7 +590,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "headache": "Common post-ictally",
       "keySign": "Lateral tongue bite + incontinence + gradual post-ictal recovery",
       "urgency": "Urgent if first seizure, status, or trauma"
-    }
+    },
+    "compareWith": ["stroke", "tia"]
   },
   {
     "id": "allergic_reaction",
@@ -625,7 +637,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "shockSigns": "Absent",
       "keySign": "Localized reaction, stable vitals, no airway involvement",
       "epinephrine": "NOT indicated"
-    }
+    },
+    "compareWith": ["anaphylaxis"]
   },
   {
     "id": "anaphylaxis",
@@ -679,7 +692,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "shockSigns": "Present — tachycardia, hypotension, AMS",
       "keySign": "Airway compromise OR hypotension with allergic exposure",
       "epinephrine": "REQUIRED — first-line treatment"
-    }
+    },
+    "compareWith": ["allergic_reaction"]
   },
   {
     "id": "hypovolemic_shock",
@@ -727,7 +741,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "lungsounds": "Clear",
       "JVD": "Absent",
       "keySign": "Obvious fluid loss + tachycardia + pale clammy skin"
-    }
+    },
+    "compareWith": ["cardiogenic_shock", "septic_shock", "neurogenic_shock"]
   },
   {
     "id": "cardiogenic_shock",
@@ -771,7 +786,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "lungsounds": "CRACKLES (pulmonary edema)",
       "JVD": "May be present",
       "keySign": "Pulmonary edema + shock + cardiac history"
-    }
+    },
+    "compareWith": ["hypovolemic_shock", "septic_shock", "neurogenic_shock"]
   },
   {
     "id": "septic_shock",
@@ -817,7 +833,8 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "lungsounds": "Variable (may have pneumonia crackles if lungs are source)",
       "JVD": "Absent",
       "keySign": "Fever + infection source + shock"
-    }
+    },
+    "compareWith": ["hypovolemic_shock", "cardiogenic_shock", "neurogenic_shock"]
   },
   {
     "id": "neurogenic_shock",
@@ -864,6 +881,7 @@ export const MEDICAL_CONDITIONS: MedicalCondition[] = [
       "lungsounds": "Clear",
       "JVD": "Absent",
       "keySign": "Bradycardia + warm dry skin + spinal trauma"
-    }
+    },
+    "compareWith": ["hypovolemic_shock", "cardiogenic_shock", "septic_shock"]
   }
 ];
