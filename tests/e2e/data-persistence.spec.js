@@ -12,7 +12,7 @@ test.describe("Data Persistence & Storage", () => {
     context,
   }) => {
     // 1. Go to sheet and grade a card
-    await page.goto(".");
+    await page.goto("./#skills");
     await page.locator(".sheet-card").first().click();
     await page.waitForURL(/.*sheet.*e201.*/);
 
@@ -50,8 +50,8 @@ test.describe("Data Persistence & Storage", () => {
   test("should maintain mastery percentage across sessions", async ({
     page,
   }) => {
-    // Go to home
-    await page.goto(".");
+    // Go to skills view
+    await page.goto("./#skills");
 
     // Get initial mastery
     const firstCard = page.locator(".sheet-card").first();
@@ -79,9 +79,9 @@ test.describe("Data Persistence & Storage", () => {
       }
     }
 
-    // Go back to home
-    await page.locator("text=← All sheets").click();
-    await expect(page.locator(".today-headline")).toBeVisible({ timeout: 5000 });
+    // Go back to skills to check sheet cards
+    await page.goto("./#skills");
+    await page.waitForLoadState("networkidle");
 
     // Check mastery has changed
     const updatedCard = page.locator(".sheet-card").first();
@@ -94,7 +94,7 @@ test.describe("Data Persistence & Storage", () => {
   });
 
   test("should show drill progress after answering a What's Next question", async ({ page }) => {
-    await page.goto(".");
+    await page.goto("./#skills");
 
     // Navigate to the first sheet's What's Next? drill
     const firstCard = page.locator(".sheet-card").first();
@@ -109,9 +109,9 @@ test.describe("Data Persistence & Storage", () => {
     await choice.first().click();
     await page.waitForTimeout(400);
 
-    // Go back to home
-    await page.locator("text=← All sheets").click();
-    await expect(page.locator(".today-headline")).toBeVisible({ timeout: 5000 });
+    // Navigate to skills to check sheet cards
+    await page.goto("./#skills");
+    await page.waitForLoadState("networkidle");
 
     // Sheet card should still be visible and render correctly
     const updatedCard = page.locator(".sheet-card").first();
@@ -121,7 +121,7 @@ test.describe("Data Persistence & Storage", () => {
   });
 
   test("should persist notes across sessions", async ({ page }) => {
-    await page.goto(".");
+    await page.goto("./#skills");
     await page.locator(".sheet-card").first().click();
     await page.waitForURL(/.*sheet.*e201.*/);
 
@@ -157,7 +157,7 @@ test.describe("Data Persistence & Storage", () => {
   test("should handle data in multiple sheets independently", async ({
     page,
   }) => {
-    await page.goto(".");
+    await page.goto("./#skills");
 
     // Study first sheet
     let firstCard = page.locator(".sheet-card").nth(0);
@@ -178,8 +178,8 @@ test.describe("Data Persistence & Storage", () => {
       }
     }
 
-    // Go back
-    await page.goto(".");
+    // Go back to skills
+    await page.goto("./#skills");
 
     // Study second sheet (if available)
     const secondCard = page.locator(".sheet-card").nth(1);
@@ -202,7 +202,7 @@ test.describe("Data Persistence & Storage", () => {
       }
 
       // Both sheets should show progress independently
-      await page.goto(".");
+      await page.goto("./#skills");
       const cards = page.locator(".sheet-card");
       const card1Mastery = await cards.nth(0).textContent();
       const card2Mastery = await cards.nth(1).textContent();
@@ -215,7 +215,7 @@ test.describe("Data Persistence & Storage", () => {
 
 test.describe("Local Storage Inspection", () => {
   test("should store progress in localStorage after drill interaction", async ({ page }) => {
-    await page.goto(".");
+    await page.goto("./#skills");
 
     // Navigate to What's Next? drill and answer one question to trigger ctx.save()
     await page.locator(".sheet-card").first().click();
@@ -268,7 +268,7 @@ test.describe("Local Storage Inspection", () => {
   });
 
   test("should increment total reviews counter", async ({ page }) => {
-    await page.goto(".");
+    await page.goto("./#skills");
 
     // Get initial review count
     const initialReviews = await page.evaluate(() => {
@@ -306,7 +306,7 @@ test.describe("Local Storage Inspection", () => {
   });
 
   test("should maintain data through page navigation", async ({ page }) => {
-    await page.goto(".");
+    await page.goto("./#skills");
 
     // Store initial state
     const state1 = await page.evaluate(() => {
@@ -317,7 +317,7 @@ test.describe("Local Storage Inspection", () => {
     // Navigate around
     await page.locator(".sheet-card").first().click();
     await page.waitForURL(/.*sheet.*/);
-    await page.goto(".");
+    await page.goto("./#skills");
 
     // Check state is unchanged
     const state2 = await page.evaluate(() => {

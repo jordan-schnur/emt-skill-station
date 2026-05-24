@@ -106,6 +106,18 @@ const DEFS: AchievementDef[] = [
     id: "all_drills_three_sheets", name: "Triple Threat", desc: "Master all 5 drill types on 3 different sheets", icon: "🥇",
     check: (s) => NREMT_DATA.sheets.filter((sheet) => sheetFullyMastered(s, sheet)).length >= 3,
   },
+  {
+    id: "auto_fail_auditor",
+    name: "Auto-Fail Auditor",
+    desc: "Know all critical criteria cold on at least one sheet",
+    icon: "🚨",
+    check: (s) =>
+      NREMT_DATA.sheets.some(sheet => {
+        if (!sheet.criticalCriteria?.length) return false;
+        const records = s.drills?.critical?.[sheet.id] ?? {};
+        return sheet.criticalCriteria.every((_, i) => records[String(i)]?.grade === "know");
+      }),
+  },
   { id: "thousand_reviews",   name: "On the Clock",      desc: "Complete 1,000 card reviews",                        icon: "⏱️", check: (s) => s.stats.totalReviews >= 1000 },
   {
     id: "all_sheets_started", name: "Survey Complete", desc: "Study at least one card on every skill sheet", icon: "🗺️",

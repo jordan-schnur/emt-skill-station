@@ -49,9 +49,16 @@ function updateStreak(state: AppState): void {
   state.stats.lastStreakDay = today;
 }
 
+function updateDailyLog(state: AppState): void {
+  const today = new Date().toISOString().slice(0, 10);
+  if (!state.stats.dailyReviewLog) state.stats.dailyReviewLog = {};
+  state.stats.dailyReviewLog[today] = (state.stats.dailyReviewLog[today] ?? 0) + 1;
+}
+
 export function save(): void {
   const state = appState.value;
   updateStreak(state);
+  updateDailyLog(state);
   state.updatedAt = new Date().toISOString();
   storageSave(state);
   const newOnes = checkAchievements(state);

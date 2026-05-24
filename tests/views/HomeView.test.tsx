@@ -35,8 +35,29 @@ vi.mock("../../src/data/sheets", () => ({
 }));
 
 import { HomeView } from "../../src/views/HomeView";
+import { NREMT_DATA } from "../../src/data/sheets";
+
+const mockSheetWithCritical = {
+  id: "critical-sheet",
+  title: "Critical Sheet",
+  shortTitle: "Critical",
+  category: "Trauma",
+  totalPoints: 48,
+  timeLimit: "10 min",
+  sections: [
+    { name: "Scene Size-Up", header: true, steps: [{ text: "Step A", points: 1 }, { text: "Step B", points: 1 }] },
+  ],
+  criticalCriteria: ["Failure to assess airway"],
+  cards: [],
+};
+
+const originalSheets = [...NREMT_DATA.sheets];
 
 describe("HomeView", () => {
+  afterEach(() => {
+    NREMT_DATA.sheets = [...originalSheets];
+  });
+
   it("renders the today hero headline", () => {
     render(<HomeView />);
     expect(screen.getByRole("heading", { level: 1 })).toBeTruthy();
@@ -61,5 +82,16 @@ describe("HomeView", () => {
   it("shows overall mastery ring", () => {
     render(<HomeView />);
     expect(screen.getByLabelText(/0% mastery/)).toBeTruthy();
+  });
+
+  it("critical alert strip absent when no low-mastery critical-criteria sheets", () => {
+    render(<HomeView />);
+    expect(screen.queryByText(/critical criteria/i)).toBeNull();
+  });
+
+  it("critical alert strip present when a sheet has criticalCriteria and mastery < 50%", () => {
+    NREMT_DATA.sheets = [mockSheetWithCritical];
+    render(<HomeView />);
+    expect(screen.getByText(/critical criteria/i)).toBeTruthy();
   });
 });
