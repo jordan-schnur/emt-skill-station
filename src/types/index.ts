@@ -260,9 +260,7 @@ export interface AppState {
 export type RouteView =
   | "home"
   | "sheet"
-  | "stats"
   | "settings"
-  | "guide"
   | "examday"
   | "sources"
   | "chat"
