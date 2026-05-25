@@ -17,6 +17,7 @@ export function createEmptyState(): AppState {
     drills: { secorder: {}, stepseq: {}, whatnext: {}, blankrecall: {}, spokenscript: {}, critical: {} },
     achievements: {},
     mnemonics: {},
+    examinerSessions: {},
     chats: {},
     emsSrs: {},
     medcondSrs: {},
@@ -41,6 +42,12 @@ function mergeState(parsed: unknown): AppState {
     srs: (p["srs"] as AppState["srs"]) || {},
     achievements: { ...((p["achievements"] as AppState["achievements"]) || {}) },
     mnemonics: { ...((p["mnemonics"] as AppState["mnemonics"]) || {}) },
+    examinerSessions: Object.fromEntries(
+      Object.entries((p["examinerSessions"] as Record<string, Record<string, unknown>>) || {}).map(([k, v]) => [
+        k,
+        { debriefMessages: [], ...v },
+      ])
+    ) as unknown as AppState["examinerSessions"],
     chats: { ...((p["chats"] as AppState["chats"]) || {}) },
     emsSrs: { ...((p["emsSrs"] as AppState["emsSrs"]) || {}) },
     medcondSrs: { ...((p["medcondSrs"] as AppState["medcondSrs"]) || {}) },

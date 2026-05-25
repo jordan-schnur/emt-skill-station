@@ -13,6 +13,7 @@ import { MnemonicsView } from "./drills/MnemonicsView";
 import { CriticalCriteriaDrill } from "./drills/CriticalCriteriaDrill";
 import { DrillView } from "./drills/DrillView";
 import { ChatView } from "./ChatView";
+import { ExaminerView } from "./ExaminerView";
 import { NotFoundView } from "./NotFoundView";
 import { MasteryRing } from "./HomeView";
 import type { Sheet, SheetTab } from "../types";
@@ -366,7 +367,7 @@ export function SheetView() {
   else if (tab === "order")    tabContent = <SectionOrderDrill key={`${sheet.id}:order`} sheet={sheet} />;
   else if (tab === "steps")    tabContent = <StepSeqDrill key={`${sheet.id}:steps`} sheet={sheet} />;
   else if (tab === "mnemonics") tabContent = <MnemonicsView key={`${sheet.id}:mnemonics`} sheet={sheet} />;
-  else if (tab === "chat")     tabContent = <ChatView key={`${sheet.id}:chat`} sheetCtx={sheet} />;
+  else if (tab === "chat")     tabContent = <ExaminerView key={`${sheet.id}:chat`} sheet={sheet} />;
   else if (tab === "critical")  tabContent = <CriticalCriteriaDrill key={`${sheet.id}:critical`} sheet={sheet} />;
   else if (tab === "drill")    tabContent = <DrillView key={`${sheet.id}:drill`} sheet={sheet} />;
   else tabContent = null;

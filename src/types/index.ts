@@ -239,6 +239,69 @@ export interface SRSRecord {
   lastReviewed: string | null;
 }
 
+// ─── Examiner session types ───────────────────────────────────────────────────
+
+export interface VitalsRevealed {
+  hr: boolean;
+  bp: boolean;
+  rr: boolean;
+  spo2: boolean;
+  gcs: boolean;
+}
+
+export interface Big5Item {
+  id: "scene_safety" | "bsi" | "patients" | "moi" | "resources";
+  what: string;
+  quote: string;
+  done: boolean;
+}
+
+export interface CritItem {
+  idx: number;
+  body: string;
+  violated: boolean;
+}
+
+export interface ExaminerMessage {
+  id: string;
+  role: "user" | "examiner" | "system";
+  text: string;
+  ts: string;
+}
+
+export interface GeneratedScenario {
+  dispatch: string;
+  patient: {
+    age: number;
+    sex: "M" | "F";
+    chiefComplaint: string;
+    history: string;
+  };
+  vitals: {
+    hr: string;
+    bp: string;
+    rr: string;
+    spo2: string;
+    gcs: string;
+  };
+  timeLimitSec: number;
+}
+
+export interface ExaminerSession {
+  id: string;
+  sheetId: string;
+  createdAt: string;
+  status: "pre" | "active" | "debrief";
+  scenario: GeneratedScenario | null;
+  messages: ExaminerMessage[];
+  debriefMessages: ExaminerMessage[];
+  big5: Big5Item[];
+  crits: CritItem[];
+  vitalsRevealed: VitalsRevealed;
+  startedAt: number | null;
+  endedAt: number | null;
+}
+
 export interface AppState {
   version: 2;
   srs: Record<string, SRSRecord>;
@@ -247,6 +310,7 @@ export interface AppState {
   drills: Drills;
   achievements: Record<string, number>;
   mnemonics: Record<string, MnemonicData>;
+  examinerSessions: Record<string, ExaminerSession>;
   chats: Record<string, Chat>;
   emsSrs: Record<string, SRSRecord>;
   medcondSrs: Record<string, SRSRecord>;
