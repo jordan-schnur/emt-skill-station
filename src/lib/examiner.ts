@@ -76,6 +76,7 @@ export function createSession(sheetId: string, crits: string[]): ExaminerSession
     status: "pre",
     scenario: null,
     messages: [],
+    debriefMessages: [],
     big5: BIG5_ITEMS.map(b => ({ ...b, done: false })),
     crits: crits.map((body, idx) => ({ idx, body, violated: false })),
     vitalsRevealed: { hr: false, bp: false, rr: false, spo2: false, gcs: false },
@@ -106,7 +107,7 @@ export function buildScenarioPrompt(sheet: Sheet): { system: string; user: strin
     `- History must be medically accurate and internally consistent with the vitals and chief complaint.`,
     `- Do not include treatment decisions or outcomes in the scenario.`,
   ].join("\n");
-  return { system, user: "Generate a scenario now." };
+  return { system, user: `Generate a scenario now. Nonce: ${Math.random().toString(36).slice(2, 10)}` };
 }
 
 export function buildExaminerSystemPrompt(session: ExaminerSession, sheet: Sheet): string {
@@ -206,6 +207,7 @@ export async function callExaminerAI(
   messages: Array<{ role: "user" | "assistant"; content: string }>,
   systemPrompt: string,
   config: AIConfig,
+  temperature = 1.0,
 ): Promise<string> {
   if (config.provider === "anthropic") {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -219,6 +221,7 @@ export async function callExaminerAI(
       body: JSON.stringify({
         model: config.model,
         max_tokens: 400,
+        temperature,
         system: systemPrompt,
         messages,
       }),
@@ -237,6 +240,7 @@ export async function callExaminerAI(
     body: JSON.stringify({
       model: config.model,
       max_tokens: 400,
+      temperature,
       messages: [{ role: "system", content: systemPrompt }, ...messages],
     }),
   });
@@ -306,4 +310,40 @@ export function getPastSessions(state: AppState, sheetId: string): ExaminerSessi
   return Object.values(state.examinerSessions ?? {})
     .filter(s => s.sheetId === sheetId && s.status === "debrief")
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+export function buildDebriefSystemPrompt(session: ExaminerSession, sheet: Sheet): string {
+  const sc = session.scenario;
+  const big5Done = session.big5.filter(b => b.done);
+  const big5Missed = session.big5.filter(b => !b.done);
+  const violations = session.crits.filter(c => c.violated);
+  const d = computeDebrief(session);
+
+  const transcriptLines = session.messages
+    .filter(m => m.role !== "system")
+    .map(m => `${m.role === "examiner" ? "EXAMINER" : "CANDIDATE"}: ${m.text}`)
+    .join("\n");
+
+  return [
+    `You are an expert NREMT coach giving personalized feedback after a practice psychomotor exam.`,
+    `Skill station: ${sheet.title} (${sheet.id.toUpperCase()})`,
+    ``,
+    `EXAM RESULTS:`,
+    `Verdict: ${d.verdict === "pass" ? "PASS" : "FAIL"}`,
+    `Big 5 verbalized: ${big5Done.map(b => b.what).join(", ") || "none"}`,
+    `Big 5 missed: ${big5Missed.map(b => b.what).join(", ") || "none"}`,
+    `Critical criteria violations: ${violations.map(v => v.body).join("; ") || "none"}`,
+    `Time elapsed: ${Math.floor(d.elapsedSec / 60)}m ${d.elapsedSec % 60}s`,
+    sc ? `\nSCENARIO: ${sc.dispatch} Patient: ${sc.patient.age}yo ${sc.patient.sex === "M" ? "male" : "female"}, CC: ${sc.patient.chiefComplaint}` : "",
+    ``,
+    `EXAM TRANSCRIPT:`,
+    transcriptLines || "(no messages recorded)",
+    ``,
+    `INSTRUCTIONS:`,
+    `- Your first message should: state the verdict clearly, highlight 1-2 specific strengths, identify the most important thing to improve, and invite a follow-up question.`,
+    `- Keep the first message to 3-4 short paragraphs.`,
+    `- For follow-up questions: be specific, cite NREMT criteria, give actionable advice.`,
+    `- Be encouraging but honest. Don't sugarcoat missed critical criteria.`,
+    `- You may reference specific things the candidate said or didn't say from the transcript.`,
+  ].filter(Boolean).join("\n");
 }

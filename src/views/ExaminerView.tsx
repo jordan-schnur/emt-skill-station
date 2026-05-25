@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "preact/hooks";
 import { appState, mutateState, save, navigate } from "../store/appStore";
 import { getConfig } from "../lib/chat";
 import {
-  createSession, buildScenarioPrompt, buildExaminerSystemPrompt,
+  createSession, buildScenarioPrompt, buildExaminerSystemPrompt, buildDebriefSystemPrompt,
   callExaminerAI, parseAIResponse, computeDebrief,
   getActiveSession, getPreSession,
   BIG5_ITEMS,
@@ -226,12 +226,45 @@ function Composer({ onSend, onEnd, disabled }: { onSend: (text: string) => void;
   );
 }
 
+// ─── Debrief composer ─────────────────────────────────────────────────────────
+
+function DebriefComposer({ onSend, disabled }: { onSend: (text: string) => void; disabled: boolean }) {
+  const [text, setText] = useState("");
+  function handleKey(e: KeyboardEvent) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
+  }
+  function submit() {
+    const t = text.trim();
+    if (!t || disabled) return;
+    setText("");
+    onSend(t);
+  }
+  return (
+    <div class="examiner-composer">
+      <textarea
+        class="examiner-composer-input"
+        placeholder="Ask a follow-up about your performance…"
+        value={text}
+        onInput={(e) => setText((e.target as HTMLTextAreaElement).value)}
+        onKeyDown={handleKey}
+        disabled={disabled}
+        rows={2}
+      />
+      <button class="btn btn-primary examiner-send-btn" onClick={submit} disabled={disabled || !text.trim()}>
+        Send ⏎
+      </button>
+    </div>
+  );
+}
+
 // ─── Debrief ──────────────────────────────────────────────────────────────────
 
-function DebriefScreen({ session, sheet, onRetry }: {
+function DebriefScreen({ session, sheet, onRetry, typing, onDebriefSend }: {
   session: ExaminerSession;
   sheet: Sheet;
   onRetry: () => void;
+  typing: boolean;
+  onDebriefSend: (text: string) => void;
 }) {
   const d = computeDebrief(session);
   const pass = d.verdict === "pass";
@@ -297,6 +330,31 @@ function DebriefScreen({ session, sheet, onRetry }: {
         </section>
       </div>
 
+      <div class="debrief-coach-section">
+        <div class="debrief-coach-header">── AI Coach ──</div>
+        <div class="debrief-thread">
+          {session.debriefMessages.length === 0 && typing && (
+            <div class="examiner-msg examiner-msg-examiner">
+              <span class="msg-avatar">AI</span>
+              <div class="msg-bubble typing-indicator"><span /><span /><span /></div>
+            </div>
+          )}
+          {session.debriefMessages.map(m => (
+            <div key={m.id} class={`examiner-msg examiner-msg-${m.role}`}>
+              <span class="msg-avatar">{m.role === "examiner" ? "AI" : "YOU"}</span>
+              <div class="msg-bubble">{m.text}</div>
+            </div>
+          ))}
+          {session.debriefMessages.length > 0 && typing && (
+            <div class="examiner-msg examiner-msg-examiner">
+              <span class="msg-avatar">AI</span>
+              <div class="msg-bubble typing-indicator"><span /><span /><span /></div>
+            </div>
+          )}
+        </div>
+        <DebriefComposer onSend={onDebriefSend} disabled={typing} />
+      </div>
+
       <div class="debrief-actions">
         <button class="btn" onClick={onRetry}>Retry (new scenario)</button>
         <button class="btn btn-primary" onClick={() => navigate({ view: "sheet", sheetId: sheet.id, tab: "sheet" })}>
@@ -357,7 +415,7 @@ export function ExaminerView({ sheet }: { sheet: Sheet }) {
     const cfg = getConfig();
     try {
       const { system, user } = buildScenarioPrompt(sheet);
-      const raw = await callExaminerAI([{ role: "user", content: user }], system, cfg);
+      const raw = await callExaminerAI([{ role: "user", content: user }], system, cfg, 1.0);
       let scenario: ExaminerSession["scenario"];
       try {
         const jsonStart = raw.indexOf("{");
@@ -462,7 +520,7 @@ export function ExaminerView({ sheet }: { sheet: Sheet }) {
     }
   }
 
-  function handleEnd() {
+  async function handleEnd() {
     if (!session) return;
     mutateState(draft => {
       const s = draft.examinerSessions[session.id];
@@ -470,6 +528,32 @@ export function ExaminerView({ sheet }: { sheet: Sheet }) {
       s.endedAt = Date.now();
     });
     save();
+
+    const cfg = getConfig();
+    if (!cfg?.apiKey) return;
+    setTyping(true);
+    try {
+      const latestSession = appState.value.examinerSessions[session.id];
+      const systemPrompt = buildDebriefSystemPrompt(latestSession, sheet);
+      const raw = await callExaminerAI(
+        [{ role: "user", content: "Please give me my debrief." }],
+        systemPrompt,
+        cfg,
+      );
+      mutateState(draft => {
+        draft.examinerSessions[session.id].debriefMessages.push({
+          id: msgId(),
+          role: "examiner",
+          text: raw.trim(),
+          ts: new Date().toISOString(),
+        });
+      });
+      save();
+    } catch {
+      // Debrief works without AI — just no chat message
+    } finally {
+      setTyping(false);
+    }
   }
 
   function handleRetry() {
@@ -486,10 +570,40 @@ export function ExaminerView({ sheet }: { sheet: Sheet }) {
     setError(null);
   }
 
+  async function handleDebriefSend(text: string) {
+    if (!session) return;
+    setTyping(true);
+    mutateState(draft => {
+      draft.examinerSessions[session.id].debriefMessages.push({
+        id: msgId(), role: "user", text, ts: new Date().toISOString(),
+      });
+    });
+    save();
+    const cfg = getConfig();
+    try {
+      const latestSession = appState.value.examinerSessions[session.id];
+      const systemPrompt = buildDebriefSystemPrompt(latestSession, sheet);
+      const history = latestSession.debriefMessages
+        .filter(m => m.role !== "system")
+        .map(m => ({ role: m.role === "examiner" ? "assistant" as const : "user" as const, content: m.text }));
+      const raw = await callExaminerAI(history, systemPrompt, cfg);
+      mutateState(draft => {
+        draft.examinerSessions[session.id].debriefMessages.push({
+          id: msgId(), role: "examiner", text: raw.trim(), ts: new Date().toISOString(),
+        });
+      });
+      save();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "API error");
+    } finally {
+      setTyping(false);
+    }
+  }
+
   if (!session) return <div class="loading">Loading…</div>;
 
   if (session.status === "debrief") {
-    return <DebriefScreen session={session} sheet={sheet} onRetry={handleRetry} />;
+    return <DebriefScreen session={session} sheet={sheet} onRetry={handleRetry} typing={typing} onDebriefSend={handleDebriefSend} />;
   }
 
   if (session.status === "pre") {

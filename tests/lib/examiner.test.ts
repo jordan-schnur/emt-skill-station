@@ -5,6 +5,7 @@ import {
   createSession,
   buildScenarioPrompt,
   buildExaminerSystemPrompt,
+  buildDebriefSystemPrompt,
   getActiveSession,
   getPreSession,
   getPastSessions,
@@ -201,7 +202,7 @@ describe("buildScenarioPrompt", () => {
     expect(typeof system).toBe("string");
     expect(typeof user).toBe("string");
     expect(system.length).toBeGreaterThan(0);
-    expect(user).toBe("Generate a scenario now.");
+    expect(user).toMatch(/^Generate a scenario now\. Nonce: [a-z0-9]+$/);
   });
 
   it("includes the sheet title and id in the system prompt", () => {
@@ -316,5 +317,79 @@ describe("getPastSessions", () => {
     const result = getPastSessions(state, "e202");
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe(d1.id);
+  });
+});
+
+// ─── createSession ────────────────────────────────────────────────────────────
+
+describe("createSession", () => {
+  it("initializes debriefMessages as empty array", () => {
+    const session = createSession("e202", ["Crit A"]);
+    expect(session.debriefMessages).toEqual([]);
+  });
+});
+
+// ─── buildDebriefSystemPrompt ─────────────────────────────────────────────────
+
+describe("buildDebriefSystemPrompt", () => {
+  const SCENARIO = {
+    dispatch: "Dispatch to chest pain.",
+    patient: { age: 55, sex: "M" as const, chiefComplaint: "chest pain", history: "PMH HTN, hyperlipidemia" },
+    vitals: { hr: "104 bpm", bp: "156/92 mmHg", rr: "20 breaths/min", spo2: "94% RA", gcs: "15" },
+    timeLimitSec: 900,
+  };
+
+  it("includes sheet info and verdict in the prompt", () => {
+    const session = {
+      ...createSession("e202", ["Failure to take BSI"]),
+      scenario: SCENARIO,
+      startedAt: Date.now() - 300000,
+      endedAt: Date.now(),
+      status: "debrief" as const,
+    };
+    session.big5.forEach(b => { b.done = true; });
+    const prompt = buildDebriefSystemPrompt(session, MOCK_SHEET);
+    expect(prompt).toContain("PASS");
+    expect(prompt).toContain(MOCK_SHEET.title);
+    expect(prompt).toContain("E202");
+  });
+
+  it("lists missed Big 5 items when not done", () => {
+    const session = {
+      ...createSession("e202", []),
+      scenario: SCENARIO,
+      startedAt: Date.now() - 60000,
+      endedAt: Date.now(),
+      status: "debrief" as const,
+    };
+    const prompt = buildDebriefSystemPrompt(session, MOCK_SHEET);
+    expect(prompt).toContain("FAIL");
+    expect(prompt).toContain("Scene safety");
+  });
+
+  it("includes violation info when crits are violated", () => {
+    const session = {
+      ...createSession("e202", ["Failure to take BSI"]),
+      scenario: SCENARIO,
+      startedAt: Date.now() - 60000,
+      endedAt: Date.now(),
+      status: "debrief" as const,
+    };
+    session.crits[0].violated = true;
+    const prompt = buildDebriefSystemPrompt(session, MOCK_SHEET);
+    expect(prompt).toContain("Failure to take BSI");
+  });
+
+  it("handles session with no scenario", () => {
+    const session = {
+      ...createSession("e202", []),
+      scenario: null,
+      startedAt: Date.now() - 30000,
+      endedAt: Date.now(),
+      status: "debrief" as const,
+    };
+    const prompt = buildDebriefSystemPrompt(session, MOCK_SHEET);
+    expect(typeof prompt).toBe("string");
+    expect(prompt.length).toBeGreaterThan(0);
   });
 });

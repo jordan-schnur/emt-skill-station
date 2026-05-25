@@ -294,6 +294,7 @@ export interface ExaminerSession {
   status: "pre" | "active" | "debrief";
   scenario: GeneratedScenario | null;
   messages: ExaminerMessage[];
+  debriefMessages: ExaminerMessage[];
   big5: Big5Item[];
   crits: CritItem[];
   vitalsRevealed: VitalsRevealed;

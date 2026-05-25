@@ -5016,3 +5016,8 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
 .item-hint { font-size: 0.78rem; color: var(--ink-soft); font-style: italic; margin-top: 2px; }
 .debrief-actions { display: flex; gap: .75rem; flex-wrap: wrap; }
 @media (max-width: 600px) { .debrief-score-row { grid-template-columns: repeat(2, 1fr); } }
+
+/* Debrief AI Coach */
+.debrief-coach-section { display: flex; flex-direction: column; gap: .5rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+.debrief-coach-header { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); text-align: center; }
+.debrief-thread { display: flex; flex-direction: column; gap: .75rem; min-height: 80px; }
