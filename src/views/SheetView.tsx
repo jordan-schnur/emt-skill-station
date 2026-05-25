@@ -81,248 +81,163 @@ function SheetHero({ sheet, tab }: { sheet: Sheet; tab: SheetTab }) {
   );
 }
 
-// ─── Mode row ─────────────────────────────────────────────────────────────────
+// ─── Mode card ────────────────────────────────────────────────────────────────
 
 type ModeRowState = "done" | "active" | "progress" | "empty";
 
-interface ModeRowProps {
+interface ModeCardProps {
+  num: string;
   label: string;
   desc: string;
-  tab?: SheetTab;
-  rowState: ModeRowState;
-  badge?: string;
-  disabled?: boolean;
+  tab: SheetTab;
+  statusLine: string;
+  cardState: ModeRowState;
   critical?: boolean;
   sheetId: string;
 }
 
-function ModeRow({ label, desc, tab, rowState, badge, disabled, critical, sheetId }: ModeRowProps) {
+function ModeCard({ num, label, desc, tab, statusLine, cardState, critical, sheetId }: ModeCardProps) {
   const cls = [
-    "mode-row",
-    rowState === "done" ? "is-done" : "",
-    rowState === "active" ? "is-active" : "",
-    rowState === "progress" ? "is-progress" : "",
-    disabled ? "is-disabled" : "",
+    "mode-card",
+    cardState === "done" ? "is-done" : "",
+    cardState === "active" ? "is-active" : "",
     critical ? "is-critical" : "",
   ].filter(Boolean).join(" ");
 
   return (
-    <button
-      class={cls}
-      disabled={disabled}
-      onClick={!disabled && tab ? () => navigate({ view: "sheet", sheetId, tab }) : undefined}
-    >
-      <div class="mode-row-pill" />
-      <div class="mode-row-text">
-        <div class="mode-row-label">{label}</div>
-        <div class="mode-row-desc">{desc}</div>
+    <div class={cls} onClick={() => navigate({ view: "sheet", sheetId, tab })}>
+      <div class="mode-card-num">{num}</div>
+      <h4>{label}</h4>
+      <p>{desc}</p>
+      <div class="mode-card-go">
+        <span>{statusLine}</span>
+        <span class="arrow">→</span>
       </div>
-      {badge != null && <span class="mode-row-badge">{badge}</span>}
-    </button>
+    </div>
   );
 }
 
-// ─── Mode buckets ─────────────────────────────────────────────────────────────
+// ─── Secondary card ───────────────────────────────────────────────────────────
 
-function ModeBuckets({ sheet, currentTab }: { sheet: Sheet; currentTab: SheetTab }) {
+function SecCard({ title, desc, tab, sheetId }: { title: string; desc: string; tab: SheetTab; sheetId: string }) {
+  return (
+    <div class="sec-card" onClick={() => navigate({ view: "sheet", sheetId, tab })}>
+      <div class="sec-card-title">{title}</div>
+      <div class="sec-card-desc">{desc}</div>
+    </div>
+  );
+}
+
+// ─── Modes grid ───────────────────────────────────────────────────────────────
+
+function ModesGrid({ sheet, currentTab }: { sheet: Sheet; currentTab: SheetTab }) {
   const state = appState.value;
 
-  // Compute badge values
-  const secRec = state.drills?.secorder?.[sheet.id];
-  const orderBadge = secRec?.mastered ? "✓"
-    : secRec && secRec.streak > 0 ? `${secRec.streak}/${MASTERY_RUNS}`
-    : undefined;
-  const orderState: ModeRowState = currentTab === "order" ? "active"
-    : secRec?.mastered ? "done"
-    : secRec && secRec.streak > 0 ? "progress"
-    : "empty";
+  const totalSteps = sheet.sections.reduce((acc, s) => acc + s.steps.length, 0);
 
+  const secRec = state.drills?.secorder?.[sheet.id];
   const drillable = sheet.sections.filter((s) => s.steps.length >= 2);
   const seqRecs = state.drills?.stepseq?.[sheet.id] ?? {};
   const stepsMastered = drillable.filter((s) => seqRecs[s.name]?.mastered).length;
-  const stepsBadge = drillable.length === 0 ? undefined
-    : stepsMastered === drillable.length && drillable.length > 0 ? "✓"
-    : `${stepsMastered}/${drillable.length}`;
-  const stepsState: ModeRowState = currentTab === "steps" ? "active"
-    : stepsMastered === drillable.length && drillable.length > 0 ? "done"
-    : stepsMastered > 0 ? "progress"
-    : "empty";
-
   const wnRec = state.drills?.whatnext?.[sheet.id];
-  const wnBadge = wnRec?.mastered ? "✓"
-    : wnRec && wnRec.streak > 0 ? `${wnRec.streak}/${MASTERY_RUNS}`
-    : undefined;
-  const wnState: ModeRowState = currentTab === "whatnext" ? "active"
-    : wnRec?.mastered ? "done"
-    : wnRec && wnRec.streak > 0 ? "progress"
+
+  const drillAllMastered =
+    (secRec?.mastered || sheet.sections.length <= 1) &&
+    (drillable.length === 0 || stepsMastered === drillable.length) &&
+    wnRec?.mastered === true;
+  const drillAnyProgress =
+    (secRec && secRec.streak > 0) ||
+    stepsMastered > 0 ||
+    (wnRec && wnRec.streak > 0);
+
+  const drillCardState: ModeRowState =
+    ["order", "steps", "whatnext"].includes(currentTab) ? "active"
+    : drillAllMastered ? "done"
+    : drillAnyProgress ? "progress"
     : "empty";
 
-  const brRec = state.drills?.blankrecall?.[sheet.id];
-  const brBadge = brRec && brRec.bestPct > 0 ? `${brRec.bestPct}%` : undefined;
-  const brState: ModeRowState = currentTab === "recall" ? "active"
-    : (brRec?.bestPct ?? 0) >= 90 ? "done"
-    : (brRec?.bestPct ?? 0) > 0 ? "progress"
-    : "empty";
-
-  const ssRec = state.drills?.spokenscript?.[sheet.id];
-  const ssBadge = ssRec?.mastered ? "✓"
-    : ssRec && ssRec.streak > 0 ? `${ssRec.streak}/${MASTERY_RUNS}`
-    : undefined;
-  const ssState: ModeRowState = currentTab === "script" ? "active"
-    : ssRec?.mastered ? "done"
-    : ssRec && ssRec.streak > 0 ? "progress"
-    : "empty";
+  let drillStatusLine = "Start drilling";
+  if (secRec && secRec.streak > 0 && !secRec.mastered) {
+    drillStatusLine = `Order ${secRec.streak}/${MASTERY_RUNS}`;
+  } else if (stepsMastered > 0 && stepsMastered < drillable.length) {
+    drillStatusLine = `Steps ${stepsMastered}/${drillable.length}`;
+  } else if (drillAllMastered) {
+    drillStatusLine = "All drills mastered";
+  }
 
   const critRecs = state.drills?.critical?.[sheet.id] ?? {};
   const critKnown = sheet.criticalCriteria.filter(
     (_, i) => critRecs[String(i)]?.grade === "know"
   ).length;
   const critTotal = sheet.criticalCriteria.length;
-  const critBadge =
-    critTotal > 0
-      ? critKnown === critTotal
-        ? "✓"
-        : `${critKnown}/${critTotal}`
-      : undefined;
-  const critState: ModeRowState =
+  const critCardState: ModeRowState =
     currentTab === "critical" ? "active"
     : critKnown === critTotal && critTotal > 0 ? "done"
     : critKnown > 0 ? "progress"
     : "empty";
 
-  const learnActive = ["sheet", "mnemonics", "script"].includes(currentTab);
-  const drillActive = ["order", "steps", "whatnext", "critical", "drill"].includes(currentTab);
-  const proveActive = ["recall", "notes", "chat"].includes(currentTab);
+  const learnCardState: ModeRowState =
+    ["sheet", "mnemonics"].includes(currentTab) ? "active" : "empty";
+
+  const noteCount = Object.keys(state.notes?.step ?? {}).filter(k => k.startsWith(sheet.id + ":")).length;
 
   return (
-    <div class="mode-buckets">
-      {/* Column 1 — Learn */}
-      <div class={`mode-bucket${learnActive ? " is-active" : ""}`}>
-        <div class="mode-bucket-head">
-          <div class="mode-bucket-icon">📖</div>
-          <div>
-            <div class="mode-bucket-step">STEP 1</div>
-            <div class="mode-bucket-name">Learn the sheet</div>
-          </div>
-        </div>
-        <ModeRow
-          label="Full Sheet"
-          desc="Read every step and section"
+    <>
+      <div class="modes-grid">
+        <ModeCard
+          num="01 · Foundation"
+          label="Learn"
+          desc="Read the full sheet and study each step. Mnemonics available."
           tab="sheet"
-          rowState={currentTab === "sheet" ? "active" : "empty"}
+          statusLine={`${totalSteps} steps`}
+          cardState={learnCardState}
           sheetId={sheet.id}
         />
-        <ModeRow
-          label="Mnemonics"
-          desc="AI-generated memory hooks"
-          tab="mnemonics"
-          rowState={currentTab === "mnemonics" ? "active" : "empty"}
+        <ModeCard
+          num="02 · Recall"
+          label="Drill"
+          desc="Adaptive sequence drill — rotates section order, step order, and what's next based on what you've missed."
+          tab="order"
+          statusLine={drillStatusLine}
+          cardState={drillCardState}
           sheetId={sheet.id}
         />
-        <ModeRow
-          label="Spoken Script"
-          desc="Verbalize what you'd say aloud"
-          tab="script"
-          rowState={ssState}
-          badge={ssBadge}
-          sheetId={sheet.id}
-        />
-      </div>
-
-      {/* Column 2 — Drill */}
-      <div class={`mode-bucket${drillActive ? " is-active" : ""}`}>
-        <div class="mode-bucket-head">
-          <div class="mode-bucket-icon">🔁</div>
-          <div>
-            <div class="mode-bucket-step">STEP 2</div>
-            <div class="mode-bucket-name">Drill until automatic</div>
-          </div>
-        </div>
-        <ModeRow
-          label="Adaptive Drill"
-          desc="Engine picks your weakest drill automatically"
-          tab="drill"
-          rowState={currentTab === "drill" ? "active" : "empty"}
-          sheetId={sheet.id}
-        />
-        {sheet.sections.length > 1 && (
-          <ModeRow
-            label="Section Order"
-            desc="Drag sections into correct exam order"
-            tab="order"
-            rowState={orderState}
-            badge={orderBadge}
-            sheetId={sheet.id}
-          />
-        )}
-        <ModeRow
-          label="Step Sequence"
-          desc="Drag steps into correct order per section"
-          tab="steps"
-          rowState={stepsState}
-          badge={stepsBadge}
-          sheetId={sheet.id}
-        />
-        <ModeRow
-          label="What's Next?"
-          desc="4-choice: pick the step that follows"
-          tab="whatnext"
-          rowState={wnState}
-          badge={wnBadge}
-          sheetId={sheet.id}
-        />
-        <ModeRow
+        <ModeCard
+          num="03 · Exam-critical"
           label="Critical Criteria"
-          desc="Auto-fail behaviors — must be reflexes"
+          desc="Just the auto-fail behaviors. Any one of these fails you on the NREMT — regardless of everything else."
           tab="critical"
-          rowState={critState}
-          badge={critBadge}
+          statusLine={`${critTotal} criteria · ${critKnown} known cold`}
+          cardState={critCardState}
           critical
           sheetId={sheet.id}
         />
       </div>
-
-      {/* Column 3 — Prove */}
-      <div class={`mode-bucket${proveActive ? " is-active" : ""}`}>
-        <div class="mode-bucket-head">
-          <div class="mode-bucket-icon">🎯</div>
-          <div>
-            <div class="mode-bucket-step">STEP 3</div>
-            <div class="mode-bucket-name">Prove mastery</div>
-          </div>
-        </div>
-        <ModeRow
-          label="Blank Recall"
-          desc="Type every step from memory"
-          tab="recall"
-          rowState={brState}
-          badge={brBadge}
+      <div class="section-head" style="margin-top: 32px;">
+        <h3>Reference</h3>
+        <span class="section-meta">No drilling — just look things up</span>
+      </div>
+      <div class="secondary-grid">
+        <SecCard
+          title="Full sheet"
+          desc="All sections, steps, points, and critical criteria in one scrollable view."
+          tab="sheet"
           sheetId={sheet.id}
         />
-        <ModeRow
-          label="Timed Simulation"
-          desc="Full station run with countdown"
-          rowState="empty"
-          badge="soon"
-          disabled
-          sheetId={sheet.id}
-        />
-        <ModeRow
-          label="Notes"
-          desc="Free-form study notes"
+        <SecCard
+          title="My notes"
+          desc={`${noteCount} note${noteCount === 1 ? "" : "s"} attached to steps on this sheet.`}
           tab="notes"
-          rowState={currentTab === "notes" ? "active" : "empty"}
           sheetId={sheet.id}
         />
-        <ModeRow
-          label="AI Chat"
-          desc="Q&A or examiner role-play"
+        <SecCard
+          title="Practice with examiner"
+          desc="AI roleplay of the station for this sheet."
           tab="chat"
-          rowState={currentTab === "chat" ? "active" : "empty"}
           sheetId={sheet.id}
         />
       </div>
-    </div>
+    </>
   );
 }
 
@@ -436,7 +351,7 @@ export function SheetView() {
         <button class="btn-link" onClick={() => navigate({ view: "home" })}>← All sheets</button>
       </div>
       <SheetHero sheet={sheet} tab={tab} />
-      <ModeBuckets sheet={sheet} currentTab={tab} />
+      <ModesGrid sheet={sheet} currentTab={tab} />
       <QuickJump sheet={sheet} current={tab} />
       <VideosSection sheet={sheet} />
       <div class="tab-content">{tabContent}</div>
