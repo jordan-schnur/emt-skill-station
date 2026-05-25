@@ -16,7 +16,10 @@ export function ReferenceView() {
 
   return (
     <div class="ref-wrap">
-      <div class="ref-tab-strip">
+      <div class="eyebrow">Reference</div>
+      <h1 class="page-title">Look it up.</h1>
+      <p class="page-sub">Conditions, mnemonics, and BLS medications — browse or quiz yourself.</p>
+      <div class="ref-tabs">
         {TABS.map(t => (
           <button
             key={t.id}
