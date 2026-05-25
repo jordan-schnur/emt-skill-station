@@ -132,7 +132,7 @@ export function ReferenceView({ sheet }: Props) {
           <span class="ref-section-count">auto-fail</span>
         </summary>
         <ul class="critical-list">
-          {sheet.criticalCriteria.map((cc, i) => <li key={i}>{cc}</li>)}
+          {sheet.criticalCriteria.map((cc, i) => <li key={i}>{cc.text}</li>)}
         </ul>
       </details>
     </div>

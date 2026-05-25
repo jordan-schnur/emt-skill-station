@@ -8,6 +8,18 @@ import {
 } from "../../lib/criticalSrs";
 import type { Sheet, CriticalGrade } from "../../types";
 
+function PearlToggle({ pearl }: { pearl: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <button class="crit-pearl-toggle" onClick={() => setOpen(!open)}>
+        Why this matters {open ? "▴" : "▾"}
+      </button>
+      {open && <div class="crit-pearl-body">{pearl}</div>}
+    </div>
+  );
+}
+
 export function CriticalCriteriaDrill({ sheet }: { sheet: Sheet }) {
   const criteriaIds = sheet.criticalCriteria.map((_, i) => String(i));
 
@@ -149,6 +161,7 @@ export function CriticalCriteriaDrill({ sheet }: { sheet: Sheet }) {
 
   const currentId = queue[queueIndex];
   const currentIndex = parseInt(currentId);
+  const currentCriterion = sheet.criticalCriteria[currentIndex];
 
   return (
     <div class="drill-pane">
@@ -178,7 +191,7 @@ export function CriticalCriteriaDrill({ sheet }: { sheet: Sheet }) {
       <ol class="critical-list">
         {criteriaIds.map((id) => {
           const idx = parseInt(id);
-          const text = sheet.criticalCriteria[idx];
+          const criterion = sheet.criticalCriteria[idx];
           const isCurrent = id === currentId;
           const itemGrade = records[id]?.grade ?? null;
 
@@ -194,7 +207,10 @@ export function CriticalCriteriaDrill({ sheet }: { sheet: Sheet }) {
               {isCurrent && !revealed ? (
                 <span class="critical-list-blank">???</span>
               ) : (
-                <span class={isCurrent ? "critical-list-revealed" : ""}>{text}</span>
+                <span class={isCurrent ? "critical-list-revealed" : ""}>{criterion.text}</span>
+              )}
+              {isCurrent && revealed && currentCriterion.pearl && (
+                <PearlToggle pearl={currentCriterion.pearl} />
               )}
             </li>
           );

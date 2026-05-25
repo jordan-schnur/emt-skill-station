@@ -72,7 +72,11 @@ describe("createSession", () => {
   });
 
   it("initializes crits from criticalCriteria array", () => {
-    const crits = ["Failure A", "Failure B", "Failure C"];
+    const crits = [
+      { text: "Failure A", pearl: null },
+      { text: "Failure B", pearl: null },
+      { text: "Failure C", pearl: null },
+    ];
     const session = createSession("e201", crits);
     expect(session.crits).toHaveLength(3);
     expect(session.crits[0]).toEqual({ idx: 0, body: "Failure A", violated: false });

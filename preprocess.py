@@ -499,6 +499,295 @@ SHEETS = [
             ]},
         ],
     },
+    {
+        "id": "e218",
+        "title": "CPAP Administration",
+        "shortTitle": "CPAP",
+        "category": "Airway / Breathing",
+        "sheetType": "station-guide",
+        "noPdf": True,
+        "totalPoints": 12,
+        "timeLimit": None,
+        "sections": [
+            {
+                "name": "PPE & Scene",
+                "header": False,
+                "steps": [
+                    {"text": "Takes or verbalizes appropriate BSI/PPE precautions", "points": 1},
+                ],
+            },
+            {
+                "name": "Indication & Contraindication Check",
+                "header": True,
+                "steps": [
+                    {"text": "Performs primary assessment and identifies respiratory distress", "points": 1},
+                    {"text": "Verifies indications: SpO2 < 94%, increased work of breathing, suspected pulmonary edema or COPD exacerbation", "points": 1},
+                    {"text": "Rules out contraindications: apnea, inability to follow commands, facial trauma, vomiting, BP < 90 mmHg systolic, respiratory rate < 8/min", "points": 1},
+                    {"text": "Obtains patient cooperation and explains the procedure", "points": 1},
+                ],
+            },
+            {
+                "name": "Device Setup",
+                "header": True,
+                "steps": [
+                    {"text": "Assembles CPAP unit and connects to O2 source at 10–15 LPM", "points": 1},
+                    {"text": "Sets PEEP valve to appropriate pressure (typically 5 cm H2O per local protocol)", "points": 1},
+                ],
+            },
+            {
+                "name": "Application",
+                "header": True,
+                "steps": [
+                    {"text": "Selects correct mask size and applies snugly over nose and mouth", "points": 1},
+                    {"text": "Secures mask with head straps, ensuring an adequate seal with no significant leak", "points": 1},
+                ],
+            },
+            {
+                "name": "Reassessment",
+                "header": True,
+                "steps": [
+                    {"text": "Reassesses patient response: SpO2, work of breathing, mental status, and lung sounds", "points": 1},
+                    {"text": "Adjusts PEEP or flow rate if patient deteriorates; prepares for BVM if CPAP fails", "points": 1},
+                    {"text": "Documents intervention, device settings, and patient response", "points": 1},
+                ],
+            },
+        ],
+        "criticalCriteria": [
+            {
+                "text": "Failure to rule out contraindications before applying CPAP",
+                "pearl": "Applying CPAP to a vomiting, apneic, or hypotensive patient can cause aspiration or worsen shock. State each contraindication check aloud — examiners need to hear your reasoning, not just watch you apply the mask.",
+            },
+            {
+                "text": "Applies CPAP to an apneic or unresponsive patient",
+                "pearl": "CPAP requires the patient to breathe spontaneously and protect their own airway. An unconscious patient needs a BVM, not CPAP. If the patient becomes unresponsive during treatment, remove the mask immediately and ventilate.",
+            },
+            {
+                "text": "Failure to reassess patient after CPAP application",
+                "pearl": "CPAP can help or harm within minutes. Check SpO2, RR, mental status, and lung sounds at least once after application. If SpO2 drops or work of breathing worsens, the patient may need BVM or ALS backup.",
+            },
+            {
+                "text": "Failure to obtain patient cooperation before applying the mask",
+                "pearl": "A panicked patient fighting the mask gets no benefit and risks injury. Take 30 seconds to explain what you’re doing. ‘This will make breathing easier — I need you to breathe with the mask.’ Compliance is part of the skill.",
+            },
+        ],
+    },
+    {
+        "id": "e219",
+        "title": "Oropharyngeal Suctioning",
+        "shortTitle": "Suction",
+        "category": "Airway / Breathing",
+        "sheetType": "station-guide",
+        "noPdf": True,
+        "totalPoints": 12,
+        "timeLimit": None,
+        "sections": [
+            {
+                "name": "PPE & Equipment",
+                "header": False,
+                "steps": [
+                    {"text": "Takes or verbalizes appropriate BSI/PPE precautions (gloves and eye protection)", "points": 1},
+                ],
+            },
+            {
+                "name": "Setup",
+                "header": True,
+                "steps": [
+                    {"text": "Turns on suction device and confirms adequate suction (≥ 300 mmHg negative pressure)", "points": 1},
+                    {"text": "Selects rigid Yankauer catheter for oral secretion suctioning", "points": 1},
+                    {"text": "Measures catheter depth (corner of mouth to earlobe)", "points": 1},
+                ],
+            },
+            {
+                "name": "Pre-Suction",
+                "header": True,
+                "steps": [
+                    {"text": "Pre-oxygenates patient for at least 30 seconds with 100% O2 if SpO2 and time allow", "points": 1},
+                    {"text": "Positions patient: head-tilt or left lateral recumbent if unable to protect airway", "points": 1},
+                ],
+            },
+            {
+                "name": "Suctioning",
+                "header": True,
+                "steps": [
+                    {"text": "Opens airway with head-tilt chin-lift (or jaw thrust if spinal injury suspected)", "points": 1},
+                    {"text": "Inserts catheter to measured depth without applying suction", "points": 1},
+                    {"text": "Applies suction while withdrawing catheter in a rotating motion; limits each attempt to 15 seconds", "points": 1},
+                ],
+            },
+            {
+                "name": "Post-Suction",
+                "header": True,
+                "steps": [
+                    {"text": "Re-oxygenates patient between suction attempts", "points": 1},
+                    {"text": "Reassesses airway, breath sounds, SpO2, and level of consciousness", "points": 1},
+                    {"text": "Documents findings, number of suction attempts, and patient response", "points": 1},
+                ],
+            },
+        ],
+        "criticalCriteria": [
+            {
+                "text": "Suctioning for longer than 15 seconds per attempt without re-oxygenating",
+                "pearl": "Every second of suction removes both secretions and O2. Hypoxia can cause bradycardia and cardiac arrest in seconds. Set a mental or physical timer — 15 seconds max, then pull out and oxygenate before the next attempt.",
+            },
+            {
+                "text": "Failure to pre-oxygenate the patient before suctioning",
+                "pearl": "Pre-oxygenation raises the O2 reserve so the brief hypoxia of suctioning doesn’t bottom out SpO2. Verbalize ‘100% O2 for 30 seconds’ before you reach for the catheter — especially in patients already hypoxic.",
+            },
+            {
+                "text": "Failure to reassess airway and SpO2 after suctioning",
+                "pearl": "Suctioning can clear secretions or stimulate vasovagal bradycardia. Check breath sounds, SpO2, and mental status immediately after. If SpO2 dropped or rhythm changed, report it and manage it.",
+            },
+            {
+                "text": "Applying suction while inserting the catheter",
+                "pearl": "Suction on insertion creates mucosal trauma and can pull tissue into the catheter tip. Insert to depth with suction off, then apply suction only while withdrawing. This is a technique point examiners watch closely.",
+            },
+        ],
+    },
+    {
+        "id": "e220",
+        "title": "Vital Signs Assessment",
+        "shortTitle": "Vitals",
+        "category": "Patient Assessment",
+        "sheetType": "station-guide",
+        "noPdf": True,
+        "totalPoints": 14,
+        "timeLimit": None,
+        "sections": [
+            {
+                "name": "PPE & Setup",
+                "header": False,
+                "steps": [
+                    {"text": "Takes or verbalizes appropriate BSI/PPE precautions", "points": 1},
+                    {"text": "Positions patient comfortably seated or supine", "points": 1},
+                ],
+            },
+            {
+                "name": "Radial Pulse",
+                "header": True,
+                "steps": [
+                    {"text": "Locates radial pulse with 2–3 fingertips at the wrist", "points": 1},
+                    {"text": "Counts pulse for at least 30 seconds and multiplies by 2 (or full 60 seconds if irregular)", "points": 1},
+                    {"text": "Assesses and reports rate, rhythm (regular/irregular), and quality (strong/weak/thready)", "points": 1},
+                ],
+            },
+            {
+                "name": "Blood Pressure",
+                "header": True,
+                "steps": [
+                    {"text": "Selects appropriate BP cuff size and applies it 1 inch above the antecubital fossa", "points": 1},
+                    {"text": "Estimates systolic pressure by palpation: inflates cuff until radial pulse disappears, then adds 30 mmHg", "points": 1},
+                    {"text": "Places stethoscope bell or diaphragm over brachial artery", "points": 1},
+                    {"text": "Deflates cuff at 2–3 mmHg/second; records systolic (first Korotkoff sound) and diastolic (sounds cease)", "points": 1},
+                    {"text": "Reports blood pressure accurately in mmHg (systolic/diastolic)", "points": 1},
+                ],
+            },
+            {
+                "name": "Respirations",
+                "header": True,
+                "steps": [
+                    {"text": "Assesses respirations without alerting patient (may keep fingers on wrist after pulse check)", "points": 1},
+                    {"text": "Counts breaths for at least 30 seconds and multiplies by 2", "points": 1},
+                    {"text": "Assesses and reports rate, rhythm, and depth (shallow/normal/deep)", "points": 1},
+                ],
+            },
+            {
+                "name": "Pulse Oximetry",
+                "header": True,
+                "steps": [
+                    {"text": "Applies pulse oximeter probe to appropriate digit or site", "points": 1},
+                    {"text": "Waits for stable waveform and reports SpO2 percentage", "points": 1},
+                ],
+            },
+        ],
+        "criticalCriteria": [
+            {
+                "text": "Reporting inaccurate vital signs (off by more than acceptable range)",
+                "pearl": "Accuracy matters clinically and on the exam. Practice until you can reliably land within ±4 mmHg on BP and ±2/min on pulse/RR. Examiners use a reference patient — report what you actually hear, never guess.",
+            },
+            {
+                "text": "Failure to assess all required vital signs (pulse, BP, and respirations at minimum)",
+                "pearl": "Skipping one vital sign fails this station. Even if SpO2 is unavailable, pulse + BP + RR are mandatory. Make it a habit to verbalize each finding as you complete it so the examiner can score you.",
+            },
+            {
+                "text": "Alerting the patient before counting respirations",
+                "pearl": "Telling a patient you’re watching their breathing immediately changes it. Transition seamlessly from pulse check — keep your fingers on the wrist and watch the chest. Examiners will note if you announce the respiration count.",
+            },
+            {
+                "text": "Failure to use proper technique for auscultated blood pressure",
+                "pearl": "Palpated BP (systolic only) is a field skill; the exam requires auscultation for both systolic and diastolic. Inflate 30 mmHg above the palpated estimate, release slowly, and listen for both Korotkoff sounds.",
+            },
+        ],
+    },
+    {
+        "id": "e221",
+        "title": "12-Lead ECG Acquisition",
+        "shortTitle": "12-Lead ECG",
+        "category": "Cardiac",
+        "sheetType": "station-guide",
+        "noPdf": True,
+        "totalPoints": 15,
+        "timeLimit": None,
+        "sections": [
+            {
+                "name": "PPE & Patient Prep",
+                "header": False,
+                "steps": [
+                    {"text": "Takes or verbalizes appropriate BSI/PPE precautions", "points": 1},
+                    {"text": "Explains procedure to patient and positions supine", "points": 1},
+                    {"text": "Exposes chest; preps skin (clean/dry; clip or shave hair if needed for electrode contact)", "points": 1},
+                ],
+            },
+            {
+                "name": "Limb Lead Placement",
+                "header": True,
+                "steps": [
+                    {"text": "Applies RA (white) electrode to right arm — wrist or forearm", "points": 1},
+                    {"text": "Applies LA (black) electrode to left arm — wrist or forearm", "points": 1},
+                    {"text": "Applies RL (green) electrode to right leg — ankle or lower leg (ground lead)", "points": 1},
+                    {"text": "Applies LL (red) electrode to left leg — ankle or lower leg", "points": 1},
+                ],
+            },
+            {
+                "name": "Precordial Lead Placement",
+                "header": True,
+                "steps": [
+                    {"text": "V1: 4th intercostal space, right sternal border", "points": 1},
+                    {"text": "V2: 4th intercostal space, left sternal border", "points": 1},
+                    {"text": "V4: 5th intercostal space, midclavicular line (place V4 before V3)", "points": 1},
+                    {"text": "V3: Between V2 and V4 (diagonal, on 4th–5th ICS)", "points": 1},
+                    {"text": "V5: Anterior axillary line at the same level as V4", "points": 1},
+                    {"text": "V6: Midaxillary line at the same level as V4 and V5", "points": 1},
+                ],
+            },
+            {
+                "name": "Acquisition",
+                "header": True,
+                "steps": [
+                    {"text": "Instructs patient to lie still and breathe normally; acquires 12-lead tracing", "points": 1},
+                    {"text": "Reviews tracing for artifact; re-applies any lead with poor contact", "points": 1},
+                    {"text": "Identifies STEMI pattern or transmits tracing to receiving facility per protocol", "points": 1},
+                ],
+            },
+        ],
+        "criticalCriteria": [
+            {
+                "text": "Reversing limb leads (LA/RA or LL/RL swap)",
+                "pearl": "Reversed limb leads produce a mirror-image artifact that mimics dextrocardia or masks ST changes. The examiner will check lead placement, not just the tracing. Color-code in your memory: white on right, black on left, green on right leg.",
+            },
+            {
+                "text": "Incorrect placement of one or more precordial leads",
+                "pearl": "Off by one intercostal space changes the ST segment appearance dramatically — a false STEMI or a missed one. Landmark V1 at the 4th ICS by counting ribs, place V4 at the midclavicular 5th ICS, then fill in V3 between them.",
+            },
+            {
+                "text": "Failure to identify or communicate a STEMI pattern",
+                "pearl": "STEMI recognition is the clinical reason for the 12-lead. ≥1 mm ST elevation in two contiguous leads, or ≥2 mm in V1–V4, is a cath-lab activation. Verbalize your finding — ‘I see ST elevation in V1–V4, activating cath lab per protocol.’",
+            },
+            {
+                "text": "Acquiring a tracing with excessive artifact without correcting it",
+                "pearl": "Wandering baseline and muscle artifact make interpretation impossible. Instruct the patient to lie still, check for poor electrode contact, and re-acquire. A tracing you can’t read is clinically worthless.",
+            },
+        ],
+    },
 ]
 
 
@@ -648,6 +937,16 @@ def _collect_step_texts(sheets: list[dict]) -> list[str]:
     return texts
 
 
+def load_pearls(sheet_id: str) -> dict[str, str] | None:
+    """Return {text: pearl} mapping from optional YAML file, or None if file missing."""
+    path = HERE / f"{sheet_id.upper()}_criteria.yaml"
+    if not path.exists():
+        return None
+    with open(path) as f:
+        data = yaml.safe_load(f)
+    return {item["text"]: item.get("pearl") for item in (data or [])}
+
+
 def load_videos(sheet_id: str) -> list[dict] | None:
     path = HERE / f"{sheet_id.upper()}_videos.yaml"
     if not path.exists():
@@ -725,29 +1024,41 @@ def main() -> int:
 
     for sheet in SHEETS:
         sheet_id = sheet["id"]
-        pdf_path = _pdf_path(sheet_id)
-        if not pdf_path.exists():
-            problems.append(f"PDF missing: {pdf_path.name}")
-            continue
+        no_pdf = sheet.get("noPdf", False)
 
-        text = extract_pdf_text(sheet_id)
-        missing = _validate(sheet, text)
-        if missing:
-            problems.append(
-                f"{sheet_id}: {len(missing)} step text(s) not found in PDF:\n    - "
-                + "\n    - ".join(missing)
-            )
+        if no_pdf:
+            criteria = sheet.get("criticalCriteria", [])
+        else:
+            pdf_path = _pdf_path(sheet_id)
+            if not pdf_path.exists():
+                problems.append(f"PDF missing: {pdf_path.name}")
+                continue
 
-        criteria = extract_critical_criteria(text)
+            text = extract_pdf_text(sheet_id)
+            missing = _validate(sheet, text)
+            if missing:
+                problems.append(
+                    f"{sheet_id}: {len(missing)} step text(s) not found in PDF:\n    - "
+                    + "\n    - ".join(missing)
+                )
+
+            pearls = load_pearls(sheet_id)
+            criteria = [
+                {"text": c, "pearl": pearls.get(c) if pearls else None}
+                for c in extract_critical_criteria(text)
+            ]
+
         cards = build_cards(sheet)
         total_cards += len(cards)
 
         videos = load_videos(sheet_id)
         sheet_entry: dict = {
-            **sheet,
+            **{k: v for k, v in sheet.items() if k not in ("criticalCriteria", "noPdf")},
             "criticalCriteria": criteria,
             "cards": cards,
         }
+        if sheet.get("sheetType"):
+            sheet_entry["sheetType"] = sheet["sheetType"]
         if videos is not None:
             sheet_entry["videos"] = videos
         out_sheets.append(sheet_entry)

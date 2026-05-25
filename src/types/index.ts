@@ -28,6 +28,11 @@ export interface Card {
   points: number;
 }
 
+export interface CriticalCriterion {
+  text: string;
+  pearl: string | null;
+}
+
 export interface Sheet {
   id: string;
   title: string;
@@ -36,9 +41,10 @@ export interface Sheet {
   totalPoints: number;
   timeLimit?: string;
   sections: Section[];
-  criticalCriteria: string[];
+  criticalCriteria: CriticalCriterion[];
   cards: Card[];
   videos?: Video[];
+  sheetType?: "station-guide";
 }
 
 export interface NremtData {
