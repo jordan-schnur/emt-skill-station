@@ -3042,7 +3042,7 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   margin: 0 auto;
   padding: 0 4px 40px;
 }
-.medcond-header { margin-bottom: 16px; }
+.medcond-header { margin-bottom: 0; }
 .medcond-tab-strip {
   display: flex;
   gap: 4px;
@@ -3409,12 +3409,6 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   max-width: 860px;
   margin: 0 auto;
   padding: 0 4px 40px;
-}
-.blsmed-title {
-  color: var(--text);
-  font-size: 22px;
-  font-weight: 700;
-  margin: 0 0 16px;
 }
 .blsmed-tab-strip {
   display: flex;
@@ -4666,14 +4660,13 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   gap: 12px;
   align-items: center;
   margin-bottom: 18px;
-  flex-wrap: wrap;
 }
 .ref-search-wrap {
   position: relative;
   display: flex;
   align-items: center;
-  flex: 1;
-  min-width: 240px;
+  flex: 0 1 340px;
+  min-width: 180px;
 }
 .ref-search-input {
   width: 100%;
@@ -4699,10 +4692,15 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   line-height: 1;
 }
 .ref-filter-row {
+  flex: 1;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.ref-filter-row::-webkit-scrollbar { display: none; }
 .ref-filter-chip {
   padding: 6px 12px;
   border-radius: 999px;

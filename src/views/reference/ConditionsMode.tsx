@@ -125,10 +125,6 @@ function BrowseTab({ onCompare }: { onCompare: (condId: string) => void }) {
 
   return (
     <>
-      <div class="medcond-header">
-        <h1>Medical Conditions Reference</h1>
-        <p class="subtitle">Signs, symptoms, and distinguishing features for common EMT medical emergencies. Click a condition to expand.</p>
-      </div>
       <ReferenceToolbar
         query={query}
         onQueryChange={setQuery}

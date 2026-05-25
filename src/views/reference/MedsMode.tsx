@@ -312,7 +312,6 @@ export function MedsMode() {
 
   return (
     <div class="blsmed-wrap">
-      <h1 class="blsmed-title">BLS Medications</h1>
       <div class="blsmed-tab-strip">
         {([["reference", "Reference"], ["scenarios", "Scenarios"], ["drill", drillDue > 0 ? `Drill (${drillDue})` : "Drill"]] as [BlsTab, string][]).map(([id, label]) => (
           <button key={id} class={`blsmed-tab-btn${tab === id ? " active" : ""}`} type="button" onClick={() => setTab(id)}>{label}</button>

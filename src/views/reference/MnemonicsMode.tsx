@@ -70,8 +70,6 @@ function BrowseMode({ onQuiz, onPracticeCard }: { onQuiz: () => void; onPractice
 
   return (
     <>
-      <h1>EMS Mnemonics &amp; Acronyms</h1>
-      <p class="subtitle">Clinical assessment and treatment acronyms used throughout EMS. Tap a card to expand, or use Quiz mode for spaced repetition.</p>
       <ReferenceToolbar
         query={query}
         onQueryChange={setQuery}
