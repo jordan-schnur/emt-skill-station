@@ -1,6 +1,6 @@
 window.NREMT_DATA = {
   "version": 1,
-  "totalCards": 172,
+  "totalCards": 227,
   "sheets": [
     {
       "id": "e201",
@@ -292,18 +292,54 @@ window.NREMT_DATA = {
         }
       ],
       "criticalCriteria": [
-        "Failure to initiate or call for transport of the patient within 10 minute time limit",
-        "Failure to take or verbalize appropriate PPE precautions",
-        "Failure to determine scene safety",
-        "Failure to assess for and provide spinal protection when indicated",
-        "Failure to voice and ultimately provide high concentration oxygen",
-        "Failure to assess/provide adequate ventilation",
-        "Failure to find or appropriately manage problems associated with airway, breathing, hemorrhage or shock",
-        "Failure to differentiate patient’s need for immediate transportation versus continued assessment/treatment at the scene",
-        "Performs other assessment before assessing/treating threats to airway, breathing and circulation",
-        "Failure to manage the patient as a competent EMT",
-        "Exhibits unacceptable affect with patient or other personnel",
-        "Uses or orders a dangerous or inappropriate intervention"
+        {
+          "text": "Failure to initiate or call for transport of the patient within 10 minute time limit",
+          "pearl": "The examiner watches the clock from your first patient contact. 'Calling for transport now' — say it early. An unstable trauma patient is load-and-go; packaging continues en route. Ten minutes is shorter under pressure than in class."
+        },
+        {
+          "text": "Failure to take or verbalize appropriate PPE precautions",
+          "pearl": "Your very first words. Say 'taking BSI precautions' before you touch anything. This is the easiest point on the sheet — and the most commonly lost by candidates who glove up silently and assume the examiner noticed."
+        },
+        {
+          "text": "Failure to determine scene safety",
+          "pearl": null
+        },
+        {
+          "text": "Failure to assess for and provide spinal protection when indicated",
+          "pearl": "Mechanism drives the decision, not pain. High-speed crash, fall from height, or penetrating trauma near the spine — verbalize it: 'I'm maintaining spinal precautions.' You earn this point by saying it, not by automatically applying a collar."
+        },
+        {
+          "text": "Failure to voice and ultimately provide high concentration oxygen",
+          "pearl": "All trauma patients get high-flow O2 until proven otherwise. Say the device and the LPM: 'NRB at 15 LPM.' If you're managing an airway, state that BVM ventilation with 100% O2 is occurring. Silence fails you."
+        },
+        {
+          "text": "Failure to assess/provide adequate ventilation",
+          "pearl": "SpO2 < 90% or RR < 8 demands action, not documentation. Say 'I'm assisting ventilations with a BVM' and demonstrate it. Noting hypoxia without treating it is the most common way this criterion fails candidates."
+        },
+        {
+          "text": "Failure to find or appropriately manage problems associated with airway, breathing, hemorrhage or shock",
+          "pearl": null
+        },
+        {
+          "text": "Failure to differentiate patient’s need for immediate transportation versus continued assessment/treatment at the scene",
+          "pearl": null
+        },
+        {
+          "text": "Performs other assessment before assessing/treating threats to airway, breathing and circulation",
+          "pearl": null
+        },
+        {
+          "text": "Failure to manage the patient as a competent EMT",
+          "pearl": "The examiner's global competence catch. Think out loud: verbalize your reasoning, your interventions, and your reassessment. If your actions are protocol-driven and clinically sound, this criterion stays unchecked. Silence and hesitation invite it."
+        },
+        {
+          "text": "Exhibits unacceptable affect with patient or other personnel",
+          "pearl": null
+        },
+        {
+          "text": "Uses or orders a dangerous or inappropriate intervention",
+          "pearl": null
+        }
       ],
       "cards": [
         {
@@ -1007,19 +1043,58 @@ window.NREMT_DATA = {
         }
       ],
       "criticalCriteria": [
-        "Failure to initiate or call for transport of the patient within 15 minute time limit",
-        "Failure to take or verbalize appropriate PPE precautions",
-        "Failure to determine scene safety before approaching patient",
-        "Failure to voice and ultimately provide appropriate oxygen therapy",
-        "Failure to assess/provide adequate ventilation",
-        "Failure to find or appropriately manage problems associated with airway, breathing, hemorrhage or shock",
-        "Failure to differentiate patient’s need for immediate transportation versus continued assessment or treatment at the sceennee",
-        "Performs secondary examination before assessing and treating threats to airway, breathing and circulation",
-        "Orders a dangerous or inappropriate intervention",
-        "Failure to provide accurate report to arriving EMS unit",
-        "Failure to manage the patient as a competent EMT",
-        "Exhibits unacceptable affect with patient or other personnel",
-        "Uses or orders a dangerous or inappropriate intervention"
+        {
+          "text": "Failure to initiate or call for transport of the patient within 15 minute time limit",
+          "pearl": "Medical gets 15 minutes, not 10. Still — AMS, stroke signs, STEMI presentation, or anaphylaxis is load-and-go. Start thinking transport during your secondary assessment, not after. Verbalize 'calling for transport' before the clock runs out."
+        },
+        {
+          "text": "Failure to take or verbalize appropriate PPE precautions",
+          "pearl": "First words, every time. Medical scenes carry infectious disease risk — body fluids, respiratory illness, unknown substances. 'BSI precautions on' before you touch the patient, no exceptions. Examiners penalize silent gloving."
+        },
+        {
+          "text": "Failure to determine scene safety before approaching patient",
+          "pearl": null
+        },
+        {
+          "text": "Failure to voice and ultimately provide appropriate oxygen therapy",
+          "pearl": null
+        },
+        {
+          "text": "Failure to assess/provide adequate ventilation",
+          "pearl": "RR < 8 or SpO2 unresponsive to O2 means the patient needs assisted ventilation. Say 'assisting ventilations with BVM and 100% O2' and do it. Noting 'respirations 6' without acting on it will fail you."
+        },
+        {
+          "text": "Failure to find or appropriately manage problems associated with airway, breathing, hemorrhage or shock",
+          "pearl": null
+        },
+        {
+          "text": "Failure to differentiate patient’s need for immediate transportation versus continued assessment or treatment at the sceennee",
+          "pearl": null
+        },
+        {
+          "text": "Performs secondary examination before assessing and treating threats to airway, breathing and circulation",
+          "pearl": null
+        },
+        {
+          "text": "Orders a dangerous or inappropriate intervention",
+          "pearl": null
+        },
+        {
+          "text": "Failure to provide accurate report to arriving EMS unit",
+          "pearl": null
+        },
+        {
+          "text": "Failure to manage the patient as a competent EMT",
+          "pearl": "Think out loud throughout the scenario. Verbalize your clinical reasoning. If your interventions follow protocol and your sequence is logical, this stays unchecked. Examiners use this criterion rarely — but they will use it for grossly unsafe practice."
+        },
+        {
+          "text": "Exhibits unacceptable affect with patient or other personnel",
+          "pearl": null
+        },
+        {
+          "text": "Uses or orders a dangerous or inappropriate intervention",
+          "pearl": null
+        }
       ],
       "cards": [
         {
@@ -1542,18 +1617,54 @@ window.NREMT_DATA = {
         }
       ],
       "criticalCriteria": [
-        "After suctioning the patient, failure to initiate ventilations within 30 seconds or interrupts ventilations for greater than 30 seconds at any time",
-        "Failure to take or verbalize appropriate PPE precautions",
-        "Failure to suction airway before ventilating the patient",
-        "Suctions the patient for an excessive and prolonged time",
-        "Failure to check responsiveness, then check breathing and pulse simultaneously for no more than 10 seconds",
-        "Failure to voice and ultimately provide high oxygen concentration [at least 85%]",
-        "Failure to ventilate the patient at a rate of 10 – 12/minute (1 ventilation every 5 – 6 seconds)",
-        "Failure to provide adequate volumes per breath [maximum 2 errors/minute permissible]",
-        "Insertion or use of any adjunct in a manner dangerous to the patient",
-        "Failure to manage the patient as a competent EMT",
-        "Exhibits unacceptable affect with patient or other personnel",
-        "Uses or orders a dangerous or inappropriate intervention"
+        {
+          "text": "After suctioning the patient, failure to initiate ventilations within 30 seconds or interrupts ventilations for greater than 30 seconds at any time",
+          "pearl": null
+        },
+        {
+          "text": "Failure to take or verbalize appropriate PPE precautions",
+          "pearl": "BVM ventilation puts you face-to-face with aerosolized secretions. Gloves AND eye protection — verbalize both before you touch anything. 'PPE on, gloves and eye protection' is your opening line."
+        },
+        {
+          "text": "Failure to suction airway before ventilating the patient",
+          "pearl": null
+        },
+        {
+          "text": "Suctions the patient for an excessive and prolonged time",
+          "pearl": null
+        },
+        {
+          "text": "Failure to check responsiveness, then check breathing and pulse simultaneously for no more than 10 seconds",
+          "pearl": null
+        },
+        {
+          "text": "Failure to voice and ultimately provide high oxygen concentration [at least 85%]",
+          "pearl": null
+        },
+        {
+          "text": "Failure to ventilate the patient at a rate of 10 – 12/minute (1 ventilation every 5 – 6 seconds)",
+          "pearl": null
+        },
+        {
+          "text": "Failure to provide adequate volumes per breath [maximum 2 errors/minute permissible]",
+          "pearl": null
+        },
+        {
+          "text": "Insertion or use of any adjunct in a manner dangerous to the patient",
+          "pearl": null
+        },
+        {
+          "text": "Failure to manage the patient as a competent EMT",
+          "pearl": "One breath every 5–6 seconds (10–12/min for adults), visible chest rise each time, minimal gastric distention, reassess position and seal constantly. Hyperventilation harms — set your rate and keep it. Show control, not urgency."
+        },
+        {
+          "text": "Exhibits unacceptable affect with patient or other personnel",
+          "pearl": null
+        },
+        {
+          "text": "Uses or orders a dangerous or inappropriate intervention",
+          "pearl": null
+        }
       ],
       "cards": [
         {
@@ -1819,14 +1930,38 @@ window.NREMT_DATA = {
         }
       ],
       "criticalCriteria": [
-        "Failure to take or verbalize appropriate PPE precautions",
-        "Failure to assemble the oxygen tank and regulator without leaks",
-        "Failure to prefill the reservoir bag",
-        "Failure to adjust the oxygen flow rate to the non-rebreather mask of at lease 10 L/minute",
-        "Failure to ensure a tight mask seal to patient’s face",
-        "Failure to manage the patient as a competent EMT",
-        "Exhibits unacceptable affect with patient or other personnel",
-        "Uses or orders a dangerous or inappropriate intervention"
+        {
+          "text": "Failure to take or verbalize appropriate PPE precautions",
+          "pearl": null
+        },
+        {
+          "text": "Failure to assemble the oxygen tank and regulator without leaks",
+          "pearl": null
+        },
+        {
+          "text": "Failure to prefill the reservoir bag",
+          "pearl": null
+        },
+        {
+          "text": "Failure to adjust the oxygen flow rate to the non-rebreather mask of at lease 10 L/minute",
+          "pearl": null
+        },
+        {
+          "text": "Failure to ensure a tight mask seal to patient’s face",
+          "pearl": null
+        },
+        {
+          "text": "Failure to manage the patient as a competent EMT",
+          "pearl": null
+        },
+        {
+          "text": "Exhibits unacceptable affect with patient or other personnel",
+          "pearl": null
+        },
+        {
+          "text": "Uses or orders a dangerous or inappropriate intervention",
+          "pearl": null
+        }
       ],
       "cards": [
         {
@@ -2042,19 +2177,58 @@ window.NREMT_DATA = {
         }
       ],
       "criticalCriteria": [
-        "Failure to immediately direct or take manual stabilization of the head",
-        "Failure to properly apply appropriately sized cervical collar before ordering release of manual stabilization",
-        "Released or ordered release of manual stabilization before it was maintained mechanically",
-        "Manipulated or moved patient excessively causing potential spinal compromise",
-        "Head immobilized to the device before device sufficiently secured to the torso",
-        "Device moves excessively up, down, left or right on the patient’s torso",
-        "Head immobilization allows for excessive movement",
-        "Torso fixation inhibits chest rise, resulting in respiratory compromise",
-        "Upon completion of immobilization, head is not in a neutral, in-line position",
-        "Failure to reassess motor, sensory and circulatory functions in each extremity after voicing immobilization to the long backboard",
-        "Failure to manage the patient as a competent EMT",
-        "Exhibits unacceptable affect with patient or other personnel",
-        "Uses or orders a dangerous or inappropriate intervention"
+        {
+          "text": "Failure to immediately direct or take manual stabilization of the head",
+          "pearl": null
+        },
+        {
+          "text": "Failure to properly apply appropriately sized cervical collar before ordering release of manual stabilization",
+          "pearl": null
+        },
+        {
+          "text": "Released or ordered release of manual stabilization before it was maintained mechanically",
+          "pearl": null
+        },
+        {
+          "text": "Manipulated or moved patient excessively causing potential spinal compromise",
+          "pearl": null
+        },
+        {
+          "text": "Head immobilized to the device before device sufficiently secured to the torso",
+          "pearl": null
+        },
+        {
+          "text": "Device moves excessively up, down, left or right on the patient’s torso",
+          "pearl": null
+        },
+        {
+          "text": "Head immobilization allows for excessive movement",
+          "pearl": null
+        },
+        {
+          "text": "Torso fixation inhibits chest rise, resulting in respiratory compromise",
+          "pearl": null
+        },
+        {
+          "text": "Upon completion of immobilization, head is not in a neutral, in-line position",
+          "pearl": null
+        },
+        {
+          "text": "Failure to reassess motor, sensory and circulatory functions in each extremity after voicing immobilization to the long backboard",
+          "pearl": null
+        },
+        {
+          "text": "Failure to manage the patient as a competent EMT",
+          "pearl": null
+        },
+        {
+          "text": "Exhibits unacceptable affect with patient or other personnel",
+          "pearl": null
+        },
+        {
+          "text": "Uses or orders a dangerous or inappropriate intervention",
+          "pearl": null
+        }
       ],
       "cards": [
         {
@@ -2291,18 +2465,54 @@ window.NREMT_DATA = {
         }
       ],
       "criticalCriteria": [
-        "Failure to immediately direct or take manual stabilization of the head",
-        "Failure to properly apply appropriately sized cervical collar before ordering release of manual stabilization",
-        "Released or ordered release of manual stabilization before it was maintained mechanically",
-        "Manipulated or moved the patient excessively causing potential spinal compromise",
-        "Head immobilized to the device before device sufficiently secured to the torso",
-        "Patient moves excessively up, down, left or right on the device",
-        "Head immobilization allows for excessive movement",
-        "Upon completion of immobilization, head is not in a neutral, in-line position",
-        "Failure to reassess motor, sensory and circulatory functions in each extremity after immobilizing patient to the device",
-        "Failure to manage the patient as a competent EMT",
-        "Exhibits unacceptable affect with patient or other personnel",
-        "Uses or orders a dangerous or inappropriate intervention"
+        {
+          "text": "Failure to immediately direct or take manual stabilization of the head",
+          "pearl": null
+        },
+        {
+          "text": "Failure to properly apply appropriately sized cervical collar before ordering release of manual stabilization",
+          "pearl": null
+        },
+        {
+          "text": "Released or ordered release of manual stabilization before it was maintained mechanically",
+          "pearl": null
+        },
+        {
+          "text": "Manipulated or moved the patient excessively causing potential spinal compromise",
+          "pearl": null
+        },
+        {
+          "text": "Head immobilized to the device before device sufficiently secured to the torso",
+          "pearl": null
+        },
+        {
+          "text": "Patient moves excessively up, down, left or right on the device",
+          "pearl": null
+        },
+        {
+          "text": "Head immobilization allows for excessive movement",
+          "pearl": null
+        },
+        {
+          "text": "Upon completion of immobilization, head is not in a neutral, in-line position",
+          "pearl": null
+        },
+        {
+          "text": "Failure to reassess motor, sensory and circulatory functions in each extremity after immobilizing patient to the device",
+          "pearl": null
+        },
+        {
+          "text": "Failure to manage the patient as a competent EMT",
+          "pearl": null
+        },
+        {
+          "text": "Exhibits unacceptable affect with patient or other personnel",
+          "pearl": null
+        },
+        {
+          "text": "Uses or orders a dangerous or inappropriate intervention",
+          "pearl": null
+        }
       ],
       "cards": [
         {
@@ -2528,13 +2738,34 @@ window.NREMT_DATA = {
         }
       ],
       "criticalCriteria": [
-        "Failure to take or verbalize appropriate PPE precautions",
-        "Failure to administer high concentration oxygen",
-        "Failure to control hemorrhage using correct procedures in a timely manner",
-        "Failure to indicate the need for immediate transportation",
-        "Failure to manage the patient as a competent EMT",
-        "Exhibits unacceptable affect with patient or other personnel",
-        "Uses or orders a dangerous or inappropriate intervention"
+        {
+          "text": "Failure to take or verbalize appropriate PPE precautions",
+          "pearl": null
+        },
+        {
+          "text": "Failure to administer high concentration oxygen",
+          "pearl": null
+        },
+        {
+          "text": "Failure to control hemorrhage using correct procedures in a timely manner",
+          "pearl": null
+        },
+        {
+          "text": "Failure to indicate the need for immediate transportation",
+          "pearl": null
+        },
+        {
+          "text": "Failure to manage the patient as a competent EMT",
+          "pearl": null
+        },
+        {
+          "text": "Exhibits unacceptable affect with patient or other personnel",
+          "pearl": null
+        },
+        {
+          "text": "Uses or orders a dangerous or inappropriate intervention",
+          "pearl": null
+        }
       ],
       "cards": [
         {
@@ -2734,19 +2965,58 @@ window.NREMT_DATA = {
         }
       ],
       "criticalCriteria": [
-        "Failure to take or verbalize appropriate PPE precautions",
-        "Failure to check responsiveness, then check breathing and pulse simultaneously for no more than 10 seconds",
-        "Failure to immediately begin chest compressions as soon as pulselessness is confirmed",
-        "Failure to demonstrate acceptable high-quality, 1-rescuer adult CPR",
-        "Interrupts CPR for more than 10 seconds at any point",
-        "Failure to correctly attach the AED to the patient",
-        "Failure to operate the AED properly",
-        "Failure to deliver shock in a timely manner",
-        "Failure to ensure that all individuals are clear of patient during rhythm analysis and before delivering shock [verbalizes “All clear” and observes]",
-        "Failure to immediately resume compressions after shock delivered",
-        "Failure to manage the patient as a competent EMT",
-        "Exhibits unacceptable affect with patient or other personnel",
-        "Uses or orders a dangerous or inappropriate intervention"
+        {
+          "text": "Failure to take or verbalize appropriate PPE precautions",
+          "pearl": "First words before you touch anything. 'Gloves on.' CPR involves direct patient contact and potential exposure to secretions. Examiners fail candidates who skip verbalization — even if you're already wearing gloves from the last call."
+        },
+        {
+          "text": "Failure to check responsiveness, then check breathing and pulse simultaneously for no more than 10 seconds",
+          "pearl": null
+        },
+        {
+          "text": "Failure to immediately begin chest compressions as soon as pulselessness is confirmed",
+          "pearl": null
+        },
+        {
+          "text": "Failure to demonstrate acceptable high-quality, 1-rescuer adult CPR",
+          "pearl": null
+        },
+        {
+          "text": "Interrupts CPR for more than 10 seconds at any point",
+          "pearl": null
+        },
+        {
+          "text": "Failure to correctly attach the AED to the patient",
+          "pearl": null
+        },
+        {
+          "text": "Failure to operate the AED properly",
+          "pearl": null
+        },
+        {
+          "text": "Failure to deliver shock in a timely manner",
+          "pearl": null
+        },
+        {
+          "text": "Failure to ensure that all individuals are clear of patient during rhythm analysis and before delivering shock [verbalizes “All clear” and observes]",
+          "pearl": null
+        },
+        {
+          "text": "Failure to immediately resume compressions after shock delivered",
+          "pearl": null
+        },
+        {
+          "text": "Failure to manage the patient as a competent EMT",
+          "pearl": null
+        },
+        {
+          "text": "Exhibits unacceptable affect with patient or other personnel",
+          "pearl": null
+        },
+        {
+          "text": "Uses or orders a dangerous or inappropriate intervention",
+          "pearl": null
+        }
       ],
       "cards": [
         {
@@ -3015,13 +3285,34 @@ window.NREMT_DATA = {
         }
       ],
       "criticalCriteria": [
-        "Failure to immediately stabilize the extremity manually",
-        "Grossly moves the injured extremity",
-        "Failure to immobilize the bone above and below the injury site",
-        "Failure to reassess distal motor, sensory and circulatory functions in the injured extremity before and after splinting",
-        "Failure to manage the patient as a competent EMT",
-        "Exhibits unacceptable affect with patient or other personnel",
-        "Uses or orders a dangerous or inappropriate intervention"
+        {
+          "text": "Failure to immediately stabilize the extremity manually",
+          "pearl": null
+        },
+        {
+          "text": "Grossly moves the injured extremity",
+          "pearl": null
+        },
+        {
+          "text": "Failure to immobilize the bone above and below the injury site",
+          "pearl": null
+        },
+        {
+          "text": "Failure to reassess distal motor, sensory and circulatory functions in the injured extremity before and after splinting",
+          "pearl": null
+        },
+        {
+          "text": "Failure to manage the patient as a competent EMT",
+          "pearl": null
+        },
+        {
+          "text": "Exhibits unacceptable affect with patient or other personnel",
+          "pearl": null
+        },
+        {
+          "text": "Uses or orders a dangerous or inappropriate intervention",
+          "pearl": null
+        }
       ],
       "cards": [
         {
@@ -3207,14 +3498,38 @@ window.NREMT_DATA = {
         }
       ],
       "criticalCriteria": [
-        "Failure to immediately stabilize the extremity manually",
-        "Grossly moves the injured extremity",
-        "Failure to immobilize the joint above and the joint below the injury site",
-        "Failure to immobilize the hand or foot in a position of function",
-        "Failure to reassess distal motor, sensory and circulatory functions in the injured extremity before and after splinting",
-        "Failure to manage the patient as a competent EMT",
-        "Exhibits unacceptable affect with patient or other personnel",
-        "Uses or orders a dangerous or inappropriate intervention"
+        {
+          "text": "Failure to immediately stabilize the extremity manually",
+          "pearl": null
+        },
+        {
+          "text": "Grossly moves the injured extremity",
+          "pearl": null
+        },
+        {
+          "text": "Failure to immobilize the joint above and the joint below the injury site",
+          "pearl": null
+        },
+        {
+          "text": "Failure to immobilize the hand or foot in a position of function",
+          "pearl": null
+        },
+        {
+          "text": "Failure to reassess distal motor, sensory and circulatory functions in the injured extremity before and after splinting",
+          "pearl": null
+        },
+        {
+          "text": "Failure to manage the patient as a competent EMT",
+          "pearl": null
+        },
+        {
+          "text": "Exhibits unacceptable affect with patient or other personnel",
+          "pearl": null
+        },
+        {
+          "text": "Uses or orders a dangerous or inappropriate intervention",
+          "pearl": null
+        }
       ],
       "cards": [
         {
@@ -3340,6 +3655,1069 @@ window.NREMT_DATA = {
           "title": "Joint and Longbone Immobilization",
           "channel": "EMS training demo",
           "url": "https://www.youtube.com/watch?v=woetGcau5bo"
+        }
+      ]
+    },
+    {
+      "id": "e218",
+      "title": "CPAP Administration",
+      "shortTitle": "CPAP",
+      "category": "Airway / Breathing",
+      "sheetType": "station-guide",
+      "totalPoints": 12,
+      "timeLimit": null,
+      "sections": [
+        {
+          "name": "PPE & Scene",
+          "header": false,
+          "steps": [
+            {
+              "text": "Takes or verbalizes appropriate BSI/PPE precautions",
+              "points": 1
+            }
+          ]
+        },
+        {
+          "name": "Indication & Contraindication Check",
+          "header": true,
+          "steps": [
+            {
+              "text": "Performs primary assessment and identifies respiratory distress",
+              "points": 1
+            },
+            {
+              "text": "Verifies indications: SpO2 < 94%, increased work of breathing, suspected pulmonary edema or COPD exacerbation",
+              "points": 1
+            },
+            {
+              "text": "Rules out contraindications: apnea, inability to follow commands, facial trauma, vomiting, BP < 90 mmHg systolic, respiratory rate < 8/min",
+              "points": 1
+            },
+            {
+              "text": "Obtains patient cooperation and explains the procedure",
+              "points": 1
+            }
+          ]
+        },
+        {
+          "name": "Device Setup",
+          "header": true,
+          "steps": [
+            {
+              "text": "Assembles CPAP unit and connects to O2 source at 10–15 LPM",
+              "points": 1
+            },
+            {
+              "text": "Sets PEEP valve to appropriate pressure (typically 5 cm H2O per local protocol)",
+              "points": 1
+            }
+          ]
+        },
+        {
+          "name": "Application",
+          "header": true,
+          "steps": [
+            {
+              "text": "Selects correct mask size and applies snugly over nose and mouth",
+              "points": 1
+            },
+            {
+              "text": "Secures mask with head straps, ensuring an adequate seal with no significant leak",
+              "points": 1
+            }
+          ]
+        },
+        {
+          "name": "Reassessment",
+          "header": true,
+          "steps": [
+            {
+              "text": "Reassesses patient response: SpO2, work of breathing, mental status, and lung sounds",
+              "points": 1
+            },
+            {
+              "text": "Adjusts PEEP or flow rate if patient deteriorates; prepares for BVM if CPAP fails",
+              "points": 1
+            },
+            {
+              "text": "Documents intervention, device settings, and patient response",
+              "points": 1
+            }
+          ]
+        }
+      ],
+      "criticalCriteria": [
+        {
+          "text": "Failure to rule out contraindications before applying CPAP",
+          "pearl": "Applying CPAP to a vomiting, apneic, or hypotensive patient can cause aspiration or worsen shock. State each contraindication check aloud — examiners need to hear your reasoning, not just watch you apply the mask."
+        },
+        {
+          "text": "Applies CPAP to an apneic or unresponsive patient",
+          "pearl": "CPAP requires the patient to breathe spontaneously and protect their own airway. An unconscious patient needs a BVM, not CPAP. If the patient becomes unresponsive during treatment, remove the mask immediately and ventilate."
+        },
+        {
+          "text": "Failure to reassess patient after CPAP application",
+          "pearl": "CPAP can help or harm within minutes. Check SpO2, RR, mental status, and lung sounds at least once after application. If SpO2 drops or work of breathing worsens, the patient may need BVM or ALS backup."
+        },
+        {
+          "text": "Failure to obtain patient cooperation before applying the mask",
+          "pearl": "A panicked patient fighting the mask gets no benefit and risks injury. Take 30 seconds to explain what you’re doing. ‘This will make breathing easier — I need you to breathe with the mask.’ Compliance is part of the skill."
+        }
+      ],
+      "cards": [
+        {
+          "id": "e218::PPE & Scene::0",
+          "sheetId": "e218",
+          "section": "PPE & Scene",
+          "sectionHeader": false,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Takes or verbalizes appropriate BSI/PPE precautions",
+          "points": 1
+        },
+        {
+          "id": "e218::Indication & Contraindication Check::0",
+          "sheetId": "e218",
+          "section": "Indication & Contraindication Check",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Performs primary assessment and identifies respiratory distress",
+          "points": 1
+        },
+        {
+          "id": "e218::Indication & Contraindication Check::1",
+          "sheetId": "e218",
+          "section": "Indication & Contraindication Check",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Verifies indications: SpO2 < 94%, increased work of breathing, suspected pulmonary edema or COPD exacerbation",
+          "points": 1
+        },
+        {
+          "id": "e218::Indication & Contraindication Check::2",
+          "sheetId": "e218",
+          "section": "Indication & Contraindication Check",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 2,
+          "subIndex": null,
+          "text": "Rules out contraindications: apnea, inability to follow commands, facial trauma, vomiting, BP < 90 mmHg systolic, respiratory rate < 8/min",
+          "points": 1
+        },
+        {
+          "id": "e218::Indication & Contraindication Check::3",
+          "sheetId": "e218",
+          "section": "Indication & Contraindication Check",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 3,
+          "subIndex": null,
+          "text": "Obtains patient cooperation and explains the procedure",
+          "points": 1
+        },
+        {
+          "id": "e218::Device Setup::0",
+          "sheetId": "e218",
+          "section": "Device Setup",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Assembles CPAP unit and connects to O2 source at 10–15 LPM",
+          "points": 1
+        },
+        {
+          "id": "e218::Device Setup::1",
+          "sheetId": "e218",
+          "section": "Device Setup",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Sets PEEP valve to appropriate pressure (typically 5 cm H2O per local protocol)",
+          "points": 1
+        },
+        {
+          "id": "e218::Application::0",
+          "sheetId": "e218",
+          "section": "Application",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Selects correct mask size and applies snugly over nose and mouth",
+          "points": 1
+        },
+        {
+          "id": "e218::Application::1",
+          "sheetId": "e218",
+          "section": "Application",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Secures mask with head straps, ensuring an adequate seal with no significant leak",
+          "points": 1
+        },
+        {
+          "id": "e218::Reassessment::0",
+          "sheetId": "e218",
+          "section": "Reassessment",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Reassesses patient response: SpO2, work of breathing, mental status, and lung sounds",
+          "points": 1
+        },
+        {
+          "id": "e218::Reassessment::1",
+          "sheetId": "e218",
+          "section": "Reassessment",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Adjusts PEEP or flow rate if patient deteriorates; prepares for BVM if CPAP fails",
+          "points": 1
+        },
+        {
+          "id": "e218::Reassessment::2",
+          "sheetId": "e218",
+          "section": "Reassessment",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 2,
+          "subIndex": null,
+          "text": "Documents intervention, device settings, and patient response",
+          "points": 1
+        }
+      ]
+    },
+    {
+      "id": "e219",
+      "title": "Oropharyngeal Suctioning",
+      "shortTitle": "Suction",
+      "category": "Airway / Breathing",
+      "sheetType": "station-guide",
+      "totalPoints": 12,
+      "timeLimit": null,
+      "sections": [
+        {
+          "name": "PPE & Equipment",
+          "header": false,
+          "steps": [
+            {
+              "text": "Takes or verbalizes appropriate BSI/PPE precautions (gloves and eye protection)",
+              "points": 1
+            }
+          ]
+        },
+        {
+          "name": "Setup",
+          "header": true,
+          "steps": [
+            {
+              "text": "Turns on suction device and confirms adequate suction (≥ 300 mmHg negative pressure)",
+              "points": 1
+            },
+            {
+              "text": "Selects rigid Yankauer catheter for oral secretion suctioning",
+              "points": 1
+            },
+            {
+              "text": "Measures catheter depth (corner of mouth to earlobe)",
+              "points": 1
+            }
+          ]
+        },
+        {
+          "name": "Pre-Suction",
+          "header": true,
+          "steps": [
+            {
+              "text": "Pre-oxygenates patient for at least 30 seconds with 100% O2 if SpO2 and time allow",
+              "points": 1
+            },
+            {
+              "text": "Positions patient: head-tilt or left lateral recumbent if unable to protect airway",
+              "points": 1
+            }
+          ]
+        },
+        {
+          "name": "Suctioning",
+          "header": true,
+          "steps": [
+            {
+              "text": "Opens airway with head-tilt chin-lift (or jaw thrust if spinal injury suspected)",
+              "points": 1
+            },
+            {
+              "text": "Inserts catheter to measured depth without applying suction",
+              "points": 1
+            },
+            {
+              "text": "Applies suction while withdrawing catheter in a rotating motion; limits each attempt to 15 seconds",
+              "points": 1
+            }
+          ]
+        },
+        {
+          "name": "Post-Suction",
+          "header": true,
+          "steps": [
+            {
+              "text": "Re-oxygenates patient between suction attempts",
+              "points": 1
+            },
+            {
+              "text": "Reassesses airway, breath sounds, SpO2, and level of consciousness",
+              "points": 1
+            },
+            {
+              "text": "Documents findings, number of suction attempts, and patient response",
+              "points": 1
+            }
+          ]
+        }
+      ],
+      "criticalCriteria": [
+        {
+          "text": "Suctioning for longer than 15 seconds per attempt without re-oxygenating",
+          "pearl": "Every second of suction removes both secretions and O2. Hypoxia can cause bradycardia and cardiac arrest in seconds. Set a mental or physical timer — 15 seconds max, then pull out and oxygenate before the next attempt."
+        },
+        {
+          "text": "Failure to pre-oxygenate the patient before suctioning",
+          "pearl": "Pre-oxygenation raises the O2 reserve so the brief hypoxia of suctioning doesn’t bottom out SpO2. Verbalize ‘100% O2 for 30 seconds’ before you reach for the catheter — especially in patients already hypoxic."
+        },
+        {
+          "text": "Failure to reassess airway and SpO2 after suctioning",
+          "pearl": "Suctioning can clear secretions or stimulate vasovagal bradycardia. Check breath sounds, SpO2, and mental status immediately after. If SpO2 dropped or rhythm changed, report it and manage it."
+        },
+        {
+          "text": "Applying suction while inserting the catheter",
+          "pearl": "Suction on insertion creates mucosal trauma and can pull tissue into the catheter tip. Insert to depth with suction off, then apply suction only while withdrawing. This is a technique point examiners watch closely."
+        }
+      ],
+      "cards": [
+        {
+          "id": "e219::PPE & Equipment::0",
+          "sheetId": "e219",
+          "section": "PPE & Equipment",
+          "sectionHeader": false,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Takes or verbalizes appropriate BSI/PPE precautions (gloves and eye protection)",
+          "points": 1
+        },
+        {
+          "id": "e219::Setup::0",
+          "sheetId": "e219",
+          "section": "Setup",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Turns on suction device and confirms adequate suction (≥ 300 mmHg negative pressure)",
+          "points": 1
+        },
+        {
+          "id": "e219::Setup::1",
+          "sheetId": "e219",
+          "section": "Setup",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Selects rigid Yankauer catheter for oral secretion suctioning",
+          "points": 1
+        },
+        {
+          "id": "e219::Setup::2",
+          "sheetId": "e219",
+          "section": "Setup",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 2,
+          "subIndex": null,
+          "text": "Measures catheter depth (corner of mouth to earlobe)",
+          "points": 1
+        },
+        {
+          "id": "e219::Pre-Suction::0",
+          "sheetId": "e219",
+          "section": "Pre-Suction",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Pre-oxygenates patient for at least 30 seconds with 100% O2 if SpO2 and time allow",
+          "points": 1
+        },
+        {
+          "id": "e219::Pre-Suction::1",
+          "sheetId": "e219",
+          "section": "Pre-Suction",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Positions patient: head-tilt or left lateral recumbent if unable to protect airway",
+          "points": 1
+        },
+        {
+          "id": "e219::Suctioning::0",
+          "sheetId": "e219",
+          "section": "Suctioning",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Opens airway with head-tilt chin-lift (or jaw thrust if spinal injury suspected)",
+          "points": 1
+        },
+        {
+          "id": "e219::Suctioning::1",
+          "sheetId": "e219",
+          "section": "Suctioning",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Inserts catheter to measured depth without applying suction",
+          "points": 1
+        },
+        {
+          "id": "e219::Suctioning::2",
+          "sheetId": "e219",
+          "section": "Suctioning",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 2,
+          "subIndex": null,
+          "text": "Applies suction while withdrawing catheter in a rotating motion; limits each attempt to 15 seconds",
+          "points": 1
+        },
+        {
+          "id": "e219::Post-Suction::0",
+          "sheetId": "e219",
+          "section": "Post-Suction",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Re-oxygenates patient between suction attempts",
+          "points": 1
+        },
+        {
+          "id": "e219::Post-Suction::1",
+          "sheetId": "e219",
+          "section": "Post-Suction",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Reassesses airway, breath sounds, SpO2, and level of consciousness",
+          "points": 1
+        },
+        {
+          "id": "e219::Post-Suction::2",
+          "sheetId": "e219",
+          "section": "Post-Suction",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 2,
+          "subIndex": null,
+          "text": "Documents findings, number of suction attempts, and patient response",
+          "points": 1
+        }
+      ]
+    },
+    {
+      "id": "e220",
+      "title": "Vital Signs Assessment",
+      "shortTitle": "Vitals",
+      "category": "Patient Assessment",
+      "sheetType": "station-guide",
+      "totalPoints": 15,
+      "timeLimit": null,
+      "sections": [
+        {
+          "name": "PPE & Setup",
+          "header": false,
+          "steps": [
+            {
+              "text": "Takes or verbalizes appropriate BSI/PPE precautions",
+              "points": 1
+            },
+            {
+              "text": "Positions patient comfortably seated or supine",
+              "points": 1
+            }
+          ]
+        },
+        {
+          "name": "Radial Pulse",
+          "header": true,
+          "steps": [
+            {
+              "text": "Locates radial pulse with 2–3 fingertips at the wrist",
+              "points": 1
+            },
+            {
+              "text": "Counts pulse for at least 30 seconds and multiplies by 2 (or full 60 seconds if irregular)",
+              "points": 1
+            },
+            {
+              "text": "Assesses and reports rate, rhythm (regular/irregular), and quality (strong/weak/thready)",
+              "points": 1
+            }
+          ]
+        },
+        {
+          "name": "Blood Pressure",
+          "header": true,
+          "steps": [
+            {
+              "text": "Selects appropriate BP cuff size and applies it 1 inch above the antecubital fossa",
+              "points": 1
+            },
+            {
+              "text": "Estimates systolic pressure by palpation: inflates cuff until radial pulse disappears, then adds 30 mmHg",
+              "points": 1
+            },
+            {
+              "text": "Places stethoscope bell or diaphragm over brachial artery",
+              "points": 1
+            },
+            {
+              "text": "Deflates cuff at 2–3 mmHg/second; records systolic (first Korotkoff sound) and diastolic (sounds cease)",
+              "points": 1
+            },
+            {
+              "text": "Reports blood pressure accurately in mmHg (systolic/diastolic)",
+              "points": 1
+            }
+          ]
+        },
+        {
+          "name": "Respirations",
+          "header": true,
+          "steps": [
+            {
+              "text": "Assesses respirations without alerting patient (may keep fingers on wrist after pulse check)",
+              "points": 1
+            },
+            {
+              "text": "Counts breaths for at least 30 seconds and multiplies by 2",
+              "points": 1
+            },
+            {
+              "text": "Assesses and reports rate, rhythm, and depth (shallow/normal/deep)",
+              "points": 1
+            }
+          ]
+        },
+        {
+          "name": "Pulse Oximetry",
+          "header": true,
+          "steps": [
+            {
+              "text": "Applies pulse oximeter probe to appropriate digit or site",
+              "points": 1
+            },
+            {
+              "text": "Waits for stable waveform and reports SpO2 percentage",
+              "points": 1
+            }
+          ]
+        }
+      ],
+      "criticalCriteria": [
+        {
+          "text": "Reporting inaccurate vital signs (off by more than acceptable range)",
+          "pearl": "Accuracy matters clinically and on the exam. Practice until you can reliably land within ±4 mmHg on BP and ±2/min on pulse/RR. Examiners use a reference patient — report what you actually hear, never guess."
+        },
+        {
+          "text": "Failure to assess all required vital signs (pulse, BP, and respirations at minimum)",
+          "pearl": "Skipping one vital sign fails this station. Even if SpO2 is unavailable, pulse + BP + RR are mandatory. Make it a habit to verbalize each finding as you complete it so the examiner can score you."
+        },
+        {
+          "text": "Alerting the patient before counting respirations",
+          "pearl": "Telling a patient you’re watching their breathing immediately changes it. Transition seamlessly from pulse check — keep your fingers on the wrist and watch the chest. Examiners will note if you announce the respiration count."
+        },
+        {
+          "text": "Failure to use proper technique for auscultated blood pressure",
+          "pearl": "Palpated BP (systolic only) is a field skill; the exam requires auscultation for both systolic and diastolic. Inflate 30 mmHg above the palpated estimate, release slowly, and listen for both Korotkoff sounds."
+        }
+      ],
+      "cards": [
+        {
+          "id": "e220::PPE & Setup::0",
+          "sheetId": "e220",
+          "section": "PPE & Setup",
+          "sectionHeader": false,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Takes or verbalizes appropriate BSI/PPE precautions",
+          "points": 1
+        },
+        {
+          "id": "e220::PPE & Setup::1",
+          "sheetId": "e220",
+          "section": "PPE & Setup",
+          "sectionHeader": false,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Positions patient comfortably seated or supine",
+          "points": 1
+        },
+        {
+          "id": "e220::Radial Pulse::0",
+          "sheetId": "e220",
+          "section": "Radial Pulse",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Locates radial pulse with 2–3 fingertips at the wrist",
+          "points": 1
+        },
+        {
+          "id": "e220::Radial Pulse::1",
+          "sheetId": "e220",
+          "section": "Radial Pulse",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Counts pulse for at least 30 seconds and multiplies by 2 (or full 60 seconds if irregular)",
+          "points": 1
+        },
+        {
+          "id": "e220::Radial Pulse::2",
+          "sheetId": "e220",
+          "section": "Radial Pulse",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 2,
+          "subIndex": null,
+          "text": "Assesses and reports rate, rhythm (regular/irregular), and quality (strong/weak/thready)",
+          "points": 1
+        },
+        {
+          "id": "e220::Blood Pressure::0",
+          "sheetId": "e220",
+          "section": "Blood Pressure",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Selects appropriate BP cuff size and applies it 1 inch above the antecubital fossa",
+          "points": 1
+        },
+        {
+          "id": "e220::Blood Pressure::1",
+          "sheetId": "e220",
+          "section": "Blood Pressure",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Estimates systolic pressure by palpation: inflates cuff until radial pulse disappears, then adds 30 mmHg",
+          "points": 1
+        },
+        {
+          "id": "e220::Blood Pressure::2",
+          "sheetId": "e220",
+          "section": "Blood Pressure",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 2,
+          "subIndex": null,
+          "text": "Places stethoscope bell or diaphragm over brachial artery",
+          "points": 1
+        },
+        {
+          "id": "e220::Blood Pressure::3",
+          "sheetId": "e220",
+          "section": "Blood Pressure",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 3,
+          "subIndex": null,
+          "text": "Deflates cuff at 2–3 mmHg/second; records systolic (first Korotkoff sound) and diastolic (sounds cease)",
+          "points": 1
+        },
+        {
+          "id": "e220::Blood Pressure::4",
+          "sheetId": "e220",
+          "section": "Blood Pressure",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 4,
+          "subIndex": null,
+          "text": "Reports blood pressure accurately in mmHg (systolic/diastolic)",
+          "points": 1
+        },
+        {
+          "id": "e220::Respirations::0",
+          "sheetId": "e220",
+          "section": "Respirations",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Assesses respirations without alerting patient (may keep fingers on wrist after pulse check)",
+          "points": 1
+        },
+        {
+          "id": "e220::Respirations::1",
+          "sheetId": "e220",
+          "section": "Respirations",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Counts breaths for at least 30 seconds and multiplies by 2",
+          "points": 1
+        },
+        {
+          "id": "e220::Respirations::2",
+          "sheetId": "e220",
+          "section": "Respirations",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 2,
+          "subIndex": null,
+          "text": "Assesses and reports rate, rhythm, and depth (shallow/normal/deep)",
+          "points": 1
+        },
+        {
+          "id": "e220::Pulse Oximetry::0",
+          "sheetId": "e220",
+          "section": "Pulse Oximetry",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Applies pulse oximeter probe to appropriate digit or site",
+          "points": 1
+        },
+        {
+          "id": "e220::Pulse Oximetry::1",
+          "sheetId": "e220",
+          "section": "Pulse Oximetry",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Waits for stable waveform and reports SpO2 percentage",
+          "points": 1
+        }
+      ]
+    },
+    {
+      "id": "e221",
+      "title": "12-Lead ECG Acquisition",
+      "shortTitle": "12-Lead ECG",
+      "category": "Cardiac",
+      "sheetType": "station-guide",
+      "totalPoints": 16,
+      "timeLimit": null,
+      "sections": [
+        {
+          "name": "PPE & Patient Prep",
+          "header": false,
+          "steps": [
+            {
+              "text": "Takes or verbalizes appropriate BSI/PPE precautions",
+              "points": 1
+            },
+            {
+              "text": "Explains procedure to patient and positions supine",
+              "points": 1
+            },
+            {
+              "text": "Exposes chest; preps skin (clean/dry; clip or shave hair if needed for electrode contact)",
+              "points": 1
+            }
+          ]
+        },
+        {
+          "name": "Limb Lead Placement",
+          "header": true,
+          "steps": [
+            {
+              "text": "Applies RA (white) electrode to right arm — wrist or forearm",
+              "points": 1
+            },
+            {
+              "text": "Applies LA (black) electrode to left arm — wrist or forearm",
+              "points": 1
+            },
+            {
+              "text": "Applies RL (green) electrode to right leg — ankle or lower leg (ground lead)",
+              "points": 1
+            },
+            {
+              "text": "Applies LL (red) electrode to left leg — ankle or lower leg",
+              "points": 1
+            }
+          ]
+        },
+        {
+          "name": "Precordial Lead Placement",
+          "header": true,
+          "steps": [
+            {
+              "text": "V1: 4th intercostal space, right sternal border",
+              "points": 1
+            },
+            {
+              "text": "V2: 4th intercostal space, left sternal border",
+              "points": 1
+            },
+            {
+              "text": "V4: 5th intercostal space, midclavicular line (place V4 before V3)",
+              "points": 1
+            },
+            {
+              "text": "V3: Between V2 and V4 (diagonal, on 4th–5th ICS)",
+              "points": 1
+            },
+            {
+              "text": "V5: Anterior axillary line at the same level as V4",
+              "points": 1
+            },
+            {
+              "text": "V6: Midaxillary line at the same level as V4 and V5",
+              "points": 1
+            }
+          ]
+        },
+        {
+          "name": "Acquisition",
+          "header": true,
+          "steps": [
+            {
+              "text": "Instructs patient to lie still and breathe normally; acquires 12-lead tracing",
+              "points": 1
+            },
+            {
+              "text": "Reviews tracing for artifact; re-applies any lead with poor contact",
+              "points": 1
+            },
+            {
+              "text": "Identifies STEMI pattern or transmits tracing to receiving facility per protocol",
+              "points": 1
+            }
+          ]
+        }
+      ],
+      "criticalCriteria": [
+        {
+          "text": "Reversing limb leads (LA/RA or LL/RL swap)",
+          "pearl": "Reversed limb leads produce a mirror-image artifact that mimics dextrocardia or masks ST changes. The examiner will check lead placement, not just the tracing. Color-code in your memory: white on right, black on left, green on right leg."
+        },
+        {
+          "text": "Incorrect placement of one or more precordial leads",
+          "pearl": "Off by one intercostal space changes the ST segment appearance dramatically — a false STEMI or a missed one. Landmark V1 at the 4th ICS by counting ribs, place V4 at the midclavicular 5th ICS, then fill in V3 between them."
+        },
+        {
+          "text": "Failure to identify or communicate a STEMI pattern",
+          "pearl": "STEMI recognition is the clinical reason for the 12-lead. ≥1 mm ST elevation in two contiguous leads, or ≥2 mm in V1–V4, is a cath-lab activation. Verbalize your finding — ‘I see ST elevation in V1–V4, activating cath lab per protocol.’"
+        },
+        {
+          "text": "Acquiring a tracing with excessive artifact without correcting it",
+          "pearl": "Wandering baseline and muscle artifact make interpretation impossible. Instruct the patient to lie still, check for poor electrode contact, and re-acquire. A tracing you can’t read is clinically worthless."
+        }
+      ],
+      "cards": [
+        {
+          "id": "e221::PPE & Patient Prep::0",
+          "sheetId": "e221",
+          "section": "PPE & Patient Prep",
+          "sectionHeader": false,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Takes or verbalizes appropriate BSI/PPE precautions",
+          "points": 1
+        },
+        {
+          "id": "e221::PPE & Patient Prep::1",
+          "sheetId": "e221",
+          "section": "PPE & Patient Prep",
+          "sectionHeader": false,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Explains procedure to patient and positions supine",
+          "points": 1
+        },
+        {
+          "id": "e221::PPE & Patient Prep::2",
+          "sheetId": "e221",
+          "section": "PPE & Patient Prep",
+          "sectionHeader": false,
+          "parent": null,
+          "stepIndex": 2,
+          "subIndex": null,
+          "text": "Exposes chest; preps skin (clean/dry; clip or shave hair if needed for electrode contact)",
+          "points": 1
+        },
+        {
+          "id": "e221::Limb Lead Placement::0",
+          "sheetId": "e221",
+          "section": "Limb Lead Placement",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Applies RA (white) electrode to right arm — wrist or forearm",
+          "points": 1
+        },
+        {
+          "id": "e221::Limb Lead Placement::1",
+          "sheetId": "e221",
+          "section": "Limb Lead Placement",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Applies LA (black) electrode to left arm — wrist or forearm",
+          "points": 1
+        },
+        {
+          "id": "e221::Limb Lead Placement::2",
+          "sheetId": "e221",
+          "section": "Limb Lead Placement",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 2,
+          "subIndex": null,
+          "text": "Applies RL (green) electrode to right leg — ankle or lower leg (ground lead)",
+          "points": 1
+        },
+        {
+          "id": "e221::Limb Lead Placement::3",
+          "sheetId": "e221",
+          "section": "Limb Lead Placement",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 3,
+          "subIndex": null,
+          "text": "Applies LL (red) electrode to left leg — ankle or lower leg",
+          "points": 1
+        },
+        {
+          "id": "e221::Precordial Lead Placement::0",
+          "sheetId": "e221",
+          "section": "Precordial Lead Placement",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "V1: 4th intercostal space, right sternal border",
+          "points": 1
+        },
+        {
+          "id": "e221::Precordial Lead Placement::1",
+          "sheetId": "e221",
+          "section": "Precordial Lead Placement",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "V2: 4th intercostal space, left sternal border",
+          "points": 1
+        },
+        {
+          "id": "e221::Precordial Lead Placement::2",
+          "sheetId": "e221",
+          "section": "Precordial Lead Placement",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 2,
+          "subIndex": null,
+          "text": "V4: 5th intercostal space, midclavicular line (place V4 before V3)",
+          "points": 1
+        },
+        {
+          "id": "e221::Precordial Lead Placement::3",
+          "sheetId": "e221",
+          "section": "Precordial Lead Placement",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 3,
+          "subIndex": null,
+          "text": "V3: Between V2 and V4 (diagonal, on 4th–5th ICS)",
+          "points": 1
+        },
+        {
+          "id": "e221::Precordial Lead Placement::4",
+          "sheetId": "e221",
+          "section": "Precordial Lead Placement",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 4,
+          "subIndex": null,
+          "text": "V5: Anterior axillary line at the same level as V4",
+          "points": 1
+        },
+        {
+          "id": "e221::Precordial Lead Placement::5",
+          "sheetId": "e221",
+          "section": "Precordial Lead Placement",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 5,
+          "subIndex": null,
+          "text": "V6: Midaxillary line at the same level as V4 and V5",
+          "points": 1
+        },
+        {
+          "id": "e221::Acquisition::0",
+          "sheetId": "e221",
+          "section": "Acquisition",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 0,
+          "subIndex": null,
+          "text": "Instructs patient to lie still and breathe normally; acquires 12-lead tracing",
+          "points": 1
+        },
+        {
+          "id": "e221::Acquisition::1",
+          "sheetId": "e221",
+          "section": "Acquisition",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 1,
+          "subIndex": null,
+          "text": "Reviews tracing for artifact; re-applies any lead with poor contact",
+          "points": 1
+        },
+        {
+          "id": "e221::Acquisition::2",
+          "sheetId": "e221",
+          "section": "Acquisition",
+          "sectionHeader": true,
+          "parent": null,
+          "stepIndex": 2,
+          "subIndex": null,
+          "text": "Identifies STEMI pattern or transmits tracing to receiving facility per protocol",
+          "points": 1
         }
       ]
     }

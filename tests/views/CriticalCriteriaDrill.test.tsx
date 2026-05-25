@@ -30,9 +30,9 @@ const MOCK_SHEET: Sheet = {
   totalPoints: 48,
   sections: [],
   criticalCriteria: [
-    "Failed to take or verbalize body substance isolation precautions",
-    "Did not assess for and manage life threats",
-    "Did not assess the response to treatments",
+    { text: "Failed to take or verbalize body substance isolation precautions", pearl: null },
+    { text: "Did not assess for and manage life threats", pearl: null },
+    { text: "Did not assess the response to treatments", pearl: null },
   ],
   cards: [],
 };

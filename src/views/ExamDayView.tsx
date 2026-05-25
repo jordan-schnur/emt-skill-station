@@ -22,10 +22,10 @@ const SCENARIOS: Scenario[] = [
   { name: "Joint Immobilization", equipment: "SAM splints, padding, bandaging", sheetId: "e216", issueUrl: null },
   { name: "Long Bone Immobilization", equipment: "Traction splint or board splints", sheetId: "e217", issueUrl: null },
   { name: "OPA / BVM Ventilation", equipment: "BVM, OPA set, O2 source", sheetId: "e203", issueUrl: null },
-  { name: "CPAP", equipment: "CPAP mask, manometer, O2 source", sheetId: null, issueUrl: "https://github.com/jordan-schnur/emt-skill-station/issues/31" },
-  { name: "12-Lead ECG", equipment: "12-lead monitor, leads, electrodes", sheetId: null, issueUrl: "https://github.com/jordan-schnur/emt-skill-station/issues/32" },
-  { name: "Suction", equipment: "Suction unit, yankauer catheter", sheetId: null, issueUrl: "https://github.com/jordan-schnur/emt-skill-station/issues/33" },
-  { name: "Vitals (Pulse, BP, RR)", equipment: "BP cuff, stethoscope, watch", sheetId: null, issueUrl: "https://github.com/jordan-schnur/emt-skill-station/issues/34" },
+  { name: "CPAP", equipment: "CPAP mask, manometer, O2 source", sheetId: "e218", issueUrl: null },
+  { name: "12-Lead ECG", equipment: "12-lead monitor, leads, electrodes", sheetId: "e221", issueUrl: null },
+  { name: "Suction", equipment: "Suction unit, yankauer catheter", sheetId: "e219", issueUrl: null },
+  { name: "Vitals (Pulse, BP, RR)", equipment: "BP cuff, stethoscope, watch", sheetId: "e220", issueUrl: null },
 ];
 
 export function ExamDayView() {

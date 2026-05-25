@@ -1,4 +1,4 @@
-import type { AppState, Big5Item, CritItem, ExaminerMessage, ExaminerSession, GeneratedScenario, Sheet, VitalsRevealed } from "../types";
+import type { AppState, Big5Item, CriticalCriterion, CritItem, ExaminerMessage, ExaminerSession, GeneratedScenario, Sheet, VitalsRevealed } from "../types";
 import type { AIConfig } from "./chat";
 
 // ─── Seed data ────────────────────────────────────────────────────────────────
@@ -68,7 +68,7 @@ export const BIG5_ITEMS: Omit<Big5Item, "done">[] = [
 
 // ─── Session factory ──────────────────────────────────────────────────────────
 
-export function createSession(sheetId: string, crits: string[]): ExaminerSession {
+export function createSession(sheetId: string, crits: CriticalCriterion[]): ExaminerSession {
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     sheetId,
@@ -78,7 +78,7 @@ export function createSession(sheetId: string, crits: string[]): ExaminerSession
     messages: [],
     debriefMessages: [],
     big5: BIG5_ITEMS.map(b => ({ ...b, done: false })),
-    crits: crits.map((body, idx) => ({ idx, body, violated: false })),
+    crits: crits.map((c, idx) => ({ idx, body: c.text, violated: false })),
     vitalsRevealed: { hr: false, bp: false, rr: false, spo2: false, gcs: false },
     startedAt: null,
     endedAt: null,

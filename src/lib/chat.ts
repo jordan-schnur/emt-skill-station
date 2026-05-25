@@ -132,7 +132,7 @@ function buildStepList(sheet: Sheet): string {
 
 function buildCriticalList(sheet: Sheet): string {
   if (!sheet.criticalCriteria?.length) return "";
-  return sheet.criticalCriteria.map((c, i) => `${i + 1}. ${c}`).join("\n");
+  return sheet.criticalCriteria.map((c, i) => `${i + 1}. ${c.text}`).join("\n");
 }
 
 const SHEET_DISPATCH: Record<string, string> = {

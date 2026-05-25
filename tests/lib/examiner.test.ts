@@ -21,7 +21,7 @@ const MOCK_SHEET: Sheet = {
   totalPoints: 40,
   timeLimit: "15 min",
   sections: [],
-  criticalCriteria: ["Failure to take BSI precautions"],
+  criticalCriteria: [{ text: "Failure to take BSI precautions", pearl: null }],
   cards: [],
 };
 
@@ -107,7 +107,11 @@ describe("createSession", () => {
   });
 
   it("initializes crits from criticalCriteria array", () => {
-    const crits = ["Failure A", "Failure B", "Failure C"];
+    const crits = [
+      { text: "Failure A", pearl: null },
+      { text: "Failure B", pearl: null },
+      { text: "Failure C", pearl: null },
+    ];
     const session = createSession("e201", crits);
     expect(session.crits).toHaveLength(3);
     expect(session.crits[0]).toEqual({ idx: 0, body: "Failure A", violated: false });
@@ -253,7 +257,7 @@ describe("buildExaminerSystemPrompt", () => {
   });
 
   it("includes critical criteria list", () => {
-    const session = { ...createSession("e202", ["Failure to take BSI"]), scenario: SCENARIO, startedAt: Date.now() };
+    const session = { ...createSession("e202", [{ text: "Failure to take BSI", pearl: null }]), scenario: SCENARIO, startedAt: Date.now() };
     const prompt = buildExaminerSystemPrompt(session, MOCK_SHEET);
     expect(prompt).toContain("Failure to take BSI");
   });
@@ -369,7 +373,7 @@ describe("buildDebriefSystemPrompt", () => {
 
   it("includes violation info when crits are violated", () => {
     const session = {
-      ...createSession("e202", ["Failure to take BSI"]),
+      ...createSession("e202", [{ text: "Failure to take BSI", pearl: null }]),
       scenario: SCENARIO,
       startedAt: Date.now() - 60000,
       endedAt: Date.now(),

@@ -177,7 +177,7 @@ function ModesGrid({ sheet, currentTab }: { sheet: Sheet; currentTab: SheetTab }
 
   const critRecs = state.drills?.critical?.[sheet.id] ?? {};
   const critKnown = sheet.criticalCriteria.filter(
-    (_, i) => critRecs[String(i)]?.grade === "know"
+    (_c, i) => critRecs[String(i)]?.grade === "know"
   ).length;
   const critTotal = sheet.criticalCriteria.length;
   const critCardState: ModeRowState =
@@ -378,6 +378,15 @@ export function SheetView() {
         <button class="btn-link" onClick={() => navigate({ view: "home" })}>← All sheets</button>
       </div>
       <SheetHero sheet={sheet} tab={tab} />
+      {sheet.sheetType === "station-guide" && (
+        <div class="station-guide-banner">
+          <span class="station-guide-icon">📋</span>
+          <div class="station-guide-text">
+            <strong>Station guide</strong> — This is not an official NREMT skill sheet.
+            You may be tested on this skill during your practical exam — know it cold.
+          </div>
+        </div>
+      )}
       <ModesGrid sheet={sheet} currentTab={tab} />
       <QuickJump sheet={sheet} current={tab} />
       <VideosSection sheet={sheet} />

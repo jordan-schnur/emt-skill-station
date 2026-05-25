@@ -47,9 +47,9 @@ export function createMockSheet(overrides: Partial<Sheet> = {}): Sheet {
       },
     ],
     criticalCriteria: [
-      "Failure to take appropriate PPE precautions",
-      "Failure to assess airway",
-      "Failure to manage the airway",
+      { text: "Failure to take appropriate PPE precautions", pearl: null },
+      { text: "Failure to assess airway", pearl: null },
+      { text: "Failure to manage the airway", pearl: null },
     ],
     ...overrides,
   };
