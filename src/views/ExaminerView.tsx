@@ -181,7 +181,7 @@ function ChatThread({ messages, typing }: { messages: ExaminerSession["messages"
   );
 }
 
-function Composer({ onSend, disabled }: { onSend: (text: string) => void; disabled: boolean }) {
+function Composer({ onSend, onEnd, disabled }: { onSend: (text: string) => void; onEnd: () => void; disabled: boolean }) {
   const [text, setText] = useState("");
   const taRef = useRef<HTMLTextAreaElement>(null);
 
@@ -201,20 +201,27 @@ function Composer({ onSend, disabled }: { onSend: (text: string) => void; disabl
   }
 
   return (
-    <div class="examiner-composer">
-      <textarea
-        ref={taRef}
-        class="examiner-composer-input"
-        placeholder="Verbalize your next action… e.g. 'I am taking BSI precautions. Is the scene safe?'"
-        value={text}
-        onInput={(e) => setText((e.target as HTMLTextAreaElement).value)}
-        onKeyDown={handleKey}
-        disabled={disabled}
-        rows={2}
-      />
-      <button class="btn btn-primary examiner-send-btn" onClick={submit} disabled={disabled || !text.trim()}>
-        Send ⏎
-      </button>
+    <div class="examiner-composer-area">
+      <div class="examiner-composer">
+        <textarea
+          ref={taRef}
+          class="examiner-composer-input"
+          placeholder="Verbalize your next action… e.g. 'I am taking BSI precautions. Is the scene safe?'"
+          value={text}
+          onInput={(e) => setText((e.target as HTMLTextAreaElement).value)}
+          onKeyDown={handleKey}
+          disabled={disabled}
+          rows={2}
+        />
+        <button class="btn btn-primary examiner-send-btn" onClick={submit} disabled={disabled || !text.trim()}>
+          Send ⏎
+        </button>
+      </div>
+      <div class="examiner-end-row">
+        <button class="btn btn-danger examiner-end-scenario-btn" onClick={onEnd}>
+          End scenario &amp; get score →
+        </button>
+      </div>
     </div>
   );
 }
@@ -511,14 +518,13 @@ export function ExaminerView({ sheet }: { sheet: Sheet }) {
               {timeLeft !== null ? fmtTime(timeLeft) : fmtTime(elapsed)}
             </span>
           )}
-          <button class="btn btn-danger examiner-end-btn" onClick={handleEnd}>End scenario</button>
         </div>
       </div>
       {error && <div class="examiner-error">{error}</div>}
       <div class="examiner-body">
         <div class="examiner-chat-col">
           <ChatThread messages={session.messages} typing={typing} />
-          <Composer onSend={handleSend} disabled={typing} />
+          <Composer onSend={handleSend} onEnd={handleEnd} disabled={typing} />
         </div>
         <Sidebar session={session} />
       </div>
