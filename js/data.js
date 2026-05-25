@@ -4146,7 +4146,7 @@ window.NREMT_DATA = {
       "shortTitle": "Vitals",
       "category": "Patient Assessment",
       "sheetType": "station-guide",
-      "totalPoints": 14,
+      "totalPoints": 15,
       "timeLimit": null,
       "sections": [
         {
@@ -4432,7 +4432,7 @@ window.NREMT_DATA = {
       "shortTitle": "12-Lead ECG",
       "category": "Cardiac",
       "sheetType": "station-guide",
-      "totalPoints": 15,
+      "totalPoints": 16,
       "timeLimit": null,
       "sections": [
         {

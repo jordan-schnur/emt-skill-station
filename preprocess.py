@@ -650,7 +650,7 @@ SHEETS = [
         "category": "Patient Assessment",
         "sheetType": "station-guide",
         "noPdf": True,
-        "totalPoints": 14,
+        "totalPoints": 15,
         "timeLimit": None,
         "sections": [
             {
@@ -725,7 +725,7 @@ SHEETS = [
         "category": "Cardiac",
         "sheetType": "station-guide",
         "noPdf": True,
-        "totalPoints": 15,
+        "totalPoints": 16,
         "timeLimit": None,
         "sections": [
             {
