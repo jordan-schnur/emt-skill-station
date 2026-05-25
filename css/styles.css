@@ -4764,37 +4764,79 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   transition: width 0.2s ease;
 }
 
-.critical-card {
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--again);
-  border-radius: 8px;
-  padding: 20px 20px 16px;
-  margin: 20px 0;
-  background: var(--bg-elev-1);
-}
+/* ── Critical criteria list drill ──────────────────────────────────────────── */
 
-.critical-card-text {
-  font-size: 15px;
-  line-height: 1.55;
-  color: var(--text);
-}
-
-.critical-pearl {
-  margin-top: 12px;
-}
-
-.critical-pearl-summary {
-  font-size: 12px;
+.critical-list-prompt {
+  font-size: 0.8125rem;
   color: var(--text-mute);
-  cursor: pointer;
-  user-select: none;
+  font-style: italic;
+  margin: 0 0 0.75rem;
 }
 
-.critical-pearl-body {
-  font-size: 13px;
+.critical-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.critical-list-item {
+  display: flex;
+  gap: 0.625rem;
+  align-items: flex-start;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.critical-list-item.is-target {
+  background: var(--accent-tint);
+  border-color: var(--accent);
+}
+
+.critical-list-item.is-known {
+  opacity: 0.35;
+}
+
+.critical-list-num {
   color: var(--text-mute);
-  margin: 8px 0 0;
-  line-height: 1.5;
+  font-size: 0.75rem;
+  min-width: 1.375rem;
+  flex-shrink: 0;
+  padding-top: 0.15em;
+  font-variant-numeric: tabular-nums;
+}
+
+.critical-list-blank {
+  color: var(--accent);
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: 0.04em;
+}
+
+.critical-list-revealed {
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.critical-reveal-btn {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.critical-reveal-btn kbd {
+  font-size: 10px;
+  opacity: 0.65;
+  font-family: inherit;
 }
 
 .critical-buttons {
@@ -4849,31 +4891,6 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
 
 .critical-btn-know:hover { background: rgba(46, 160, 67, 0.18); }
 
-.critical-mini-list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  margin-top: 24px;
-}
-
-.critical-chip {
-  font-size: 11px;
-  padding: 5px 8px;
-  border-radius: 5px;
-  border: 1px solid var(--border);
-  color: var(--text-mute);
-  background: var(--bg-elev-1);
-  line-height: 1.4;
-  transition: border-color 0.15s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.critical-chip-fail   { border-color: var(--again); color: var(--again); background: rgba(229,83,75,0.06); }
-.critical-chip-close  { border-color: var(--hard);  color: var(--hard);  background: rgba(210,153,34,0.06); }
-.critical-chip-know   { border-color: var(--good);  color: var(--good);  background: rgba(46,160,67,0.06); }
-.critical-chip-current { border-color: var(--accent); color: var(--text); background: rgba(79,158,255,0.08); font-weight: 600; }
 
 .critical-state-screen {
   display: flex;
