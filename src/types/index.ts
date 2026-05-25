@@ -283,7 +283,8 @@ export type SheetTab =
   | "script"
   | "mnemonics"
   | "chat"
-  | "critical";
+  | "critical"
+  | "drill";
 
 export interface Route {
   view: RouteView;

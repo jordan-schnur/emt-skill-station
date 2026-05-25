@@ -11,6 +11,7 @@ import { SectionOrderDrill } from "./drills/SectionOrderDrill";
 import { StepSeqDrill } from "./drills/StepSeqDrill";
 import { MnemonicsView } from "./drills/MnemonicsView";
 import { CriticalCriteriaDrill } from "./drills/CriticalCriteriaDrill";
+import { DrillView } from "./drills/DrillView";
 import { ChatView } from "./ChatView";
 import { NotFoundView } from "./NotFoundView";
 import { MasteryRing } from "./HomeView";
@@ -190,7 +191,7 @@ function ModeBuckets({ sheet, currentTab }: { sheet: Sheet; currentTab: SheetTab
     : "empty";
 
   const learnActive = ["sheet", "mnemonics", "script"].includes(currentTab);
-  const drillActive = ["order", "steps", "whatnext", "critical"].includes(currentTab);
+  const drillActive = ["order", "steps", "whatnext", "critical", "drill"].includes(currentTab);
   const proveActive = ["recall", "notes", "chat"].includes(currentTab);
 
   return (
@@ -237,6 +238,13 @@ function ModeBuckets({ sheet, currentTab }: { sheet: Sheet; currentTab: SheetTab
             <div class="mode-bucket-name">Drill until automatic</div>
           </div>
         </div>
+        <ModeRow
+          label="Adaptive Drill"
+          desc="Engine picks your weakest drill automatically"
+          tab="drill"
+          rowState={currentTab === "drill" ? "active" : "empty"}
+          sheetId={sheet.id}
+        />
         {sheet.sections.length > 1 && (
           <ModeRow
             label="Section Order"
@@ -353,6 +361,7 @@ function QuickJump({ sheet, current }: { sheet: Sheet; current: SheetTab }) {
     { id: "sheet", label: "Full sheet" },
     { id: "notes", label: "Notes" },
     { id: "mnemonics", label: "Mnemonics" },
+    { id: "drill", label: "Adaptive Drill" },
     ...(sheet.sections.length > 1 ? [{ id: "order" as SheetTab, label: orderLabel() }] : []),
     { id: "steps", label: stepLabel() },
     ...(sheet.criticalCriteria.length > 0
@@ -418,6 +427,7 @@ export function SheetView() {
   else if (tab === "mnemonics") tabContent = <MnemonicsView key={`${sheet.id}:mnemonics`} sheet={sheet} />;
   else if (tab === "chat")     tabContent = <ChatView key={`${sheet.id}:chat`} sheetCtx={sheet} />;
   else if (tab === "critical")  tabContent = <CriticalCriteriaDrill key={`${sheet.id}:critical`} sheet={sheet} />;
+  else if (tab === "drill")    tabContent = <DrillView key={`${sheet.id}:drill`} sheet={sheet} />;
   else tabContent = null;
 
   return (
