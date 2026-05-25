@@ -260,8 +260,8 @@ test.describe("Exam Day View", () => {
   test("should display scenario grid with linked and coming-soon cards", async ({ page }) => {
     const linked = page.locator(".scenario-card--linked");
     const soon = page.locator(".scenario-card--soon");
-    await expect(linked).toHaveCount(6);
-    await expect(soon).toHaveCount(4);
+    await expect(linked).toHaveCount(10);
+    await expect(soon).toHaveCount(0);
   });
 
   test("should navigate to sheet view when linked scenario card is clicked", async ({ page }) => {

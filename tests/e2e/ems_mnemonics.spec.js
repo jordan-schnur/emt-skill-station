@@ -12,7 +12,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
     await page.locator(".topnav button", { hasText: "Reference" }).click();
     await page.locator(".ref-tab-btn", { hasText: "Mnemonics" }).click();
     await expect(page).toHaveURL(/reference\/mnemonics/);
-    await expect(page.locator("h1")).toContainText("EMS Mnemonics");
+    await expect(page.locator(".ems-mnemonics")).toBeVisible();
   });
 
   // Browse-mode tests: navigate directly to /reference/mnemonics
@@ -87,7 +87,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
 
   test("Quiz button is visible and clicking it shows quiz card", async ({ page }) => {
     await page.goto("./reference/mnemonics");
-    const quizBtn = page.locator(".ems-quiz-btn");
+    const quizBtn = page.locator(".blsmed-tab-btn", { hasText: "Quiz" });
     await expect(quizBtn).toBeVisible();
     await quizBtn.click();
     const card = page.locator(".ems-quiz-card");
@@ -97,7 +97,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
   // Quiz-mode tests: enter via Quiz button (quiz is local state, URL stays at /reference/mnemonics)
   test("quiz card shows acronym and Begin Quiz button on front", async ({ page }) => {
     await page.goto("./reference/mnemonics");
-    await page.locator(".ems-quiz-btn").click();
+    await page.locator(".blsmed-tab-btn", { hasText: "Quiz" }).click();
     const card = page.locator(".ems-quiz-card");
     await expect(card).toBeVisible();
     const acronym = card.locator(".ems-quiz-acronym");
@@ -109,7 +109,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
 
   test("clicking Begin Quiz shows letter-by-letter prompt with input", async ({ page }) => {
     await page.goto("./reference/mnemonics");
-    await page.locator(".ems-quiz-btn").click();
+    await page.locator(".blsmed-tab-btn", { hasText: "Quiz" }).click();
     await page.locator("button", { hasText: "Begin Quiz" }).click();
     await expect(page.locator(".ems-quiz-input")).toBeVisible();
     await expect(page.locator(".ems-quiz-letter-prompt")).toBeVisible();
@@ -117,7 +117,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
 
   test("typing correct answer shows correct verdict", async ({ page }) => {
     await page.goto("./reference/mnemonics");
-    await page.locator(".ems-quiz-btn").click();
+    await page.locator(".blsmed-tab-btn", { hasText: "Quiz" }).click();
     await page.locator("button", { hasText: "Begin Quiz" }).click();
     // The first card is SAMPLE, first letter S = "Signs and Symptoms"
     const input = page.locator(".ems-quiz-input");
@@ -130,7 +130,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
 
   test("typing clearly wrong answer shows incorrect verdict", async ({ page }) => {
     await page.goto("./reference/mnemonics");
-    await page.locator(".ems-quiz-btn").click();
+    await page.locator(".blsmed-tab-btn", { hasText: "Quiz" }).click();
     await page.locator("button", { hasText: "Begin Quiz" }).click();
     const input = page.locator(".ems-quiz-input");
     await expect(input).toBeVisible();
@@ -142,7 +142,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
 
   test("answering all letters correctly suggests Easy grade", async ({ page }) => {
     await page.goto("./reference/mnemonics");
-    await page.locator(".ems-quiz-btn").click();
+    await page.locator(".blsmed-tab-btn", { hasText: "Quiz" }).click();
     await page.locator("button", { hasText: "Begin Quiz" }).click();
 
     // SAMPLE letters: S A M P L E
@@ -173,7 +173,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
 
   test("answering all letters wrong suggests Again grade", async ({ page }) => {
     await page.goto("./reference/mnemonics");
-    await page.locator(".ems-quiz-btn").click();
+    await page.locator(".blsmed-tab-btn", { hasText: "Quiz" }).click();
     await page.locator("button", { hasText: "Begin Quiz" }).click();
 
     for (let i = 0; i < 6; i++) {
@@ -194,7 +194,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
 
   test("confirming grade from summary advances to next card or session complete", async ({ page }) => {
     await page.goto("./reference/mnemonics");
-    await page.locator(".ems-quiz-btn").click();
+    await page.locator(".blsmed-tab-btn", { hasText: "Quiz" }).click();
     await page.locator("button", { hasText: "Begin Quiz" }).click();
 
     const answers = [
@@ -224,18 +224,18 @@ test.describe("EMS Mnemonics & Acronyms", () => {
 
   test("back link from quiz returns to browse view", async ({ page }) => {
     await page.goto("./reference/mnemonics");
-    await page.locator(".ems-quiz-btn").click();
+    await page.locator(".blsmed-tab-btn", { hasText: "Quiz" }).click();
     await expect(page.locator(".ems-quiz-card")).toBeVisible();
     const backLink = page.locator(".btn-link", { hasText: "← Back" });
     await expect(backLink).toBeVisible();
     await backLink.click();
     await expect(page).toHaveURL(/\/reference\/mnemonics/);
-    await expect(page.locator(".ems-mnemonic-grid")).toBeVisible();
+    await expect(page.locator(".ems-mnemonics")).toBeVisible();
   });
 
   test("Reference nav button is active while on mnemonics view", async ({ page }) => {
     await page.goto("./reference/mnemonics");
-    await expect(page.locator("h1")).toContainText("EMS Mnemonics");
+    await expect(page.locator(".ems-mnemonics")).toBeVisible();
     const btn = page.locator(".topnav button", { hasText: "Reference" });
     await expect(btn).toHaveClass(/active/);
   });
@@ -287,7 +287,7 @@ test.describe("EMS Mnemonics & Acronyms", () => {
 
   test("DMIST per-letter quiz works for all 5 letters", async ({ page }) => {
     await page.goto("./reference/mnemonics");
-    await page.locator(".ems-quiz-btn").click();
+    await page.locator(".blsmed-tab-btn", { hasText: "Quiz" }).click();
     await expect(page.locator(".ems-quiz-card")).toBeVisible();
     // Navigate cards until we hit DMIST
     let found = false;

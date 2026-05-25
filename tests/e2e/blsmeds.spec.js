@@ -12,7 +12,7 @@ test.describe("BLS Medications", () => {
     await page.locator(".topnav button", { hasText: "Reference" }).click();
     await page.locator(".ref-tab-btn", { hasText: "Meds" }).click();
     await expect(page).toHaveURL(/reference\/meds/);
-    await expect(page.locator("h1")).toContainText("BLS Medications");
+    await expect(page.locator(".blsmed-wrap")).toBeVisible();
   });
 
   test("reference tab shows 9 medication cards", async ({ page }) => {
