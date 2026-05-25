@@ -81,6 +81,14 @@ function SheetHero({ sheet, tab }: { sheet: Sheet; tab: SheetTab }) {
   );
 }
 
+// ─── Scroll helper ────────────────────────────────────────────────────────────
+
+function scrollToContent() {
+  requestAnimationFrame(() => {
+    document.getElementById("tab-content")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
+
 // ─── Mode card ────────────────────────────────────────────────────────────────
 
 type ModeRowState = "done" | "active" | "progress" | "empty";
@@ -105,7 +113,7 @@ function ModeCard({ num, label, desc, tab, statusLine, cardState, critical, shee
   ].filter(Boolean).join(" ");
 
   return (
-    <div class={cls} onClick={() => navigate({ view: "sheet", sheetId, tab })}>
+    <div class={cls} onClick={() => { navigate({ view: "sheet", sheetId, tab }); scrollToContent(); }}>
       <div class="mode-card-num">{num}</div>
       <h4>{label}</h4>
       <p>{desc}</p>
@@ -119,9 +127,10 @@ function ModeCard({ num, label, desc, tab, statusLine, cardState, critical, shee
 
 // ─── Secondary card ───────────────────────────────────────────────────────────
 
-function SecCard({ title, desc, tab, sheetId }: { title: string; desc: string; tab: SheetTab; sheetId: string }) {
+function SecCard({ title, desc, tab, sheetId, isActive }: { title: string; desc: string; tab: SheetTab; sheetId: string; isActive?: boolean }) {
+  const cls = ["sec-card", isActive ? "is-active" : ""].filter(Boolean).join(" ");
   return (
-    <div class="sec-card" onClick={() => navigate({ view: "sheet", sheetId, tab })}>
+    <div class={cls} onClick={() => { navigate({ view: "sheet", sheetId, tab }); scrollToContent(); }}>
       <div class="sec-card-title">{title}</div>
       <div class="sec-card-desc">{desc}</div>
     </div>
@@ -223,18 +232,21 @@ function ModesGrid({ sheet, currentTab }: { sheet: Sheet; currentTab: SheetTab }
           desc="All sections, steps, points, and critical criteria in one scrollable view."
           tab="sheet"
           sheetId={sheet.id}
+          isActive={currentTab === "sheet"}
         />
         <SecCard
           title="My notes"
           desc={`${noteCount} note${noteCount === 1 ? "" : "s"} attached to steps on this sheet.`}
           tab="notes"
           sheetId={sheet.id}
+          isActive={currentTab === "notes"}
         />
         <SecCard
           title="Practice with examiner"
           desc="AI roleplay of the station for this sheet."
           tab="chat"
           sheetId={sheet.id}
+          isActive={currentTab === "chat"}
         />
       </div>
     </>
@@ -331,6 +343,20 @@ export function SheetView() {
 
   const tab: SheetTab = r.tab ?? "sheet";
 
+  const TAB_LABELS: Partial<Record<SheetTab, string>> = {
+    sheet: "Full sheet",
+    notes: "My notes",
+    chat: "Practice with examiner",
+    order: "Section order drill",
+    steps: "Step sequence drill",
+    whatnext: "What's next?",
+    recall: "Blank recall",
+    script: "Spoken script",
+    mnemonics: "Mnemonics",
+    critical: "Critical criteria",
+    drill: "Adaptive drill",
+  };
+
   let tabContent: JSX.Element | null;
   if (tab === "sheet")         tabContent = <ReferenceView sheet={sheet} />;
   else if (tab === "notes")    tabContent = <NotesView sheet={sheet} />;
@@ -354,7 +380,12 @@ export function SheetView() {
       <ModesGrid sheet={sheet} currentTab={tab} />
       <QuickJump sheet={sheet} current={tab} />
       <VideosSection sheet={sheet} />
-      <div class="tab-content">{tabContent}</div>
+      <div id="tab-content" class="tab-content">
+        {tabContent && (
+          <div class="tab-content-label">{TAB_LABELS[tab] ?? tab}</div>
+        )}
+        {tabContent}
+      </div>
     </div>
   );
 }

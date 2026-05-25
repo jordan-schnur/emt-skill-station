@@ -5102,8 +5102,36 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   cursor: pointer;
 }
 .sec-card:hover { border-color: var(--text-dim); }
+.sec-card.is-active {
+  border-color: var(--accent);
+  background: var(--accent-tint);
+}
+.sec-card.is-active .sec-card-title { color: var(--accent-ink); }
 .sec-card-title { font-weight: 600; font-size: 14px; }
 .sec-card-desc { color: var(--text-dim); font-size: 12.5px; }
+
+/* Tab content anchor + mode label */
+.tab-content-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 1.25rem;
+  padding-top: 0.25rem;
+}
+.tab-content-label::before {
+  content: "";
+  display: block;
+  width: 3px;
+  height: 1em;
+  border-radius: 2px;
+  background: var(--accent);
+  flex-shrink: 0;
+}
 
 /* Section head for reference row */
 .section-head {
