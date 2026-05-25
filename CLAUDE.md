@@ -154,6 +154,10 @@ Tests use **Vitest** + `@testing-library/preact` in jsdom.
 - **New lib functions** → `src/lib/` with a matching test in `tests/`.
 - Keep `src/types/index.ts` as the single source of truth for all shared types.
 
+## Color Discipline
+
+`--again` / red (`#e5534b`) is reserved for Critical Criteria sections, exam-fail warnings, wrong-answer error states, and explicit danger-action buttons (`.btn-danger`). Medical contraindications in BLS meds are also semantic red (keep). Use `--accent` for interactive elements and highlights, `--accent-warm` for non-error callouts. Never use red for decorative backgrounds or non-exam cosmetic purposes.
+
 ## Active Roadmap
 
 `README.md` tracks what's shipped (✅) and what's planned. Check it before starting any new feature.
