@@ -4979,7 +4979,7 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   border: none;
   cursor: pointer;
   font-size: 1rem;
-  color: var(--muted);
+  color: var(--text-mute);
   padding: 0;
   line-height: 1;
 }
@@ -4993,14 +4993,17 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--surface);
+  color: var(--text-dim);
   font-size: 0.8125rem;
   cursor: pointer;
   white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
+.ref-filter-chip:hover { background: var(--bg-elev-2); color: var(--text); border-color: var(--text-dim); }
 .ref-filter-chip.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
 }
 
 /* ── ReferenceView tab strip ────────────────────────────────────────────── */
@@ -5025,11 +5028,11 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   font-size: 0.9375rem;
   font-weight: 500;
   cursor: pointer;
-  color: var(--muted);
+  color: var(--text-mute);
 }
 .ref-tab-btn.active {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
 /* ── Inline compare button ──────────────────────────────────────────────── */
