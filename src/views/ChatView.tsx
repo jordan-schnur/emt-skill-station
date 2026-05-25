@@ -176,7 +176,34 @@ function ChatDetail({ chatId, sheetCtx }: { chatId: string; sheetCtx?: Sheet }) 
 
 export function ChatView({ sheetCtx }: { sheetCtx?: Sheet } = {}) {
   const r = route.value as { chatId?: string };
+
+  useEffect(() => {
+    if (!sheetCtx || r.chatId) return;
+    const cfg = getConfig();
+    if (!cfg?.apiKey) return;
+    const state = appState.value;
+    const allChats = listChats(state);
+    const existing = allChats.find(c => c.sheetId === sheetCtx.id && c.mode === "examiner");
+    if (existing) {
+      navigate({ view: "chat", chatId: existing.id });
+      return;
+    }
+    let chatId!: string;
+    mutateState(draft => { chatId = createChat(draft, { mode: "examiner", sheetId: sheetCtx.id }); });
+    save();
+    navigate({ view: "chat", chatId });
+  }, [sheetCtx?.id]);
+
   if (r.chatId) return <ChatDetail chatId={r.chatId} sheetCtx={sheetCtx} />;
+  if (sheetCtx) {
+    const cfg = getConfig();
+    if (cfg?.apiKey) return null;
+    return (
+      <div class="chat-view">
+        <ChatList sheetCtx={sheetCtx} />
+      </div>
+    );
+  }
   return (
     <div class="chat-view">
       <ChatList sheetCtx={sheetCtx} />
