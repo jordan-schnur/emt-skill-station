@@ -50,16 +50,11 @@ function EmsCard({ mnemonic, srsRec, onPractice }: { mnemonic: ClinicalMnemonic;
   );
 }
 
-function BrowseMode({ onQuiz, onPracticeCard }: { onQuiz: () => void; onPracticeCard: (id: string) => void }) {
+function BrowseMode({ onPracticeCard }: { onPracticeCard: (id: string) => void }) {
   const categories = ["All", ...Array.from(new Set(EMS_CLINICAL_MNEMONICS.map(m => m.category)))];
   const [activeCat, setActiveCat] = useState("All");
   const [query, setQuery] = useState("");
   const srsStore = appState.value.emsSrs ?? {};
-  const now = Date.now();
-  const dueCount = EMS_CLINICAL_MNEMONICS.filter(m => {
-    const rec = srsStore["ems::" + m.id];
-    return !rec || rec.due <= now;
-  }).length;
 
   const filtered = EMS_CLINICAL_MNEMONICS.filter(m => {
     const matchesCat = activeCat === "All" || m.category === activeCat;
@@ -70,8 +65,6 @@ function BrowseMode({ onQuiz, onPracticeCard }: { onQuiz: () => void; onPractice
 
   return (
     <>
-      <h1>EMS Mnemonics &amp; Acronyms</h1>
-      <p class="subtitle">Clinical assessment and treatment acronyms used throughout EMS. Tap a card to expand, or use Quiz mode for spaced repetition.</p>
       <ReferenceToolbar
         query={query}
         onQueryChange={setQuery}
@@ -80,9 +73,6 @@ function BrowseMode({ onQuiz, onPracticeCard }: { onQuiz: () => void; onPractice
         onCategoryChange={setActiveCat}
         placeholder="Search acronyms…"
       />
-      <button class="btn btn-primary ems-quiz-btn" type="button" onClick={onQuiz}>
-        {dueCount > 0 ? `Quiz — ${dueCount} card${dueCount === 1 ? "" : "s"} due` : "Quiz — all caught up"}
-      </button>
       <div class="ems-mnemonic-grid">
         {filtered.map(m => (
           <EmsCard key={m.id} mnemonic={m} srsRec={srsStore["ems::" + m.id]} onPractice={onPracticeCard} />
@@ -262,11 +252,30 @@ export function MnemonicsMode() {
   const pinnedId = route.value.referenceCardId;
   const [isQuiz, setIsQuiz] = useState(!!pinnedId);
 
+  const srsStore = appState.value.emsSrs ?? {};
+  const now = Date.now();
+  const dueCount = EMS_CLINICAL_MNEMONICS.filter(m => {
+    const rec = srsStore["ems::" + m.id];
+    return !rec || rec.due <= now;
+  }).length;
+
   return (
     <div class="ems-mnemonics">
+      <div class="blsmed-tab-strip">
+        <button
+          class={`blsmed-tab-btn${!isQuiz ? " active" : ""}`}
+          type="button"
+          onClick={() => { setIsQuiz(false); navigate({ view: "reference", referenceTab: "mnemonics" }); }}
+        >Browse</button>
+        <button
+          class={`blsmed-tab-btn${isQuiz ? " active" : ""}`}
+          type="button"
+          onClick={() => setIsQuiz(true)}
+        >{dueCount > 0 ? `Quiz (${dueCount})` : "Quiz"}</button>
+      </div>
       {isQuiz
         ? <QuizMode pinnedId={pinnedId} onBack={() => { setIsQuiz(false); navigate({ view: "reference", referenceTab: "mnemonics" }); }} />
-        : <BrowseMode onQuiz={() => setIsQuiz(true)} onPracticeCard={id => { navigate({ view: "reference", referenceTab: "mnemonics", referenceCardId: id }); setIsQuiz(true); }} />
+        : <BrowseMode onPracticeCard={id => { navigate({ view: "reference", referenceTab: "mnemonics", referenceCardId: id }); setIsQuiz(true); }} />
       }
     </div>
   );

@@ -95,10 +95,8 @@ Lives in `localStorage` under `"nremt.state.v1"`. Types in `src/types/index.ts`.
 
 | Route | File | Description |
 |-------|------|-------------|
-| `#` / `#home` | `HomeView.tsx` | Sheet grid with mastery badges |
-| `#stats` | `StatsView.tsx` | Streak, achievements, per-sheet drill summary |
-| `#settings` | `SettingsView.tsx` | Cloud sync, JSON export/import, AI API config |
-| `#guide` | `GuideView.tsx` | Tutorial for every study mode |
+| `#` / `#home` | `HomeView.tsx` | Today dashboard — streak, hero card, 14-day strip |
+| `#settings` | `SettingsView.tsx` | Cloud sync, JSON export/import, AI API config, achievements |
 | `#mnemonics` | `EmsMnemonicsView.tsx` | EMS clinical acronyms (OPQRST, SAMPLE, etc.) with browse + quiz modes |
 | `#medconditions` | `MedConditionsView.tsx` | Medical conditions reference + quiz |
 
@@ -184,6 +182,7 @@ Ordered by dependency and impact. Update status as work progresses.
 | 14 | [T-024 #60] Merged Reference view (Conditions / Mnemonics / Meds) | ⬜ todo | Restores mnemonics + blsmeds to nav under Reference tab |
 | 15 | [T-010 #46] Build Learn mode (rebrand SRS flashcards) | ⬜ todo | Simple rebrand on SheetView |
 | 16 | [T-011 #47] Build adaptive Drill mode (rotate secorder/stepseq/whatnext) | ⬜ todo | New DrillView.tsx + pickNextDrill.ts |
+| 17 | [T-034 #70] Remove dead routes + old view files after epics land | ✅ done | Deleted StatsView.tsx + GuideView.tsx + orphaned CSS |
 
 **Status key:** ⬜ todo · 🔄 in progress · ✅ done · ⏭ skipped
 
