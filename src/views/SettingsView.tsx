@@ -4,6 +4,7 @@ import { reset, exportToFile, importFromFile, createEmptyState } from "../lib/st
 import { getConfig, saveConfig, clearConfig, fetchModels } from "../lib/chat";
 import { openConfirmModal, openConflictModal } from "../components/ui/Modal";
 import { CloudSync, isFirebaseConfigured } from "../lib/firebase";
+import { getAll as getAllAchievements } from "../lib/achievements";
 
 // ─── Cloud section ──────────────────────────────────────────────────────────
 
@@ -250,6 +251,51 @@ function AISection() {
   );
 }
 
+// ─── Achievements section ────────────────────────────────────────────────────
+
+function AchievementsSection() {
+  const [open, setOpen] = useState(false);
+  const allAchs = getAllAchievements(appState.value);
+  const unlocked = allAchs.filter((a) => !!a.unlockedAt);
+  const nextUp = allAchs.find((a) => !a.unlockedAt);
+
+  return (
+    <section class="settings-section">
+      <button class="settings-collapse-btn" onClick={() => setOpen(!open)}>
+        <span>Achievements ({unlocked.length}/{allAchs.length})</span>
+        <span>{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div class="ach-grid" style="margin-top: 12px;">
+          {unlocked.map((a) => (
+            <div key={a.id} class="ach-card ach-unlocked">
+              <div class="ach-icon">{a.icon}</div>
+              <div class="ach-body">
+                <div class="ach-name">{a.name}</div>
+                <div class="ach-desc">{a.desc}</div>
+                <div class="ach-date">Unlocked {new Date(a.unlockedAt!).toLocaleDateString()}</div>
+              </div>
+              <div class="ach-check">✓</div>
+            </div>
+          ))}
+          {nextUp && (
+            <div class="ach-card ach-next-up">
+              <div class="ach-icon">{nextUp.icon}</div>
+              <div class="ach-body">
+                <div class="ach-name">{nextUp.name}</div>
+                <div class="ach-desc">Keep going to unlock this!</div>
+              </div>
+            </div>
+          )}
+          {unlocked.length === 0 && (
+            <p style="color: var(--text-dim); font-size: 13px;">Complete drills to unlock achievements!</p>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
 // ─── Main SettingsView ──────────────────────────────────────────────────────
 
 export function SettingsView() {
@@ -311,6 +357,8 @@ export function SettingsView() {
       </div>
 
       <AISection />
+
+      <AchievementsSection />
     </div>
   );
 }

@@ -54,6 +54,18 @@ describe("StatsView", () => {
     expect(screen.getByRole("heading", { name: /Achievements/ })).toBeTruthy();
   });
 
+  it("hides locked achievement tiles", () => {
+    render(<StatsView />);
+    expect(screen.queryByText("???")).toBeNull();
+  });
+
+  it("shows one next-up hint tile", () => {
+    render(<StatsView />);
+    const nextUpTiles = document.querySelectorAll(".ach-next-up");
+    expect(nextUpTiles.length).toBe(1);
+    expect(screen.getByText("Keep going to unlock this!")).toBeTruthy();
+  });
+
   it("renders progress by sheet section", () => {
     render(<StatsView />);
     expect(screen.getByRole("heading", { name: "Progress by Sheet" })).toBeTruthy();

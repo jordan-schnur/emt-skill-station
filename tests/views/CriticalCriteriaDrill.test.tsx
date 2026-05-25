@@ -37,15 +37,26 @@ const MOCK_SHEET: Sheet = {
   cards: [],
 };
 
+function revealCurrent() {
+  fireEvent.click(screen.getByText(/Reveal criterion/));
+}
+
 describe("CriticalCriteriaDrill", () => {
   beforeEach(() => {
     appStoreMock.appState.value = createEmptyState();
     vi.clearAllMocks();
   });
 
-  it("renders first criterion on mount", () => {
+  it("hides first criterion as ??? on mount", () => {
     render(<CriticalCriteriaDrill sheet={MOCK_SHEET} />);
-    expect(screen.getByText(/Failed to take or verbalize body substance isolation/)).toBeTruthy();
+    expect(screen.getByText("???")).toBeTruthy();
+    expect(screen.queryByText(/Failed to take or verbalize body substance isolation/)).toBeNull();
+  });
+
+  it("shows all other criteria in the list on mount", () => {
+    render(<CriticalCriteriaDrill sheet={MOCK_SHEET} />);
+    expect(screen.getByText(/Did not assess for and manage life threats/)).toBeTruthy();
+    expect(screen.getByText(/Did not assess the response to treatments/)).toBeTruthy();
   });
 
   it("shows sheet code in header", () => {
@@ -58,42 +69,53 @@ describe("CriticalCriteriaDrill", () => {
     expect(screen.getByText(/0\/3 known cold/)).toBeTruthy();
   });
 
-  it("shows three grade buttons", () => {
+  it("shows Reveal button before grade buttons", () => {
     render(<CriticalCriteriaDrill sheet={MOCK_SHEET} />);
+    expect(screen.getByText(/Reveal criterion/)).toBeTruthy();
+    expect(screen.queryByText(/Would fail/)).toBeNull();
+    expect(screen.queryByText(/Close call/)).toBeNull();
+    expect(screen.queryByText(/Know it cold/)).toBeNull();
+  });
+
+  it("shows grade buttons and revealed text after clicking Reveal", () => {
+    render(<CriticalCriteriaDrill sheet={MOCK_SHEET} />);
+    revealCurrent();
+    expect(screen.getByText(/Failed to take or verbalize body substance isolation/)).toBeTruthy();
     expect(screen.getByText(/Would fail/)).toBeTruthy();
     expect(screen.getByText(/Close call/)).toBeTruthy();
     expect(screen.getByText(/Know it cold/)).toBeTruthy();
   });
 
-  it("shows expandable 'Why this matters' pearl", () => {
+  it("shows all criteria in numbered list", () => {
     render(<CriticalCriteriaDrill sheet={MOCK_SHEET} />);
-    expect(screen.getByText(/Why this matters/)).toBeTruthy();
+    const items = document.querySelectorAll(".critical-list-item");
+    expect(items.length).toBe(3);
   });
 
-  it("shows mini-list with all criteria as chips", () => {
+  it("marks current criterion as target", () => {
     render(<CriticalCriteriaDrill sheet={MOCK_SHEET} />);
-    const chips = document.querySelectorAll(".critical-chip");
-    expect(chips.length).toBe(3);
+    const target = document.querySelector(".critical-list-item.is-target");
+    expect(target).toBeTruthy();
   });
 
   it("shows session-complete screen after grading all criteria as know", () => {
     render(<CriticalCriteriaDrill sheet={MOCK_SHEET} />);
-    const knowBtn = screen.getByText(/Know it cold/);
-    fireEvent.click(knowBtn);
-    fireEvent.click(knowBtn);
-    fireEvent.click(knowBtn);
+    for (let i = 0; i < 3; i++) {
+      revealCurrent();
+      fireEvent.click(screen.getByText(/Know it cold/));
+    }
     expect(screen.getByText(/Session complete/)).toBeTruthy();
     expect(screen.getByText(/Start new session/)).toBeTruthy();
   });
 
   it("Start new session button restarts drill", () => {
     render(<CriticalCriteriaDrill sheet={MOCK_SHEET} />);
-    const knowBtn = screen.getByText(/Know it cold/);
-    fireEvent.click(knowBtn);
-    fireEvent.click(knowBtn);
-    fireEvent.click(knowBtn);
+    for (let i = 0; i < 3; i++) {
+      revealCurrent();
+      fireEvent.click(screen.getByText(/Know it cold/));
+    }
     fireEvent.click(screen.getByText(/Start new session/));
-    expect(screen.getByText(/Failed to take or verbalize body substance isolation/)).toBeTruthy();
+    expect(screen.getByText("???")).toBeTruthy();
   });
 
   it("shows all-caught-up screen when buildQueue returns empty", () => {
@@ -108,14 +130,22 @@ describe("CriticalCriteriaDrill", () => {
     expect(screen.getByText(/Drill all 3 criteria anyway/)).toBeTruthy();
   });
 
-  it("keyboard key 3 grades as know and calls save", () => {
+  it("keyboard Space reveals criterion", () => {
     render(<CriticalCriteriaDrill sheet={MOCK_SHEET} />);
+    fireEvent.keyDown(document, { key: " " });
+    expect(screen.getByText(/Would fail/)).toBeTruthy();
+  });
+
+  it("keyboard key 3 grades as know after reveal and calls save", () => {
+    render(<CriticalCriteriaDrill sheet={MOCK_SHEET} />);
+    revealCurrent();
     fireEvent.keyDown(document, { key: "3" });
     expect(appStoreMock.save).toHaveBeenCalled();
   });
 
-  it("keyboard key 1 grades as fail and calls save", () => {
+  it("keyboard key 1 grades as fail after reveal and calls save", () => {
     render(<CriticalCriteriaDrill sheet={MOCK_SHEET} />);
+    revealCurrent();
     fireEvent.keyDown(document, { key: "1" });
     expect(appStoreMock.save).toHaveBeenCalled();
   });

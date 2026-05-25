@@ -69,12 +69,13 @@ describe("SheetView", () => {
 
   it("renders tab buttons", () => {
     render(<SheetView />);
-    // Quickjump strip shows these labels
-    expect(screen.getByText("Full sheet")).toBeTruthy();
-    // "Notes" appears in both mode-picker and quickjump
+    // QuickJump strip and SecCard both show "Full sheet"
+    expect(screen.getAllByText("Full sheet").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Notes").length).toBeGreaterThan(0);
-    // Quickjump shows "Order" (short label); mode-picker shows "Section Order"
-    expect(screen.getByText("Section Order")).toBeTruthy();
+    // Modes grid shows mode card labels
+    expect(screen.getByText("Learn")).toBeTruthy();
+    expect(screen.getByText("Drill")).toBeTruthy();
+    expect(screen.getAllByText("Critical Criteria").length).toBeGreaterThan(0);
   });
 
   it("renders ReferenceView for sheet tab", () => {
@@ -90,9 +91,8 @@ describe("SheetView", () => {
 
   it("navigates to notes tab on click", () => {
     render(<SheetView />);
-    // "Notes" appears in both mode-picker and quickjump; click the quickjump button (last match)
     const notesButtons = screen.getAllByText("Notes");
-    fireEvent.click(notesButtons[notesButtons.length - 1]);
+    fireEvent.click(notesButtons[0]);
     expect(mockNavigate).toHaveBeenCalledWith({
       view: "sheet",
       sheetId: "trauma-assessment",

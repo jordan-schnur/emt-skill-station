@@ -17,6 +17,7 @@ export function CriticalCriteriaDrill({ sheet }: { sheet: Sheet }) {
   });
   const [queueIndex, setQueueIndex] = useState(0);
   const [sessionDone, setSessionDone] = useState(false);
+  const [revealed, setRevealed] = useState(false);
 
   const records = appState.value.drills?.critical?.[sheet.id] ?? {};
   const knownCold = criteriaIds.filter(
@@ -36,6 +37,8 @@ export function CriticalCriteriaDrill({ sheet }: { sheet: Sheet }) {
       draft.stats.totalReviews = (draft.stats.totalReviews || 0) + 1;
     });
     save();
+
+    setRevealed(false);
 
     if (g === "know") {
       if (queueIndex + 1 >= queue.length) {
@@ -57,6 +60,13 @@ export function CriticalCriteriaDrill({ sheet }: { sheet: Sheet }) {
         e.target instanceof HTMLTextAreaElement
       )
         return;
+      if (!revealed) {
+        if (e.key === " " || e.key === "Enter") {
+          e.preventDefault();
+          setRevealed(true);
+        }
+        return;
+      }
       if (e.key === "1") grade("fail");
       else if (e.key === "2") grade("close");
       else if (e.key === "3") grade("know");
@@ -138,7 +148,7 @@ export function CriticalCriteriaDrill({ sheet }: { sheet: Sheet }) {
   }
 
   const currentId = queue[queueIndex];
-  const criterionText = sheet.criticalCriteria[parseInt(currentId)];
+  const currentIndex = parseInt(currentId);
 
   return (
     <div class="drill-pane">
@@ -159,51 +169,58 @@ export function CriticalCriteriaDrill({ sheet }: { sheet: Sheet }) {
         </div>
       </div>
 
-      <div class="critical-card">
-        <div class="critical-card-text">{criterionText}</div>
-        <details class="critical-pearl">
-          <summary class="critical-pearl-summary">Why this matters →</summary>
-          <p class="critical-pearl-body">Coming soon.</p>
-        </details>
-      </div>
+      <p class="critical-list-prompt">
+        {revealed
+          ? `Did you know criterion ${currentIndex + 1}?`
+          : "What's the missing criterion?"}
+      </p>
 
-      <div class="critical-buttons">
-        <button class="btn critical-btn critical-btn-fail" onClick={() => grade("fail")}>
-          Would fail <kbd>1</kbd>
-        </button>
-        <button class="btn critical-btn critical-btn-close" onClick={() => grade("close")}>
-          Close call <kbd>2</kbd>
-        </button>
-        <button class="btn critical-btn critical-btn-know" onClick={() => grade("know")}>
-          Know it cold <kbd>3</kbd>
-        </button>
-      </div>
-
-      <div class="critical-mini-list">
+      <ol class="critical-list">
         {criteriaIds.map((id) => {
-          const g = records[id]?.grade ?? null;
+          const idx = parseInt(id);
+          const text = sheet.criticalCriteria[idx];
           const isCurrent = id === currentId;
+          const itemGrade = records[id]?.grade ?? null;
+
+          const cls = [
+            "critical-list-item",
+            isCurrent ? "is-target" : "",
+            !isCurrent && itemGrade === "know" ? "is-known" : "",
+          ].filter(Boolean).join(" ");
+
           return (
-            <div
-              key={id}
-              class={[
-                "critical-chip",
-                g === "fail" ? "critical-chip-fail" : "",
-                g === "close" ? "critical-chip-close" : "",
-                g === "know" ? "critical-chip-know" : "",
-                isCurrent ? "critical-chip-current" : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-            >
-              {parseInt(id) + 1}.{" "}
-              {sheet.criticalCriteria[parseInt(id)].length > 45
-                ? sheet.criticalCriteria[parseInt(id)].slice(0, 45) + "…"
-                : sheet.criticalCriteria[parseInt(id)]}
-            </div>
+            <li key={id} class={cls}>
+              <span class="critical-list-num">{idx + 1}.</span>
+              {isCurrent && !revealed ? (
+                <span class="critical-list-blank">???</span>
+              ) : (
+                <span class={isCurrent ? "critical-list-revealed" : ""}>{text}</span>
+              )}
+            </li>
           );
         })}
-      </div>
+      </ol>
+
+      {!revealed ? (
+        <button
+          class="btn btn-primary critical-reveal-btn"
+          onClick={() => setRevealed(true)}
+        >
+          Reveal criterion {currentIndex + 1} <kbd>Space</kbd>
+        </button>
+      ) : (
+        <div class="critical-buttons">
+          <button class="btn critical-btn critical-btn-fail" onClick={() => grade("fail")}>
+            Would fail <kbd>1</kbd>
+          </button>
+          <button class="btn critical-btn critical-btn-close" onClick={() => grade("close")}>
+            Close call <kbd>2</kbd>
+          </button>
+          <button class="btn critical-btn critical-btn-know" onClick={() => grade("know")}>
+            Know it cold <kbd>3</kbd>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

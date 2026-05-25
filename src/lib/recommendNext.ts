@@ -21,6 +21,7 @@ const DURATION: Record<SheetTab, number> = {
   mnemonics: 3,
   chat: 3,
   critical: 5,
+  drill: 10,
 };
 
 function buildJustification(state: AppState, sheet: Sheet, tab: SheetTab): string {

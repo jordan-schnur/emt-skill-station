@@ -260,9 +260,7 @@ export interface AppState {
 export type RouteView =
   | "home"
   | "sheet"
-  | "stats"
   | "settings"
-  | "guide"
   | "examday"
   | "sources"
   | "chat"
@@ -283,7 +281,8 @@ export type SheetTab =
   | "script"
   | "mnemonics"
   | "chat"
-  | "critical";
+  | "critical"
+  | "drill";
 
 export interface Route {
   view: RouteView;

@@ -241,24 +241,34 @@ export function StatsView() {
         <span class="ach-count-badge">{unlockedCount}/{allAchs.length}</span>
       </h2>
       <div class="ach-grid">
-        {allAchs.map((ach) => {
-          const unlocked = !!ach.unlockedAt;
-          return (
-            <div key={ach.id} class={`ach-card${unlocked ? " ach-unlocked" : " ach-locked"}`}>
-              <div class="ach-icon">{ach.icon}</div>
-              <div class="ach-body">
-                <div class="ach-name">{ach.name}</div>
-                <div class="ach-desc">{unlocked ? ach.desc : "???"}</div>
-                {unlocked && (
-                  <div class="ach-date">
-                    Unlocked {new Date(ach.unlockedAt!).toLocaleDateString()}
-                  </div>
-                )}
+        {allAchs.filter((ach) => ach.unlockedAt).map((ach) => (
+          <div key={ach.id} class="ach-card ach-unlocked">
+            <div class="ach-icon">{ach.icon}</div>
+            <div class="ach-body">
+              <div class="ach-name">{ach.name}</div>
+              <div class="ach-desc">{ach.desc}</div>
+              <div class="ach-date">
+                Unlocked {new Date(ach.unlockedAt!).toLocaleDateString()}
               </div>
-              {unlocked && <div class="ach-check">✓</div>}
+            </div>
+            <div class="ach-check">✓</div>
+          </div>
+        ))}
+        {(() => {
+          const nextUp = allAchs.find((ach) => !ach.unlockedAt);
+          if (!nextUp) {
+            return <div class="ach-all-unlocked">🏆 All achievements unlocked!</div>;
+          }
+          return (
+            <div class="ach-card ach-next-up">
+              <div class="ach-icon">{nextUp.icon}</div>
+              <div class="ach-body">
+                <div class="ach-name">{nextUp.name}</div>
+                <div class="ach-desc">Keep going to unlock this!</div>
+              </div>
             </div>
           );
-        })}
+        })()}
       </div>
 
       {/* Progress by sheet */}

@@ -7,8 +7,6 @@ import { Modal } from "./components/ui/Modal";
 import { UpdateBanner } from "./components/ui/UpdateBanner";
 import { HomeView } from "./views/HomeView";
 import { SheetView } from "./views/SheetView";
-import { StatsView } from "./views/StatsView";
-import { GuideView } from "./views/GuideView";
 import { SettingsView } from "./views/SettingsView";
 import { EmsMnemonicsView } from "./views/EmsMnemonicsView";
 import { MedConditionsView } from "./views/MedConditionsView";
@@ -25,8 +23,6 @@ import type { Route } from "./types";
 const VIEWS: Partial<Record<Route["view"], () => JSX.Element | null>> = {
   home:          () => <HomeView />,
   sheet:         () => <SheetView />,
-  stats:         () => <StatsView />,
-  guide:         () => <GuideView />,
   settings:      () => <SettingsView />,
   reference:     () => <ReferenceView />,
   mnemonics:     () => <ReferenceView />,
