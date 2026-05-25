@@ -166,6 +166,7 @@ export interface MedicalCondition {
   criticalFindings: string[];
   treatment: string[];
   compareDimensions: Record<string, string>;
+  compareWith?: string[];
 }
 
 export interface BLSMedDose {
@@ -265,6 +266,7 @@ export type RouteView =
   | "examday"
   | "sources"
   | "chat"
+  | "reference"
   | "mnemonics"
   | "medconditions"
   | "blsmeds"
@@ -292,4 +294,6 @@ export interface Route {
   mnemonicsCardId?: string;
   medcondTab?: string;
   blsmedsTab?: string;
+  referenceTab?: "conditions" | "mnemonics" | "meds";
+  referenceCardId?: string;
 }

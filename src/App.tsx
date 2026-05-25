@@ -17,6 +17,7 @@ import { ChatView } from "./views/ChatView";
 import { ExamDayView } from "./views/ExamDayView";
 import { SourcesView } from "./views/SourcesView";
 import { SkillsView } from "./views/SkillsView";
+import { ReferenceView } from "./views/ReferenceView";
 import { NotFoundView } from "./views/NotFoundView";
 import { NREMT_DATA } from "./data/sheets";
 import type { Route } from "./types";
@@ -27,9 +28,10 @@ const VIEWS: Partial<Record<Route["view"], () => JSX.Element | null>> = {
   stats:         () => <StatsView />,
   guide:         () => <GuideView />,
   settings:      () => <SettingsView />,
-  mnemonics:     () => <EmsMnemonicsView />,
-  medconditions: () => <MedConditionsView />,
-  blsmeds:       () => <BlsMedsView />,
+  reference:     () => <ReferenceView />,
+  mnemonics:     () => <ReferenceView />,
+  medconditions: () => <ReferenceView />,
+  blsmeds:       () => <ReferenceView />,
   chat:          () => <ChatView />,
   examday:       () => <ExamDayView />,
   sources:       () => <SourcesView />,
