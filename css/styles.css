@@ -3165,7 +3165,7 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   margin-bottom: 6px;
   text-transform: uppercase;
 }
-.medcond-critical .medcond-section-label { color: #e5534b; }
+.medcond-critical .medcond-section-label { color: var(--critical); }
 .medcond-treatment .medcond-section-label { color: var(--accent); }
 .medcond-list {
   list-style: disc;
@@ -3357,9 +3357,9 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   font-weight: 600;
 }
 .medcond-option.wrong {
-  background: color-mix(in srgb, #e5534b 20%, var(--bg-raised));
-  border-color: #e5534b;
-  color: #e5534b;
+  background: color-mix(in srgb, var(--critical) 20%, var(--bg-raised));
+  border-color: var(--critical);
+  color: var(--critical);
 }
 .medcond-quiz-feedback {
   background: var(--bg-raised);
@@ -3369,7 +3369,7 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   padding: 10px 14px;
 }
 .medcond-feedback-correct { color: #3fb950; font-weight: 600; margin-bottom: 4px; }
-.medcond-feedback-wrong { color: #e5534b; font-weight: 600; margin-bottom: 4px; }
+.medcond-feedback-wrong { color: var(--critical); font-weight: 600; margin-bottom: 4px; }
 .medcond-feedback-schedule { color: var(--text-dim); font-size: 12px; margin-bottom: 4px; }
 .medcond-feedback-detail { color: var(--text-dim); font-size: 12px; line-height: 1.5; }
 .medcond-quiz-next { display: block; margin: 0 auto; min-width: 120px; }
@@ -3537,7 +3537,7 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   text-transform: uppercase;
 }
 .blsmed-indications .blsmed-section-label { color: #3fb950; }
-.blsmed-contraindications .blsmed-section-label { color: #e5534b; }
+.blsmed-contraindications .blsmed-section-label { color: var(--critical); }
 .blsmed-pearls .blsmed-section-label { color: var(--accent-warm); }
 .blsmed-list {
   list-style: disc;
@@ -3605,9 +3605,9 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   color: #3fb950;
 }
 .blsmed-feedback-wrong {
-  background: color-mix(in srgb, #e5534b 15%, var(--bg-elev));
-  border: 1px solid #e5534b;
-  color: #e5534b;
+  background: color-mix(in srgb, var(--critical) 15%, var(--bg-elev));
+  border: 1px solid var(--critical);
+  color: var(--critical);
 }
 .blsmed-explanation {
   color: var(--text-dim);
@@ -3673,9 +3673,9 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   font-weight: 600;
 }
 .blsmed-option.wrong {
-  background: color-mix(in srgb, #e5534b 20%, var(--bg-raised));
-  border-color: #e5534b;
-  color: #e5534b;
+  background: color-mix(in srgb, var(--critical) 20%, var(--bg-raised));
+  border-color: var(--critical);
+  color: var(--critical);
 }
 .blsmed-scenarios-done {
   display: flex;
@@ -4935,7 +4935,7 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
 
 .examiner-msg { display: flex; align-items: flex-start; gap: .6rem; }
 .msg-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; letter-spacing: .04em; flex-shrink: 0; margin-top: 2px; }
-.examiner-msg-examiner .msg-avatar { background: var(--again, #e5534b); color: #fff; }
+.examiner-msg-examiner .msg-avatar { background: var(--critical); color: #fff; }
 .examiner-msg-user .msg-avatar { background: var(--accent, #4a80d4); color: #fff; }
 .examiner-msg-system .msg-avatar { background: var(--line); color: var(--ink-mute); }
 .msg-bubble { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: .5rem .75rem; font-size: 0.88rem; line-height: 1.5; color: var(--ink); max-width: 640px; }
@@ -5021,3 +5021,42 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
 .debrief-coach-section { display: flex; flex-direction: column; gap: .5rem; border-top: 1px solid var(--line); padding-top: 1rem; }
 .debrief-coach-header { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); text-align: center; }
 .debrief-thread { display: flex; flex-direction: column; gap: .75rem; min-height: 80px; }
+
+/* Station guide banner */
+.station-guide-banner {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: color-mix(in srgb, var(--accent-warm) 12%, var(--bg-elev));
+  border: 1px solid color-mix(in srgb, var(--accent-warm) 40%, transparent);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.station-guide-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.station-guide-text { color: var(--ink); }
+.station-guide-text strong { color: var(--accent-warm); }
+
+/* Critical criteria pearl toggle */
+.crit-pearl-toggle {
+  background: none;
+  border: none;
+  color: var(--ink-mute);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 0;
+  text-align: left;
+}
+.crit-pearl-toggle:hover { color: var(--ink); }
+.crit-pearl-body {
+  font-size: 13px;
+  color: var(--ink-mute);
+  line-height: 1.6;
+  margin-top: 6px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent-warm);
+}

@@ -152,9 +152,41 @@ Tests use **Vitest** + `@testing-library/preact` in jsdom.
 - **New lib functions** → `src/lib/` with a matching test in `tests/`.
 - Keep `src/types/index.ts` as the single source of truth for all shared types.
 
-## Color Discipline
+## Design Tokens
 
-`--again` / red (`#e5534b`) is reserved for Critical Criteria sections, exam-fail warnings, wrong-answer error states, and explicit danger-action buttons (`.btn-danger`). Medical contraindications in BLS meds are also semantic red (keep). Use `--accent` for interactive elements and highlights, `--accent-warm` for non-error callouts. Never use red for decorative backgrounds or non-exam cosmetic purposes.
+All colors must use CSS custom properties from `css/styles.css :root`. Never hardcode hex values.
+
+### Chromatic accents (only 2 allowed in UI)
+| Token | Value | Use |
+|-------|-------|-----|
+| `--accent` | `oklch(0.74 0.13 240)` | Interactive elements, CTAs, links, active states |
+| `--accent-warm` | `#ffb454` | Non-error callouts, highlights, station-guide banners |
+
+### Semantic colors
+| Token | Resolves to | Use |
+|-------|-------------|-----|
+| `--critical` / `--again` | `oklch(0.72 0.17 25)` | Critical criteria, wrong-answer states, exam-fail warnings, danger buttons |
+| `--good` | `oklch(0.74 0.13 150)` | Correct answers, pass states, mastery indicators |
+| `--hard` | `#d29922` | "Hard" flashcard grade only |
+| `--easy` | `#2f81f7` | "Easy" flashcard grade only |
+
+### Surface & ink
+| Token | Use |
+|-------|-----|
+| `--bg` | Page background |
+| `--surface` / `--bg-elev` | Card / panel background |
+| `--surface-2` / `--bg-elev-2` | Nested panel / modal background |
+| `--ink` / `--text` | Primary text |
+| `--ink-mute` / `--text-dim` | Secondary / supporting text |
+| `--ink-soft` / `--text-mute` | Placeholder / disabled text |
+| `--line` / `--border` | Dividers, input borders |
+| `--line-strong` | Emphasized borders |
+
+### Color discipline rules
+- **Red (`--critical` / `--again`)**: Reserved for Critical Criteria sections, exam-fail warnings, wrong-answer error states, and `.btn-danger` buttons. Medical contraindications in BLS meds are also semantic red. **Never** use for decorative backgrounds or non-exam purposes.
+- **Gold (`--accent-warm`)**: For informational highlights and callouts that are not errors — station-guide banners, mnemonics hints, warm nudges. **Not** for interactive buttons (use `--accent` instead).
+- **Blue (`--accent`)**: Primary interactive color — nav active states, primary buttons, links, focus rings. **Not** for static content.
+- **No hardcoded hex values** in component CSS. Always use a token.
 
 ## Active Roadmap
 
