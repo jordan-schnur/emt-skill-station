@@ -587,7 +587,7 @@ export const EMS_CLINICAL_MNEMONICS: ClinicalMnemonic[] = [
     "title": "Enhanced Stroke Recognition",
     "category": "Stroke",
     "note": "Adds Balance and Eyes to capture posterior circulation (vertebrobasilar) strokes that FAST misses. Detects ~14% more strokes than FAST alone.",
-    "sources": ["Aroor S et al. BE-FAST (Balance, Eyes, Face, Arm, Speech, Time): Reducing the Proportion of Strokes Missed Using the FAST Mnemonic. Stroke, 2017."],
+    "sources": ["American Stroke Association (a division of the American Heart Association). B.E. F.A.S.T. — Spot a Stroke. https://www.stroke.org/en/help-and-support/resource-library/be-fast-materials", "Aroor S et al. BE-FAST (Balance, Eyes, Face, Arm, Speech, Time): Reducing the Proportion of Strokes Missed Using the FAST Mnemonic. Stroke, 2017."],
     "letters": [
       {
         "letter": "B",

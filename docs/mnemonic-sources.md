@@ -77,6 +77,7 @@ Add the appropriate strings to the `sources` field when implementing issue #19.
 - Kothari RU et al. "Cincinnati Prehospital Stroke Scale: Reproducibility and Validity." *Annals of Emergency Medicine*, 1999.
 
 ### BE-FAST
+- American Stroke Association (a division of the American Heart Association). "B.E. F.A.S.T. — Spot a Stroke." https://www.stroke.org/en/help-and-support/resource-library/be-fast-materials
 - Aroor S et al. "BE-FAST (Balance, Eyes, Face, Arm, Speech, Time): Reducing the Proportion of Strokes Missed Using the FAST Mnemonic." *Stroke*, 2017.
 
 ---
