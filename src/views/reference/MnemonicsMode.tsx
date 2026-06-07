@@ -4,6 +4,7 @@ import { EMS_CLINICAL_MNEMONICS } from "../../data/ems_clinical_mnemonics";
 import { defaultRecord, grade, describeDue } from "../../lib/emsSrs";
 import { suggestGrade, getNonConnectorLetters, quizMatchesAnswer } from "../../lib/emsMnemonicsHelpers";
 import { ReferenceToolbar } from "../../components/ReferenceToolbar";
+import { BeFastDrill } from "./BeFastDrill";
 import type { ClinicalMnemonic, SRSRecord } from "../../types";
 
 type Grade = "again" | "hard" | "good" | "easy";
@@ -248,9 +249,11 @@ function QuizMode({ pinnedId, onBack }: { pinnedId?: string; onBack: () => void 
   );
 }
 
+type MnemonicsTab = "browse" | "quiz" | "befast";
+
 export function MnemonicsMode() {
   const pinnedId = route.value.referenceCardId;
-  const [isQuiz, setIsQuiz] = useState(!!pinnedId);
+  const [mode, setMode] = useState<MnemonicsTab>(pinnedId ? "quiz" : "browse");
 
   const srsStore = appState.value.emsSrs ?? {};
   const now = Date.now();
@@ -259,24 +262,18 @@ export function MnemonicsMode() {
     return !rec || rec.due <= now;
   }).length;
 
+  const backToBrowse = () => { setMode("browse"); navigate({ view: "reference", referenceTab: "mnemonics" }); };
+
   return (
     <div class="ems-mnemonics">
       <div class="blsmed-tab-strip">
-        <button
-          class={`blsmed-tab-btn${!isQuiz ? " active" : ""}`}
-          type="button"
-          onClick={() => { setIsQuiz(false); navigate({ view: "reference", referenceTab: "mnemonics" }); }}
-        >Browse</button>
-        <button
-          class={`blsmed-tab-btn${isQuiz ? " active" : ""}`}
-          type="button"
-          onClick={() => setIsQuiz(true)}
-        >{dueCount > 0 ? `Quiz (${dueCount})` : "Quiz"}</button>
+        <button class={`blsmed-tab-btn${mode === "browse" ? " active" : ""}`} type="button" onClick={backToBrowse}>Browse</button>
+        <button class={`blsmed-tab-btn${mode === "quiz" ? " active" : ""}`} type="button" onClick={() => setMode("quiz")}>{dueCount > 0 ? `Quiz (${dueCount})` : "Quiz"}</button>
+        <button class={`blsmed-tab-btn${mode === "befast" ? " active" : ""}`} type="button" onClick={() => setMode("befast")}>BE-FAST</button>
       </div>
-      {isQuiz
-        ? <QuizMode pinnedId={pinnedId} onBack={() => { setIsQuiz(false); navigate({ view: "reference", referenceTab: "mnemonics" }); }} />
-        : <BrowseMode onPracticeCard={id => { navigate({ view: "reference", referenceTab: "mnemonics", referenceCardId: id }); setIsQuiz(true); }} />
-      }
+      {mode === "quiz" && <QuizMode pinnedId={pinnedId} onBack={backToBrowse} />}
+      {mode === "befast" && <BeFastDrill onBack={backToBrowse} />}
+      {mode === "browse" && <BrowseMode onPracticeCard={id => { navigate({ view: "reference", referenceTab: "mnemonics", referenceCardId: id }); setMode("quiz"); }} />}
     </div>
   );
 }

@@ -3845,6 +3845,13 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   font-size: 40px;
   font-weight: 700;
 }
+.befast-drill-letter {
+  color: var(--accent);
+  font-size: 56px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 6px;
+}
 
 @media (max-width: 600px) {
   .blsmed-tab-strip { overflow-x: auto; }
