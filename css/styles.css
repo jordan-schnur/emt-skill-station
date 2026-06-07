@@ -3815,6 +3815,37 @@ details[open] > .ref-section-summary::before { transform: rotate(90deg); }
   min-width: 120px;
 }
 
+/* Dosage quiz */
+.dosage-quiz-intro {
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 32px 20px;
+  text-align: center;
+}
+.dosage-quiz-lead {
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1.55;
+  margin: 0;
+}
+.dosage-quiz-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 12px;
+  font-size: 13px;
+  text-align: center;
+}
+.dosage-quiz-score {
+  color: var(--accent);
+  font-size: 40px;
+  font-weight: 700;
+}
+
 @media (max-width: 600px) {
   .blsmed-tab-strip { overflow-x: auto; }
   .blsmed-followup-options { grid-template-columns: 1fr; }

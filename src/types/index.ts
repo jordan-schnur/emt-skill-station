@@ -221,6 +221,15 @@ export interface BlsMedsQuizRecord {
   lastSessionAt: string | null;
 }
 
+export interface MedicationDosage {
+  id: string;
+  name: string;
+  section: string;
+  adultDose: string;
+  route: string;
+  indication: string;
+}
+
 export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;

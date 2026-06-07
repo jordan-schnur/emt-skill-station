@@ -3,9 +3,10 @@ import { appState, mutateState, save } from "../../store/appStore";
 import { BLS_MEDICATIONS } from "../../data/bls_medications";
 import { defaultRecord, grade } from "../../lib/emsSrs";
 import { ReferenceToolbar } from "../../components/ReferenceToolbar";
+import { DosageQuiz } from "./DosageQuiz";
 import type { BLSMedication, BLSScenario, BLSFollowUp, SRSRecord } from "../../types";
 
-type BlsTab = "reference" | "scenarios" | "drill";
+type BlsTab = "reference" | "scenarios" | "drill" | "dosages";
 
 function MedCard({ med }: { med: BLSMedication }) {
   const [open, setOpen] = useState(false);
@@ -313,13 +314,14 @@ export function MedsMode() {
   return (
     <div class="blsmed-wrap">
       <div class="blsmed-tab-strip">
-        {([["reference", "Reference"], ["scenarios", "Scenarios"], ["drill", drillDue > 0 ? `Drill (${drillDue})` : "Drill"]] as [BlsTab, string][]).map(([id, label]) => (
+        {([["reference", "Reference"], ["scenarios", "Scenarios"], ["drill", drillDue > 0 ? `Drill (${drillDue})` : "Drill"], ["dosages", "Dosages"]] as [BlsTab, string][]).map(([id, label]) => (
           <button key={id} class={`blsmed-tab-btn${tab === id ? " active" : ""}`} type="button" onClick={() => setTab(id)}>{label}</button>
         ))}
       </div>
       {tab === "reference" && <ReferenceSubTab />}
       {tab === "scenarios" && <ScenariosTab onBack={() => setTab("reference")} />}
       {tab === "drill" && <DrillTab onBack={() => setTab("reference")} />}
+      {tab === "dosages" && <DosageQuiz />}
     </div>
   );
 }
